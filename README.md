@@ -22,3 +22,5 @@ This member variable has no “real” utility in the sockaddr_in structure. It 
 htons() doc -> https://www.ibm.com/docs/en/zos/2.4.0?topic=lf-htons-translate-unsigned-short-integer-into-network-byte-order -> convierte un integer en formato little endian (Host Byte Order) a big endian (Network Byte Order) formato necesario para la estructura sockaddr_in
 
 host byte order and network byte order -> https://www.ibm.com/docs/ja/zvm/7.2?topic=domains-network-byte-order-host-byte-order
+
+inet_addr() -> function shall convert the string pointed to by cp, in the standard IPv4 dotted decimal notation, to an integer value suitable for use as an Internet address. (ip form to integer convertion)
