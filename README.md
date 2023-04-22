@@ -19,5 +19,6 @@ struct sockaddr_in -> sin_zero
 
 This member variable has no “real” utility in the sockaddr_in structure. It is a buffer used to adjust the size of the sockaddr_in in cases where you need to cast it to a sockaddr type. The sockaddr type is larger than the sockaddr_in type, so the sin_zero is used to make up the difference when the need to be interchanged. It’s not very relevant for our present architecture, so it can be left as is. It is however common practice to zero-out the bytes in this field when not used.
 
-htons() doc -> https://www.ibm.com/docs/en/zos/2.4.0?topic=lf-htons-translate-unsigned-short-integer-into-network-byte-order
+htons() doc -> https://www.ibm.com/docs/en/zos/2.4.0?topic=lf-htons-translate-unsigned-short-integer-into-network-byte-order -> convierte un integer en formato little endian (Host Byte Order) a big endian (Network Byte Order) formato necesario para la estructura sockaddr_in
 
+host byte order and network byte order -> https://www.ibm.com/docs/ja/zvm/7.2?topic=domains-network-byte-order-host-byte-order
