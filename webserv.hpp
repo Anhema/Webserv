@@ -2,6 +2,7 @@
 #define WEBSERV_HPP
 
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <string>
 #include <stdlib.h>
@@ -16,20 +17,24 @@ class webserv
 		std::string 		_ip_address;
 		int					_port;
 		int         		_socket;
-		struct sockaddr_in	_socker_address;
+		int					_socket_address_len;
+		struct sockaddr_in	_socket_address;
+		std::string			_server_message;
 
 	public:
 		webserv();
-		webserv(std::string conf_file);
+		webserv(std::string ip_address, int port);
 		~webserv();
 
 		void start_server();
+		void start_listening();
 		void debug_log(std::string log);
+		void request();
 
 		class SocketException: public std::runtime_error
 		{
 			public:
-				SocketException(): std::runtime_error("Failed creating socket") {};
+				SocketException(std::string str): std::runtime_error(str) {};
 		};
 };
 

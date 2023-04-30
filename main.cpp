@@ -26,6 +26,7 @@ std::string read_file(std::string file_name)
 int main(int argc, char **argv)
 {
     std::string conf_file;
+
     if (argc != 2)
     {
         std::cout << "Invalid number of arguments\n";
@@ -33,6 +34,16 @@ int main(int argc, char **argv)
     }
 
     conf_file = read_file(argv[1]);
-    std::cout << conf_file << "\n";
+    //std::cout << conf_file << "\n";
+    try
+    {
+        webserv server("0.0.0.0", 8080);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    //webserv server("0.0.0.0", 8080);
     return (0);
 }
