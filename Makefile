@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-NAME		=	Bureaucrat
-=======
 NAME		=	webserv
->>>>>>> 03ee1adb933582e23dfa72eae7e8d2494a645139
 NAME_SANI	=	$(addsuffix _sani, $(NAME))
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic

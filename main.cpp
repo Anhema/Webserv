@@ -34,7 +34,9 @@ int main(int argc, char **argv)
     }
 
     conf_file = read_file(argv[1]);
-    //std::cout << conf_file << "\n";
+    if (conf_file == "")
+        return (0);
+
     try
     {
         webserv server("0.0.0.0", 8080);
@@ -43,7 +45,5 @@ int main(int argc, char **argv)
     {
         std::cerr << e.what() << '\n';
     }
-    
-    //webserv server("0.0.0.0", 8080);
     return (0);
 }

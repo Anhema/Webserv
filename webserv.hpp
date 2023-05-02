@@ -30,7 +30,13 @@ class webserv
 		void start_listening();
 		void debug_log(std::string log);
 		void request();
+		void response();
 
+		/*
+			In case of any error in the server, we can throw a
+			error to prevent any unwanted exit an be able to
+			restart the server
+		*/
 		class SocketException: public std::runtime_error
 		{
 			public:
