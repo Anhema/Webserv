@@ -1,18 +1,25 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+# include <unistd.h>
+# include <sys/types.h>
 # include <sys/socket.h>
 # include <iostream>
 # include <cstring>
 # include <arpa/inet.h>
 # include <stdlib.h>
 # include <stdio.h>
+#include <sstream>
 
+
+# define BUFFER_SIZE 30720
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
+
+
 
 
 class Server {
@@ -67,10 +74,54 @@ public:
 			throw (Server::ListenExceptionCantInit());
 		else {
 			cout << "\nListening on ADDRESS: "
-			<< inet_ntoa(m_socketAddress.sin_addr)
-			<< " PORT: " << ntohs(m_socketAddress.sin_port)
-			<< " \n\n";
+				 << inet_ntoa(m_socketAddress.sin_addr)
+				 << " PORT: " << ntohs(m_socketAddress.sin_port)
+				 << " \n\n";
 		}
+		listenLoop();
+
+	}
+
+	void accepConnection() {
+		_newSocket = accept(_socketFd, (sockaddr*)&m_socketAddress, (socklen_t*)&m_socketAddress_len);
+		cout << "accepting...";
+		if (_newSocket == -1)
+			throw (Server::SocketException());
+
+
+	}
+
+	void listenLoop() {
+		while (true) {
+			char buffer[BUFFER_SIZE];
+			accepConnection();
+			cout << "Accepted\n";
+			if (read(_newSocket, buffer, BUFFER_SIZE) < 0)
+				exit(EXIT_FAILURE);
+			cout << "Buffer (" <<  buffer << ")\n";
+			response();
+
+
+		}
+	}
+
+	void response()
+	{
+		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
+		std::ostringstream response;
+
+		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " << htmlFile.size() << "\n\n"
+		   << htmlFile;
+		std::size_t sendBytes = write(_newSocket, response.str().c_str(), htmlFile.size());
+
+
+
+		if (sendBytes != htmlFile.size())
+		{
+			cout << "=========ERROR SENDING=========\n" << "\t\tMessage size: " << htmlFile.size() << "\n" << "Sent: " << sendBytes << "\n";
+		}
+		else
+			cout << "==========RESPONSE SEND SUCCESFULLY===============\n";
 	}
 
 private:
@@ -78,7 +129,7 @@ private:
 	int _port;
 	int	_socketFd;
 	int _newSocket;
-	long _incomingMessage;
+//	long _incomingMessage;
 	struct sockaddr_in m_socketAddress;
 	unsigned int m_socketAddress_len;
 	string m_serverMessage;
