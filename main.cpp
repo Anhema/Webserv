@@ -27,15 +27,17 @@ int main(int argc, char **argv)
 {
     std::string conf_file;
 
-    if (argc != 2)
-    {
-        std::cout << "Invalid number of arguments\n";
-        return (0);
-    }
+    (void) argc;
+    (void) argv;
+    // if (argc != 2)
+    // {
+    //     std::cout << "Invalid number of arguments\n";
+    //     return (0);
+    // }
 
-    conf_file = read_file(argv[1]);
-    if (conf_file == "")
-        return (0);
+    // conf_file = read_file(argv[1]);
+    // if (conf_file == "")
+    //     return (0);
 
     try
     {

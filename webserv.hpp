@@ -17,6 +17,7 @@ class webserv
 		std::string 		_ip_address;
 		int					_port;
 		int         		_socket;
+		int         		_new_socket;
 		int					_socket_address_len;
 		struct sockaddr_in	_socket_address;
 		std::string			_server_message;
@@ -29,6 +30,7 @@ class webserv
 		void start_server();
 		void start_listening();
 		void debug_log(std::string log);
+		void accept_conection();
 		void request();
 		void response();
 
