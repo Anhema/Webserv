@@ -124,9 +124,9 @@ public:
 		string plainText = "Hello World";
 		std::ostringstream response;
 
-		response << "HTTP/1.1 200 OK\nContent-Type: text/plain\nServer: Hello\nContent-Length: " << plainText.size() << "\n\n"
-		   << plainText;
-		std::size_t sendBytes = write(_newSocket, response.str().c_str(), htmlFile.size());
+		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nServer: Hello\nContent-Length: " << htmlFile.size() << "\n\n"
+		   << htmlFile;
+		std::size_t sendBytes = write(_newSocket, response.str().c_str(), response.str().size());
 
 
 
