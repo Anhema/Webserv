@@ -9,8 +9,11 @@
 # include <arpa/inet.h>
 # include <stdlib.h>
 # include <stdio.h>
-#include <sstream>
-
+# include <sstream>
+# include <vector>
+# include <sys/event.h>
+# include <sys/time.h>
+typedef int fd;
 
 # define BUFFER_SIZE 300
 
@@ -82,25 +85,31 @@ public:
 
 	}
 
-	void accepConnection() {
-		_newSocket = accept(_socketFd, (sockaddr*)&m_socketAddress, (socklen_t*)&m_socketAddress_len);
-		cout << "Accepting...";
-		if (_newSocket == -1)
-			throw (Server::SocketException());
-
-
+	void acceptConnection() {
+		// Add connection to vector
+		// Create new 
+		activeFds.push_back(accept(_socketFd, (sockaddr *)&m_socketAddress, (socklen_t *)&m_socketAddress_len));
 	}
 
 	void listenLoop() {
-		while (true) {
-			char buffer[BUFFER_SIZE];
-			accepConnection();
-			cout << "Accepted\n";
-			if (read(_newSocket, buffer, BUFFER_SIZE) < 0)
-				exit(EXIT_FAILURE);
-			cout << "======REQUEST-HEADER==========\n\n" <<  buffer << "\n==========END======\n\n";
-			response();
 
+		kernelQueueInit();
+		struct kevent event;
+		int kq;
+
+		kq = kqueue();
+
+		if (kq == -1)
+			throw (Server::SocketException());
+
+		EV_SET(&event, _newSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+
+
+
+
+		while (true) {
+			acceptConnection();
+			kernelQueueLoop();
 
 		}
 	}
@@ -118,9 +127,19 @@ public:
 		cout << "===========END=========\n";
 	}
 
+	void kernelQueueInit()
+	{
+
+	}
+
+	void kernelQueueLoop()
+	{
+
+	}
+
 	void response()
 	{
-		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
+		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><img src=\"path\"/<h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
 		string plainText = "Hello World";
 		std::ostringstream response;
 
@@ -130,7 +149,7 @@ public:
 
 
 
-		if (sendBytes != htmlFile.size())
+		if (sendBytes != response.str().size())
 		{
 			cout << "=========ERROR SENDING=========\n" << "\t\tMessage size: " << htmlFile.size() << "\n" << "Sent: " << sendBytes << "\n";
 		}
@@ -141,16 +160,19 @@ public:
 
 			cout << "==========RESPONSE SEND SUCCESFULLY===============\n\n";
 		}
+		close(_newSocket);
 
-		checkResponse();
+//		checkResponse();
 
 	}
 
 private:
+
+	std::vector<fd> activeFds;
 	string _ip_address;
 	int _port;
-	int	_socketFd;
-	int _newSocket;
+	fd	_socketFd;
+	fd  _newSocket;
 //	long _incomingMessage;
 	struct sockaddr_in m_socketAddress;
 	unsigned int m_socketAddress_len;
