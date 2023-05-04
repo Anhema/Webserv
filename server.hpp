@@ -12,7 +12,7 @@
 #include <sstream>
 
 
-# define BUFFER_SIZE 30720
+# define BUFFER_SIZE 300
 
 using std::cout;
 using std::cerr;
@@ -84,7 +84,7 @@ public:
 
 	void accepConnection() {
 		_newSocket = accept(_socketFd, (sockaddr*)&m_socketAddress, (socklen_t*)&m_socketAddress_len);
-		cout << "accepting...";
+		cout << "Accepting...";
 		if (_newSocket == -1)
 			throw (Server::SocketException());
 
@@ -98,20 +98,34 @@ public:
 			cout << "Accepted\n";
 			if (read(_newSocket, buffer, BUFFER_SIZE) < 0)
 				exit(EXIT_FAILURE);
-			cout << "Buffer (" <<  buffer << ")\n";
+			cout << "======REQUEST-HEADER==========\n\n" <<  buffer << "\n==========END======\n\n";
 			response();
 
 
 		}
 	}
 
+	void checkResponse()
+	{
+		char buffer[BUFFER_SIZE];
+
+		cout << "===== NEW SOCKET CHECK =====\n";
+		read(_newSocket, buffer, BUFFER_SIZE);
+
+
+		string newSocketContent(buffer);
+		cout << newSocketContent;
+		cout << "===========END=========\n";
+	}
+
 	void response()
 	{
 		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
+		string plainText = "Hello World";
 		std::ostringstream response;
 
-		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " << htmlFile.size() << "\n\n"
-		   << htmlFile;
+		response << "HTTP/1.1 200 OK\nContent-Type: text/plain\nServer: Hello\nContent-Length: " << plainText.size() << "\n\n"
+		   << plainText;
 		std::size_t sendBytes = write(_newSocket, response.str().c_str(), htmlFile.size());
 
 
@@ -121,7 +135,15 @@ public:
 			cout << "=========ERROR SENDING=========\n" << "\t\tMessage size: " << htmlFile.size() << "\n" << "Sent: " << sendBytes << "\n";
 		}
 		else
-			cout << "==========RESPONSE SEND SUCCESFULLY===============\n";
+		{
+			cout << "==========RESPONSE==========\n";
+			cout << response.str() << "\n";
+
+			cout << "==========RESPONSE SEND SUCCESFULLY===============\n\n";
+		}
+
+		checkResponse();
+
 	}
 
 private:
