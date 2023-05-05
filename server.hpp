@@ -91,37 +91,49 @@ public:
 
 	void listenLoop()
 	{
-
-		kernelQueueInit();
-		cout << "TEST\n";
 		kernelQueueLoop();
 	}
 
-	void kernelQueueInit()
-	{
-		_kq_id = kqueue();
 
-		EV_SET(_serverSocketMonitor, _socketFd, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0 ,0);
-
-	}
+#define MAX_EVENTS 10
 
 	void kernelQueueLoop()
 	{
 
 		int new_events;
 		fd	new_connection;
+		struct kevent socket;
 
-		int socketEvents = kevent(_kq_id, _serverSocketMonitor, 1, NULL, 1, NULL);
 
 
-		if (socketEvents == -1)
-			throw (serverError("Kernel event error monitoring server\n"));
 
-		for (;;)
+		_kq_id = kqueue();
+		if (_kq_id == -1)
+			throw (serverError("kqueue failed to init"));
+
+
+
+		EV_SET(&socket, _socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+
+
+		cout << "waiting for socket events\n";
+		kevent(_kq_id, &socket, 1, NULL, 0, NULL);
+		cout << socket.data << endl;
+		cout << "socket event recived\n";
+
+
+		// No purpose at all for waiting till we have the first pending connection when we could loop right away
+
+
+		// When kqueue recieves an event on the _socketFd its managed as a new connection inbound
+
+		while (1)
 		{
 
 
-			new_events = kevent(_kq_id, NULL, 0, _serverSocketEvents, 1, NULL);
+			new_events = kevent(_kq_id, NULL, 0, _change, MAX_EVENTS, NULL);
+
+			cout << "unblocked\n";
 
 			if (new_events == -1)
 				throw (serverError("Error reading new events\n"));
@@ -129,11 +141,11 @@ public:
 
 			for (int i = 0; i < new_events; i++)
 			{
-				fd event_fd = _serverSocketEvents[i].ident;
+				fd event_fd = _change[i].ident;
 
 				cout << "Event fd: " << event_fd << endl;
 
-				if (_serverSocketEvents[i].flags & EV_EOF)
+				if (_change[i].flags & EV_EOF)
 				{
 					cout << "*****CLIENT (" << event_fd << ") TRIES TO DISCONNECT\n";
 					// the fd should be closed BUT its funnier this, thanks 42
@@ -146,19 +158,19 @@ public:
 					if (new_connection == -1)
 						throw(serverError("Error accepting connection\n"));
 
-					EV_SET(_serverSocketMonitor, new_connection, EVFILT_READ, EV_ADD, 0, 0, 0);
+					EV_SET(_change, new_connection, EVFILT_READ, EV_ADD, 0, 0, 0);
 
-					if (kevent(_kq_id, _serverSocketMonitor, 1, NULL, 0, NULL) == -1)
+					if (kevent(_kq_id, _change, 1, NULL, 0, NULL) == -1)
 						throw (serverError("Kevent error\n"));
 
 				}
-				if (_serverSocketEvents[i].filter & EVFILT_READ)
+				if (_change[i].filter & EVFILT_READ)
 				{
 					cout << "Socket: " << event_fd << " ready to be read\n";
 					// Actual read of the socket :)
 
 					// data attribute equals to available bytes in fd
-					std::size_t read_size = _serverSocketEvents[i].data;
+					std::size_t read_size = _change[i].data;
 
 					std::unique_ptr<char[]> buffer;
 					buffer.reset(new char[read_size]);
@@ -213,8 +225,7 @@ private:
 	fd	_socketFd;
 	fd  _newSocket;
 	int _kq_id;
-	struct kevent _serverSocketMonitor[4]; // change_event
-	struct kevent _serverSocketEvents[4];  // event
+	struct kevent _change[MAX_EVENTS]; // change_event
 	struct sockaddr_in m_socketAddress;
 	unsigned int m_socketAddress_len;
 	string m_serverMessage;
