@@ -109,7 +109,7 @@ void webserv::start_listening()
 
 		this->debug_log(log.str());
 		this->request();
-
+		this->response();
 	}
 }
 
@@ -148,7 +148,7 @@ void webserv::accept_conection()
 */
 void webserv::request()
 {
-	const int BUFFER_SIZE = 3000;
+	const int BUFFER_SIZE = 30720;
 
 	char buffer[BUFFER_SIZE] = {0};
 	if (read(this->_new_socket, buffer, BUFFER_SIZE) < 0)
@@ -159,9 +159,26 @@ void webserv::request()
 	std::cout << buffer << "\n";
 }
 
+/*
+	The response data is returned to the client via the socket connection using the write() system call.
+	The functions take in the socket object, the message data as well as the size of the message data and write the data to the socket so the client receives a response on their end of the connection.
+*/
 void webserv::response()
 {
+	size_t send_bytes = 0;
 
+	std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
+	std::ostringstream message;
+	message << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " << htmlFile.size() << "\n\n"
+	<< htmlFile;
+	
+	this->_server_message = message.str();
+
+	send_bytes = write(this->_new_socket, this->_server_message.c_str(), this->_server_message.size());
+	if (send_bytes == this->_server_message.size())
+		this->debug_log("-------- SERVER RESPONSE SENT TO CLIENT --------");
+	else
+		this->debug_log("-------- ERROR SENDING RESPONSE TO CLIENT --------");
 }
 
 void webserv::debug_log(std::string log)
