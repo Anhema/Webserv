@@ -54,6 +54,10 @@ public:
 	public:
 		SocketException(): std::runtime_error("socket malfunction") {};
 	};
+	class serverError: public std::runtime_error {
+	public:
+		serverError(const string &error): std::runtime_error(error) {};
+	};
 
 	void initSocket() {
 		_socketFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -85,55 +89,92 @@ public:
 
 	}
 
-	void acceptConnection() {
-		// Add connection to vector
-		// Create new 
-		activeFds.push_back(accept(_socketFd, (sockaddr *)&m_socketAddress, (socklen_t *)&m_socketAddress_len));
-	}
-
-	void listenLoop() {
+	void listenLoop()
+	{
 
 		kernelQueueInit();
-		struct kevent event;
-		int kq;
-
-		kq = kqueue();
-
-		if (kq == -1)
-			throw (Server::SocketException());
-
-		EV_SET(&event, _newSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
-
-
-
-
-		while (true) {
-			acceptConnection();
-			kernelQueueLoop();
-
-		}
-	}
-
-	void checkResponse()
-	{
-		char buffer[BUFFER_SIZE];
-
-		cout << "===== NEW SOCKET CHECK =====\n";
-		read(_newSocket, buffer, BUFFER_SIZE);
-
-
-		string newSocketContent(buffer);
-		cout << newSocketContent;
-		cout << "===========END=========\n";
+		cout << "TEST\n";
+		kernelQueueLoop();
 	}
 
 	void kernelQueueInit()
 	{
+		_kq_id = kqueue();
+
+		EV_SET(_serverSocketMonitor, _socketFd, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0 ,0);
 
 	}
 
 	void kernelQueueLoop()
 	{
+
+		int new_events;
+		fd	new_connection;
+
+		int socketEvents = kevent(_kq_id, _serverSocketMonitor, 1, NULL, 1, NULL);
+
+
+		if (socketEvents == -1)
+			throw (serverError("Kernel event error monitoring server\n"));
+
+		for (;;)
+		{
+
+
+			new_events = kevent(_kq_id, NULL, 0, _serverSocketEvents, 1, NULL);
+
+			if (new_events == -1)
+				throw (serverError("Error reading new events\n"));
+
+
+			for (int i = 0; i < new_events; i++)
+			{
+				fd event_fd = _serverSocketEvents[i].ident;
+
+				cout << "Event fd: " << event_fd << endl;
+
+				if (_serverSocketEvents[i].flags & EV_EOF)
+				{
+					cout << "*****CLIENT (" << event_fd << ") TRIES TO DISCONNECT\n";
+					// the fd should be closed BUT its funnier this, thanks 42
+				}
+				if (event_fd == _socketFd)
+				{
+					cout << "Incoming connection on fd " << event_fd << "...\n";
+					new_connection = accept(_socketFd, (struct sockaddr *)&m_socketAddress, (socklen_t *)&m_socketAddress_len);
+
+					if (new_connection == -1)
+						throw(serverError("Error accepting connection\n"));
+
+					EV_SET(_serverSocketMonitor, new_connection, EVFILT_READ, EV_ADD, 0, 0, 0);
+
+					if (kevent(_kq_id, _serverSocketMonitor, 1, NULL, 0, NULL) == -1)
+						throw (serverError("Kevent error\n"));
+
+				}
+				if (_serverSocketEvents[i].filter & EVFILT_READ)
+				{
+					cout << "Socket: " << event_fd << " ready to be read\n";
+					// Actual read of the socket :)
+
+					// data attribute equals to available bytes in fd
+					std::size_t read_size = _serverSocketEvents[i].data;
+
+					std::unique_ptr<char[]> buffer;
+					buffer.reset(new char[read_size]);
+
+					std::size_t read_res = read(event_fd, buffer.get(), read_size);
+
+					cout << "READ SIZE:" << read_size << endl;
+					cout << "READ RES:" << read_res << endl;
+					cout << "READ BUFFER" << buffer << endl;
+
+
+
+				}
+			}
+
+		}
 
 	}
 
@@ -142,11 +183,9 @@ public:
 		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><img src=\"path\"/<h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
 		string plainText = "Hello World";
 		std::ostringstream response;
-
 		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nServer: Hello\nContent-Length: " << htmlFile.size() << "\n\n"
 		   << htmlFile;
 		std::size_t sendBytes = write(_newSocket, response.str().c_str(), response.str().size());
-
 
 
 		if (sendBytes != response.str().size())
@@ -173,7 +212,9 @@ private:
 	int _port;
 	fd	_socketFd;
 	fd  _newSocket;
-//	long _incomingMessage;
+	int _kq_id;
+	struct kevent _serverSocketMonitor[4]; // change_event
+	struct kevent _serverSocketEvents[4];  // event
 	struct sockaddr_in m_socketAddress;
 	unsigned int m_socketAddress_len;
 	string m_serverMessage;
