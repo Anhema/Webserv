@@ -23,6 +23,7 @@ using std::endl;
 using std::string;
 
 
+#define MAX_EVENTS 500
 
 
 class Server {
@@ -60,15 +61,16 @@ public:
 	};
 
 	void initSocket() {
+
+		m_socketAddress.sin_family = AF_INET;
+		m_socketAddress.sin_port = htons(_port);
+		m_socketAddress.sin_addr.s_addr = inet_addr(_ip_address.c_str());
+
 		_socketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (_socketFd < 0)
 			throw (Server::SocketException());
 
 		cout << "Socket fd initialized with fd:" << _socketFd << endl;
-
-		m_socketAddress.sin_family = AF_INET;
-		m_socketAddress.sin_port = htons(_port);
-		m_socketAddress.sin_addr.s_addr = inet_addr(_ip_address.c_str());
 
 		if (bind(_socketFd, (sockaddr*)&m_socketAddress, m_socketAddress_len) < 0)
 			throw (Server::SocketExceptionCantBind());
@@ -76,6 +78,7 @@ public:
 			cout << "bind succesfull\n";
 
 	};
+
 	void ServerListener() {
 		if (listen(_socketFd, 20) < 0)
 			throw (Server::ListenExceptionCantInit());
@@ -95,7 +98,6 @@ public:
 	}
 
 
-#define MAX_EVENTS 10
 
 	void kernelQueueLoop()
 	{
@@ -133,8 +135,6 @@ public:
 
 			new_events = kevent(_kq_id, NULL, 0, _change, MAX_EVENTS, NULL);
 
-			cout << "unblocked\n";
-
 			if (new_events == -1)
 				throw (serverError("Error reading new events\n"));
 
@@ -148,6 +148,7 @@ public:
 				if (_change[i].flags & EV_EOF)
 				{
 					cout << "*****CLIENT (" << event_fd << ") TRIES TO DISCONNECT\n";
+
 					// the fd should be closed BUT its funnier this, thanks 42
 				}
 				if (event_fd == _socketFd)
@@ -158,12 +159,18 @@ public:
 					if (new_connection == -1)
 						throw(serverError("Error accepting connection\n"));
 
-					EV_SET(_change, new_connection, EVFILT_READ, EV_ADD, 0, 0, 0);
+					EV_SET(_change, new_connection, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, 0);
 
 					if (kevent(_kq_id, _change, 1, NULL, 0, NULL) == -1)
 						throw (serverError("Kevent error\n"));
 
 				}
+
+				if (_change[i].filter & EVFILT_WRITE)
+				{
+					response(event_fd);
+				}
+
 				if (_change[i].filter & EVFILT_READ)
 				{
 					cout << "Socket: " << event_fd << " ready to be read\n";
@@ -175,11 +182,16 @@ public:
 					std::unique_ptr<char[]> buffer;
 					buffer.reset(new char[read_size]);
 
-					std::size_t read_res = read(event_fd, buffer.get(), read_size);
+					long read_res = read(event_fd, buffer.get(), read_size);
 
+					if (read_res == -1)
+					{
+						cout << "\n======READ ERROR=========\n";
+						continue;
+					}
 					cout << "READ SIZE:" << read_size << endl;
 					cout << "READ RES:" << read_res << endl;
-					cout << "READ BUFFER" << buffer << endl;
+					cout << "READ BUFFER\n\n=====================\n\n" << buffer << "\n=========================\n" << endl;
 
 
 
@@ -190,14 +202,14 @@ public:
 
 	}
 
-	void response()
+	void response(fd write_socket)
 	{
 		std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><img src=\"path\"/<h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
 		string plainText = "Hello World";
 		std::ostringstream response;
 		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nServer: Hello\nContent-Length: " << htmlFile.size() << "\n\n"
 		   << htmlFile;
-		std::size_t sendBytes = write(_newSocket, response.str().c_str(), response.str().size());
+		std::size_t sendBytes = write(write_socket, response.str().c_str(), response.str().size());
 
 
 		if (sendBytes != response.str().size())
@@ -207,11 +219,10 @@ public:
 		else
 		{
 			cout << "==========RESPONSE==========\n";
-			cout << response.str() << "\n";
+//			cout << response.str() << "\n";
 
 			cout << "==========RESPONSE SEND SUCCESFULLY===============\n\n";
 		}
-		close(_newSocket);
 
 //		checkResponse();
 
@@ -223,7 +234,6 @@ private:
 	string _ip_address;
 	int _port;
 	fd	_socketFd;
-	fd  _newSocket;
 	int _kq_id;
 	struct kevent _change[MAX_EVENTS]; // change_event
 	struct sockaddr_in m_socketAddress;
