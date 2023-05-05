@@ -13,6 +13,7 @@
 # include <vector>
 # include <sys/event.h>
 # include <sys/time.h>
+# include <fcntl.h>
 typedef int fd;
 
 # define BUFFER_SIZE 300
@@ -80,7 +81,7 @@ public:
 	};
 
 	void ServerListener() {
-		if (listen(_socketFd, 20) < 0)
+		if (listen(_socketFd, MAX_EVENTS) < 0)
 			throw (Server::ListenExceptionCantInit());
 		else {
 			cout << "\nListening on ADDRESS: "
@@ -147,8 +148,11 @@ public:
 
 				if (_change[i].flags & EV_EOF)
 				{
-					cout << "*****CLIENT (" << event_fd << ") TRIES TO DISCONNECT\n";
-
+					cout << "*****CLIENT (" << event_fd << ") TRIES TO DISCONNECT*****\n";
+					EV_SET(_change, event_fd, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+					close(event_fd);
+					// stop checking the fd
+//					close(event_fd);
 					// the fd should be closed BUT its funnier this, thanks 42
 				}
 				if (event_fd == _socketFd)
@@ -173,32 +177,39 @@ public:
 
 				if (_change[i].filter & EVFILT_READ)
 				{
-					cout << "Socket: " << event_fd << " ready to be read\n";
-					// Actual read of the socket :)
-
-					// data attribute equals to available bytes in fd
-					std::size_t read_size = _change[i].data;
-
-					std::unique_ptr<char[]> buffer;
-					buffer.reset(new char[read_size]);
-
-					long read_res = read(event_fd, buffer.get(), read_size);
-
-					if (read_res == -1)
-					{
-						cout << "\n======READ ERROR=========\n";
-						continue;
-					}
-					cout << "READ SIZE:" << read_size << endl;
-					cout << "READ RES:" << read_res << endl;
-					cout << "READ BUFFER\n\n=====================\n\n" << buffer << "\n=========================\n" << endl;
-
-
+					recieve(_change[i], event_fd);
 
 				}
 			}
 
 		}
+
+	}
+
+
+	void recieve(struct kevent &_change, fd event_fd)
+	{
+		cout << "Socket: " << event_fd << " ready to be read\n";
+		// Actual read of the socket :)
+
+		// data attribute equals to available bytes in fd
+		std::size_t read_size = _change.data;
+
+		std::unique_ptr<char[]> buffer;
+		buffer.reset(new char[read_size]);
+
+		long read_res = recv(_change.ident, buffer.get(), read_size, 0);
+
+		if (read_res == -1)
+		{
+			cout << "\n======READ ERROR=========\n";
+			return;
+		}
+		cout << "READ SIZE:" << read_size << endl;
+		cout << "READ RES:" << read_res << endl;
+		cout << "READ BUFFER\n\n=====================\n\n" << buffer
+			 << "\n=========================\n" << endl;
+
 
 	}
 
@@ -209,7 +220,7 @@ public:
 		std::ostringstream response;
 		response << "HTTP/1.1 200 OK\nContent-Type: text/html\nServer: Hello\nContent-Length: " << htmlFile.size() << "\n\n"
 		   << htmlFile;
-		std::size_t sendBytes = write(write_socket, response.str().c_str(), response.str().size());
+		std::size_t sendBytes = send(write_socket, response.str().c_str(), response.str().size(), MSG_DONTWAIT);
 
 
 		if (sendBytes != response.str().size())
