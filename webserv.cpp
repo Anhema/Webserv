@@ -92,7 +92,7 @@ void webserv::start_listening()
 		<< "\nPORT: " << ntohs(this->_socket_address.sin_port) 
 		<< "\n\n";
 
-	this->debug_log(log.str());
+	debug_log(log.str());
 
 
 	while (true)
@@ -104,12 +104,13 @@ void webserv::start_listening()
 		<< "*****************CONNECTION ACCEPTED*****************\n\n"
         << "Server accept incoming connection\nADDRESS: " 
         << inet_ntoa(this->_socket_address.sin_addr) << ";\nPORT: " 
-        << ntohs(this->_socket_address.sin_port)
-		<< "\n\n****************************************************\n";
+        << ntohs(this->_socket_address.sin_port) << "\n";
 
-		this->debug_log(log.str());
+		debug_log(log.str());
 		this->request();
+		debug_log("*****************************************************\n");
 		this->response();
+		close(this->_new_socket);
 	}
 }
 
@@ -138,7 +139,7 @@ void webserv::accept_conection()
         << ntohs(this->_socket_address.sin_port)
 		<< "****************************************************";
 
-		this->debug_log(log.str());
+		debug_log(log.str());
 	}
 }
 
@@ -156,32 +157,68 @@ void webserv::request()
 		throw (webserv::SocketException("Failed to read bytes from client socket connection"));
 	}
 
-	std::cout << buffer << "\n";
+	std::vector<std::string> request = split(buffer, "\n");
+	std::vector<std::string>::iterator ite = request.end();
+	std::vector<std::string>::iterator start = request.begin();
+	std::vector<std::string> r_line = split((*start), " ");
+	this->_request.method = r_line[0];
+	this->_request.target = r_line[1];
+	this->_request.version = r_line[2];
+	start++;
+	for (std::vector<std::string>::iterator it = start; it != ite; it++)
+		debug_log((*it));
+	
+	debug_log(this->_request.method);
+	debug_log(this->_request.target );
+	debug_log(this->_request.version);
 }
 
 /*
 	The response data is returned to the client via the socket connection using the write() system call.
 	The functions take in the socket object, the message data as well as the size of the message data and write the data to the socket so the client receives a response on their end of the connection.
+
 */
 void webserv::response()
 {
 	size_t send_bytes = 0;
 
-	std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
 	std::ostringstream message;
-	message << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " << htmlFile.size() << "\n\n"
-	<< htmlFile;
-	
-	this->_server_message = message.str();
+	if (this->_request.method == "GET")
+		this->_server_message = get();
+	else
+	{
+
+	}
 
 	send_bytes = write(this->_new_socket, this->_server_message.c_str(), this->_server_message.size());
 	if (send_bytes == this->_server_message.size())
-		this->debug_log("-------- SERVER RESPONSE SENT TO CLIENT --------");
+		debug_log("-------- SERVER RESPONSE SENT TO CLIENT --------\n");
 	else
-		this->debug_log("-------- ERROR SENDING RESPONSE TO CLIENT --------");
+		debug_log("------- ERROR SENDING RESPONSE TO CLIENT -------\n");
 }
 
-void webserv::debug_log(std::string log)
+/*
+	For the moment the GET METHOD always search in www/ forlder all files that Client Request.
+	By default, with localhost:8080 url it will take index.html. Also, HTTP/1.1 200 OK will be sent
+	even if there ir any error.
+	
+	Later all this things will be replaced by configuration file values.
+*/
+std::string webserv::get()
 {
-	std::cout << log << "\n";
+	std::ostringstream message;
+	std::string path = "www";
+	if (this->_request.target == "/")
+		this->_response.htmlFile = read_file(path.append("/index.html"));
+	else
+	{
+		path.append(this->_request.target);
+		std::cout << "FILE: ---" << path << "---\n";
+		this->_response.htmlFile = read_file(path);
+	}
+	this->_response.extension = get_extension(path);
+	std::cout << "EXTENSION: ---" << this->_response.extension << "---\n";
+	message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
+		<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+	return (message.str());
 }

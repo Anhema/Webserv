@@ -1,28 +1,5 @@
 #include "webserv.hpp"
 
-std::string read_file(std::string file_name)
-{
-    std::ifstream   file;
-    std::string     result;
-    std::string     line;
-
-    file.open(file_name.c_str());
-    if (file.is_open())
-    {
-        while (std::getline(file, line))
-        {
-            result.append(line);
-            result.append("\n");
-        }
-    }
-    else
-    {
-        std::cout << "Error opening configuration file\n";
-    }
-    file.close();
-    return (result);
-}
-
 int main(int argc, char **argv)
 {
     std::string conf_file;
