@@ -63,7 +63,7 @@ Server will use a **TCP/IP** socket registered to an IP address on the computer.
 ## HTTP Server
 
 HTTP communication usually takes place over TCP. A typical HTTP session often consists of three steps: The client and server establish a TCP connection stream, the client sends HTTP request over TCP connection, and then the server processes that request and sends back a reply. The second and third step can be repeated any number of times, until both client and server decide to close the underlying TCP connection. To put it in a simple diagram, this is how the process looks like in the perspective of TCP.
-![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://www.layerstack.com/img/docs/resources/Apachediagram1.jpg)
+![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://res.cloudinary.com/practicaldev/image/fetch/s--FkljvNhV--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_800/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/qbtgkb5i8msewgalxnnk.png)
 
 As a server, these are the main steps that we need to take care of:
 
