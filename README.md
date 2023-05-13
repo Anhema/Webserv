@@ -45,7 +45,7 @@ We will be using **TCP** (Transmission Control Protocol) to implement our **HTTP
 
 **TCP** (Transmission Control Protocol) is an important network protocol that lets two hosts connect and exchange data streams. **TCP** guarantees the delivery of data and packets in the same order as they were sent.
 
-Our server will use a **TCP/IP** socket registered to an IP address on the computer. It will also have a specific port through which the socket will listen for incoming network connections. Network connections that come into our server will be stored on a Queue of network threads. When the Queue is full, incoming network requests will start to fall through. The server will process each network thread synchronously. The network connection will be used to create a temporary socket through which the server reads data from the client and sends data to the client.
+Server will use a **TCP/IP** socket registered to an IP address on the computer. It will also have a specific port through which the socket will listen for incoming network connections. Network connections that come into the server will be stored on a Queue of network threads. When the Queue is full, incoming network requests will start to fall through. The server will process each network thread synchronously. The network connection will be used to create a temporary socket through which the server reads data from the client and sends data to the client.
 
 	- Listens for incoming network connections and puts them on a Queue
 	- Accepts a network connection from the Queue one at a time
@@ -64,6 +64,24 @@ As a server, these are the main steps that we need to take care of:
     - Receive messages, process them and sends some responses to the client. This is where HTTP message exchange happens.
     - When one party wants to close the connection, it will do that by sending an EOF character and closing the socket file descriptor.
 
+### HTTP Messages
+HTTP is the most common application layer protocol that serves as the basis for many communications over the web. In a client-server setting, HTTP messages are the requests and responses objects exchanged between the two parties. An HTTP client sends a HTTP request to an HTTP server, and the server will reply with an HTTP response. The messages must follow some format specified in the RFCs. For the small scope of my project, I picked out the most basic components to implement in my program. In short, an HTTP message should consist of:
+
+    - A start line: For an HTTP request, this line includes an HTTP method (GET, POST, HEAD, etc), a request target (URI), and a string that indicates the HTTP version (e.g HTTP/1.1). For an HTTP response, the start line (or status line) will have the HTTP version that the server used, a status code, an optionally, a message describing the status code. The start line of a message should be terminated by a CRLF character.
+    - Header fields: A list of key - value pairs that appear right after the start line and contain metadata about the HTTP connection and message. Each field should be on a single line and have the format field-name: field-value
+    - Message body: An optional sequence of bytes. The message body is often present in response messages from the server, and sometimes in requests sent by the client, depending on the HTTP method. An HTTP message body can have any format, as long as both client and server have no issue understanding it.
+
+**HTTP Request**
+> GET /hello.html HTTP/1.1
+> Host: 0.0.0.0
+> Accept-Language: en, vi
+
+**HTTP Response**
+> HTTP/1.1 200 OK
+> Server: Hello
+> Content-Length: 13
+> Content-Type: text/plain
+> Hello, world
 
 ## Configuration file
 
@@ -75,6 +93,11 @@ https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Web_mechanics/Wh
 https://osasazamegbe.medium.com/showing-building-an-http-server-from-scratch-in-c-2da7c0db6cb7
 
 https://trungams.github.io/2020-08-23-a-simple-http-server-from-scratch/
+
+### RFC
+https://www.ietf.org/standards/rfcs/
+
+https://datatracker.ietf.org/doc/html/rfc7230
 
 ### CGI
 https://diego.com.es/concepto-y-funcionamiento-de-cgi
