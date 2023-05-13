@@ -120,11 +120,7 @@ HTTP defines a set of request methods indicating the desired action to be perfor
     - The POST method sends data to a server so it may change its state. This is the method often used for HTML Forms.
     - The DELETE method deletes the specified resource.
 
-> GET /hello.html HTTP/1.1
-> 
-> Host: 0.0.0.0
-> 
-> Accept-Language: en, vi
+![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://camo.githubusercontent.com/b6b0f8900c4af3b3ad8efedce8851da43853614067457c748e0d1c0c3f86857a/68747470733a2f2f6d69726f2e6d656469756d2e636f6d2f6d61782f313430302f312a5971712d363044396d44344e567568466434496f46672e706e67)
 
 <br>
 
@@ -147,16 +143,7 @@ HTTP response status codes indicate if a specific HTTP request has been successf
     - 404: Not Found. The server cannot find the requested resource.
 
 
-> HTTP/1.1 200 OK
-> 
-> Server: Hello
-> 
-> Content-Length: 13
-> 
-> Content-Type: text/plain
-> 
-> Hello, world
-> 
+![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://camo.githubusercontent.com/918ddffc875ff2ec6428ae0e7c3e05057331b27ed246dc9a03b0ad927c3b1041/68747470733a2f2f6d69726f2e6d656469756d2e636f6d2f6d61782f313430302f312a355143726741354c6f4138414b5233306365367835412e706e67)
 
 <br>
 
