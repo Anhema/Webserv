@@ -6,10 +6,11 @@ SANI_FLAG	=	-fsanitize=address -g3
 OBJDIR		=	objs/
 OBJDIR_SANI	=	objs_sani/
 PCHDIR		=	pch/
-SRCS		=	$(wildcard *.cpp)
-PCH_SRC 	=	$(wildcard *.hpp)
-PCH_OUT 	=	$(addprefix $(PCHDIR), $(PCH_SRC:.hpp=.hpp.gch))
-OBJS	 	=	$(addprefix $(OBJDIR), $(SRCS:.cpp=.o))
+SRCS		=	$(wildcard srcs/*/*.cpp)
+SRCDIRS		=	$(dir $(SRCS))
+PCH_SRC 	=	$(wildcard srcs/*/*.hpp)
+PCH_OUT 	=	$(addprefix $(PCHDIR), $(notdir $(PCH_SRC:.hpp=.hpp.gch)))
+OBJS	 	=	$(addprefix $(OBJDIR), $(notdir $(SRCS:.cpp=.o)))
 OBJS_SANI   = 	$(addprefix $(OBJDIR_SANI), $(SRCS:.cpp=_sani.o))
 
 
@@ -17,33 +18,30 @@ MKDIR		=	mkdir -p
 RM			=	rm -fr
 ECHO		=	echo
 
+$(info pch $(PCH_OUT))
 
 #.SILENT:
 
-all: $(NAME) $(NAME_SANI)
+all: $(NAME)
 
-$(NAME_SANI): $(OBJS_SANI)
-	$(CXX) $(CXXFLAGS) $(SANI_FLAG) $(OBJS) -I $(PCHDIR) -o $(NAME_SANI)
-#	printf "$(B_RED)CREATING $(NC)$(B_WHT)%s$(NC)$(B_RED)SANI EXECUTABLE: $(B_WHT)$(NAME_SANI) $(NC)\n"
+$(NAME):  $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(SANI_FLAG) $^ -o $(NAME_SANI)
 
-$(OBJS_SANI): $(SRCS) $(PCH_OUT)
-	@$(MKDIR) $(OBJDIR_SANI)
-	$(CXX) $(CXXFLAGS) $(SANI_FLAG) -c -o $@ $<
-#	printf "$(B_RED)Sani Compiling: $(NC)$(B_WHT)%s$(NC)\n" $(notdir $@)
+$(OBJDIR)%.o: srcs/*/%.cpp $(PCH_OUT)
+	$(MKDIR) $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
 
-$(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -I $(PCHDIR) -o $(NAME)
-#	printf "$(B_BLU)CREATING $(NC)$(B_WHT)%s$(NC)$(B_BLU)EXECUTABLE: $(B_WHT)$(NAME) $(NC)\n"
+$(PCHDIR)%.hpp.gch: srcs/*/%.hpp
+	$(MKDIR) $(PCHDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJDIR)%.o: %.cpp $(PCH_OUT)
-	@$(MKDIR) $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-#	printf "$(B_CYN)Compiling: $(NC)$(B_WHT)%s$(NC)\n" $(notdir $@)
+$(PCHDIR):
+	$(MKDIR) $(PCHDIR)
 
-$(PCH_OUT): $(PCH_SRC)
-	@$(MKDIR) $(PCHDIR)
-	$(CXX) $(CXXFLAGS) -o $@ $<
-#	printf "$(B_CYN)Compiling: $(NC)$(B_WHT)%s$(NC)\n" $(notdir $@)
+$(OBJDIR):
+	$(MKDIR) $(OBJDIR)
 
 sani: $(NAME_SANI)
 	./$(NAME_SANI)
@@ -54,18 +52,19 @@ run: all
 re: fclean all
 
 clean:
-	@$(RM) $(OBJDIR)
-	@$(RM) $(PCHDIR)
-	@$(RM) $(OBJDIR_SANI)
+	$(RM) $(OBJDIR)
+	$(RM) $(PCHDIR)
+	$(RM) $(OBJDIR_SANI)
 
 const: all
 	@$(ECHO) "n constructors ->"
 	@./$(NAME) | grep "cons" | wc -l
 	@$(ECHO) "n destructors ->"
 	@./$(NAME) | grep "dest" | wc -l
+
 fclean: clean
-	@$(RM) $(NAME)
-	@$(RM) $(NAME_SANI)
+	$(RM) $(NAME)
+	$(RM) $(NAME_SANI)
 
 
 BLK		=	\e[0;30m
