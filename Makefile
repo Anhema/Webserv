@@ -1,7 +1,7 @@
 NAME		=	webserv
 NAME_SANI	=	$(addsuffix _sani, $(NAME))
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic -Winvalid-pch
 SANI_FLAG	=	-fsanitize=address -g3
 OBJDIR		=	objs/
 OBJDIR_SANI	=	objs_sani/
@@ -9,33 +9,36 @@ PCHDIR		=	pch/
 SRCS		=	$(wildcard srcs/*/*.cpp)
 SRCDIRS		=	$(dir $(SRCS))
 PCH_SRC 	=	$(wildcard srcs/*/*.hpp)
-PCH_OUT 	=	$(addprefix $(PCHDIR), $(notdir $(PCH_SRC:.hpp=.hpp.gch)))
+PCH_OUT 	=	$(addprefix $(PCHDIR), $(notdir $(PCH_SRC:.hpp=.gch)))
 OBJS	 	=	$(addprefix $(OBJDIR), $(notdir $(SRCS:.cpp=.o)))
 OBJS_SANI   = 	$(addprefix $(OBJDIR_SANI), $(SRCS:.cpp=_sani.o))
 
+
+INCFLAG		=	$(foreach header, $(PCH_OUT),-include $(header))
 
 MKDIR		=	mkdir -p
 RM			=	rm -fr
 ECHO		=	echo
 
-$(info pch $(PCH_OUT))
+$(info inclue $(INCFLAG))
 
 #.SILENT:
+
+.SECONDARY: $(PCH_OUT)
 
 all: $(NAME)
 
 $(NAME):  $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $(NAME)
-	$(CXX) $(CXXFLAGS) $(SANI_FLAG) $^ -o $(NAME_SANI)
+	$(CXX) $(CXXFLAGS) $(INCFLAG) $^ -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(INCFLAG) $(SANI_FLAG) $^ -o $(NAME_SANI)
 
-$(OBJDIR)%.o: srcs/*/%.cpp $(PCH_OUT)
-	$(MKDIR) $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-	$(CXX) $(CXXFLAGS) $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
+$(OBJDIR)%.o: srcs/*/%.cpp $(PCH_OUT) | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -Winvalid-pch -I /pch -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Winvalid-pch -I /pch $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
 
-$(PCHDIR)%.hpp.gch: srcs/*/%.hpp
-	$(MKDIR) $(PCHDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(PCHDIR)%.gch: srcs/*/%.hpp | $(PCHDIR)
+	 c++ -x c++-header -finput-charset=UTF-8 $< -o $@
+
 
 $(PCHDIR):
 	$(MKDIR) $(PCHDIR)
@@ -49,7 +52,7 @@ sani: $(NAME_SANI)
 run: all
 	./$(NAME)
 
-re: fclean all
+re: fclean $(OBJDIR) $(PCHDIR) all
 
 clean:
 	$(RM) $(OBJDIR)
