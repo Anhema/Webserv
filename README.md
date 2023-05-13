@@ -25,6 +25,8 @@
 	- CGI Functionality
 3. References
 
+
+
 ## HTTP Server introduction
 
 A **web server** is a computer that stores web server software and a website's component files (for example, HTML documents, images, CSS stylesheets, and JavaScript files). A web server connects to the Internet and supports physical data interchange with other devices connected to the web.
@@ -52,6 +54,8 @@ Server will use a **TCP/IP** socket registered to an IP address on the computer.
 	- Reads the data (Request) sent from the client over the network connection
 	- Sends data (Response) to the client over the network connection.
 
+
+
 ## Server
 
 HTTP communication usually takes place over TCP. A typical HTTP session often consists of three steps: The client and server establish a TCP connection stream, the client sends HTTP request over TCP connection, and then the server processes that request and sends back a reply. The second and third step can be repeated any number of times, until both client and server decide to close the underlying TCP connection. To put it in a simple diagram, this is how the process looks like in the perspective of TCP.
@@ -64,6 +68,8 @@ As a server, these are the main steps that we need to take care of:
     - Receive messages, process them and sends some responses to the client. This is where HTTP message exchange happens.
     - When one party wants to close the connection, it will do that by sending an EOF character and closing the socket file descriptor.
 
+
+
 ### HTTP Messages
 
 HTTP is the most common application layer protocol that serves as the basis for many communications over the web. In a client-server setting, HTTP messages are the requests and responses objects exchanged between the two parties. An HTTP client sends a HTTP request to an HTTP server, and the server will reply with an HTTP response. The messages must follow some format specified in the RFCs. For the small scope of my project, I picked out the most basic components to implement in my program. In short, an HTTP message should consist of:
@@ -71,6 +77,8 @@ HTTP is the most common application layer protocol that serves as the basis for 
     - A start line: For an HTTP request, this line includes an HTTP method (GET, POST, HEAD, etc), a request target (URI), and a string that indicates the HTTP version (e.g HTTP/1.1). For an HTTP response, the start line (or status line) will have the HTTP version that the server used, a status code, an optionally, a message describing the status code. The start line of a message should be terminated by a CRLF character.
     - Header fields: A list of key - value pairs that appear right after the start line and contain metadata about the HTTP connection and message. Each field should be on a single line and have the format field-name: field-value
     - Message body: An optional sequence of bytes. The message body is often present in response messages from the server, and sometimes in requests sent by the client, depending on the HTTP method. An HTTP message body can have any format, as long as both client and server have no issue understanding it.
+
+
 
 **HTTP Request**
 
@@ -81,7 +89,9 @@ Once the connection is established, the user-agent can send the request (a user-
         - The HTTP protocol version
     2. Subsequent lines represent an HTTP header, giving the server information about what type of data is appropriate (for example, what language, what MIME types), or other data altering its behavior (for example, not sending an answer if it is already cached). These HTTP headers form a block which ends with an empty line.
     3. The final block is an optional data block, which may contain further data mainly used by the POST method.
-    
+
+
+
 **Request Methods**
 
 HTTP defines a set of request methods indicating the desired action to be performed upon a resource. Although they can also be nouns, these requests methods are sometimes referred as HTTP verbs. The most common requests are GET and POST:
@@ -95,7 +105,8 @@ HTTP defines a set of request methods indicating the desired action to be perfor
 > Host: 0.0.0.0
 > 
 > Accept-Language: en, vi
-> 
+
+
 
 **HTTP Response**
 
@@ -104,6 +115,8 @@ After the connected agent has sent its request, the web server processes it, and
     1. The first line, the status line, consists of an acknowledgment of the HTTP version used, followed by a response status code (and its brief meaning in human-readable text).
     2. Subsequent lines represent specific HTTP headers, giving the client information about the data sent (for example, type, data size, compression algorithm used, hints about caching). Similarly to the block of HTTP headers for a client request, these HTTP headers form a block ending with an empty line.
     3. The final block is a data block, which contains the optional data.
+ 
+ 
 
 **Response status codes**
 
@@ -124,6 +137,8 @@ HTTP response status codes indicate if a specific HTTP request has been successf
 > 
 > Hello, world
 > 
+
+
 
 ## Configuration file
 
