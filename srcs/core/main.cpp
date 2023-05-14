@@ -3,6 +3,9 @@
 
 int main(void)
 {
-	Logger::log_error("test");
+	Logger::log("test", ERROR);
+	Logger::log("test2", INFO);
+	Logger::log("test3", WARNING);
+
 	//Logger::log("test", ERROR);
 }
