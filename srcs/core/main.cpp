@@ -3,5 +3,6 @@
 
 int main(void)
 {
-	cout << "test\n";
+	Logger::log_error("test");
+	//Logger::log("test", ERROR);
 }

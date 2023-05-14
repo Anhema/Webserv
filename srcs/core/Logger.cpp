@@ -3,26 +3,32 @@
 
 Logger::Logger() {}
 
-Logger::Logger(const Logger __unused &obj) {}
+Logger::Logger(const Logger &obj) { (void)obj; }
 
 Logger::~Logger() {}
 
 Logger::VerboseNoMatchException::VerboseNoMatchException(): std::invalid_argument("invalid verbose level") {}
 
-Logger::levels Logger::get_level() {
+void Logger::log_error(string const &message) {
 
-    switch (VERBOSE) {
+    cout << BOLDRED << "[ERROR]" << NC << " " << message << endl;
+
+}
+
+void Logger::log(string const &message, levels level) {
+
+    switch (level)
+    {
         case ERROR:
-            return (ERROR);
+            log_error(message);
             break;
         case WARNING:
-            return (WARNING);
+            log_error(message);
             break;
         case INFO:
-            return (INFO);
+            log_error(message);
             break;
-        default:
-            throw (Logger::VerboseNoMatchException());
-
     }
+    log_error(message);
+    (void)level;
 }
