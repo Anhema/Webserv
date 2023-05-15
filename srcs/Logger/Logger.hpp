@@ -16,7 +16,6 @@
 // Verbose level 1 = only errors and warning will be displayed
 // Verbose level 2 = only errors will be displayed
 
-
  enum levels {
         INFO,
         WARNING,
@@ -25,7 +24,6 @@
 
 class Logger {
 private:
-
 
 
 public:

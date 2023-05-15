@@ -10,6 +10,7 @@ using std::cerr;
 using std::endl;
 using std::stringstream;
 
+typedef int fd;
 // Cout colors
 
 # define NC				"\033[0m"
