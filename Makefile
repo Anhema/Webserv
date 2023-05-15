@@ -15,12 +15,13 @@ OBJS_SANI   = 	$(addprefix $(OBJDIR_SANI), $(SRCS:.cpp=_sani.o))
 
 
 INCFLAG		=	$(foreach header, $(PCH_OUT),-include $(header))
+INCDIRS		=	 $(foreach dir, $(dir $(PCH_SRC)), -I $(dir))
 
 MKDIR		=	mkdir -p
 RM			=	rm -fr
 ECHO		=	echo
 
-$(info inclue $(INCFLAG))
+$(info inclue $(INCDIRS))
 
 #.SILENT:
 
@@ -32,13 +33,9 @@ $(NAME):  $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCFLAG) $^ -o $(NAME)
 	$(CXX) $(CXXFLAGS) $(INCFLAG) $(SANI_FLAG) $^ -o $(NAME_SANI)
 
-$(OBJDIR)%.o: srcs/*/%.cpp $(PCH_OUT) | $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -Winvalid-pch -I /pch -c $< -o $@
-	$(CXX) $(CXXFLAGS) -Winvalid-pch -I /pch $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
-
-$(PCHDIR)%.gch: srcs/*/%.hpp | $(PCHDIR)
-	 c++ -x c++-header -finput-charset=UTF-8 $< -o $@
-
+$(OBJDIR)%.o: srcs/*/%.cpp $(PCH_SRC) | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -Winvalid-pch $(INCDIRS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Winvalid-pch $(INCDIRS) $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
 
 $(PCHDIR):
 	$(MKDIR) $(PCHDIR)
