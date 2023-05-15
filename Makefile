@@ -15,13 +15,11 @@ OBJS_SANI   = 	$(addprefix $(OBJDIR_SANI), $(SRCS:.cpp=_sani.o))
 
 
 INCFLAG		=	$(foreach header, $(PCH_OUT),-include $(header))
-INCDIRS		=	 $(foreach dir, $(dir $(PCH_SRC)), -I $(dir))
+INCDIRS		=	$(foreach dir, $(dir $(PCH_SRC)), -I $(dir))
 
 MKDIR		=	mkdir -p
 RM			=	rm -fr
 ECHO		=	echo
-
-$(info inclue $(INCDIRS))
 
 #.SILENT:
 
