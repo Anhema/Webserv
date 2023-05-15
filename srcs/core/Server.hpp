@@ -16,6 +16,7 @@
 # include <sys/time.h>
 # include <fcntl.h>
 
+
 class Server {
 public:
 	Server();
@@ -28,13 +29,22 @@ public:
 
 
 private:
+	static const u_int16_t 	max_listen_queue = 128;
+	static const u_int16_t	maxEvents = 1024;
+
+private:
 	const string		_ip;
 	const int 			_port;
 	const u_int32_t 	_socketAddress_len;
 	fd 					_socket_fd;
 	struct sockaddr_in	_socketAddress;
 
-	static const u_int32_t 	max_listen_queue = 128;
+private:
+	int 				_kq;
+	struct kevent		_socketEvents;
+	struct kevent		_serverEvents[maxEvents];
+
+
 
 private:
 	void	bindSocket();
@@ -42,7 +52,17 @@ private:
 	void	startSocketAddress();
 	void 	startListen();
 	void 	startKqueue();
+	void	startSocketEvents();
 
+private:
+	void 	monitorConnection(const fd connection);
+	void 	serverLoop();
+	void 	eventLoop(int new_events);
+	void	getEvents(int &events);
+	void	acceptClient();
+	void	disconnectClient(const fd client);
+	size_t 	sendResponse(const fd client);
+	void	receiveHeader(const fd client, size_t buffer_size);
 };
 
 #endif
