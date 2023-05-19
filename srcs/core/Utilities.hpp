@@ -3,6 +3,13 @@
 
 # include <iostream>
 # include <cstring>
+# include <vector>
+# include <iostream>
+# include <map>
+# include <vector>
+# include <sstream>
+# include <fstream>
+
 
 using std::string;
 using std::cout;
@@ -16,10 +23,16 @@ typedef long ssize_t;
 typedef int fd;
 // Cout colors
 
+std::vector<std::string>	split(std::string str, std::string separator);
+void						debug_log(std::string log);
+std::string					read_file(std::string file_name);
+std::string					get_extension(std::string file_name);
+
+
 # define NC				"\033[0m"
 # define BLACK			"\033[30m"      /* Black */
 # define RED			"\033[31m"      /* Red */
-# define Green			"\033[32m"      /* Green */
+# define GREEN			"\033[32m"      /* Green */
 # define YELLOW			"\033[33m"      /* Yellow */
 # define BLUE			"\033[34m"      /* Blue */
 # define MAGENTA		"\033[35m"      /* Magenta */

@@ -15,6 +15,7 @@
 # include <sys/event.h>
 # include <sys/time.h>
 # include <fcntl.h>
+# include "Message.hpp"
 
 
 class Server {
@@ -38,6 +39,7 @@ private:
 	const u_int32_t 	_socketAddress_len;
 	fd 					_socket_fd;
 	struct sockaddr_in	_socketAddress;
+	Message				_message;
 
 private:
 	int 				_kq;

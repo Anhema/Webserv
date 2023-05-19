@@ -1,0 +1,342 @@
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Accepted connection: 6
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 6
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Accepted connection: 6
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 6
+[INFO] Accepted connection: 7
+[INFO] Accepted connection: 8
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8082
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 11
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8083
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 688
+[INFO] Responding fd: 5
+[INFO] Request fd: 5 size: 540
+[INFO] Responding fd: 5
+[INFO] Request fd: 5 size: 526
+[INFO] Responding fd: 5
+[INFO] Request fd: 5 size: 596
+[INFO] Responding fd: 5
+[INFO] Request fd: 6 size: 595
+[INFO] Responding fd: 6
+[INFO] Accepted connection: 7
+[INFO] Request fd: 3 size: 1
+[INFO] Responding fd: 3
+[INFO] Request fd: 7 size: 595
+[INFO] Responding fd: 7
+[INFO] Request fd: 7 size: 588
+[INFO] Responding fd: 7
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 6
+[INFO] Request fd: 4 size: 0
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 6
+[INFO] Request fd: 4 size: 0
+[INFO] Responding fd: 4
+[INFO] Accepted connection: 7
+[INFO] Request fd: 4 size: 0
+[INFO] Responding fd: 4
+[INFO] Request fd: 6 size: 688
+[INFO] Responding fd: 6
+[INFO] Request fd: 6 size: 540
+[INFO] Responding fd: 6
+[INFO] Request fd: 6 size: 526
+[INFO] Responding fd: 6
+[INFO] Request fd: 6 size: 596
+[INFO] Responding fd: 6
+[INFO] Request fd: 7 size: 595
+[INFO] Responding fd: 7
+[INFO] Accepted connection: 8
+[INFO] Request fd: 4 size: 1
+[INFO] Responding fd: 4
+[INFO] Request fd: 8 size: 595
+[INFO] Responding fd: 8
+[INFO] Request fd: 8 size: 588
+[INFO] Responding fd: 8
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8082
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 7
+[INFO] Request fd: 5 size: 0
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 662
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 688
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 1
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 688
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 688
+[INFO] Responding fd: 5
+[INFO] Request fd: 5 size: 540
+[INFO] Responding fd: 5
+[INFO] Request fd: 6 size: 526
+[INFO] Responding fd: 6
+[INFO] Request fd: 6 size: 596
+[INFO] Responding fd: 6
+[INFO] Request fd: 5 size: 595
+[INFO] Responding fd: 5
+[INFO] Accepted connection: 7
+[INFO] Request fd: 3 size: 1
+[INFO] Responding fd: 3
+[INFO] Request fd: 7 size: 595
+[INFO] Responding fd: 7
+[INFO] Request fd: 7 size: 588
+[INFO] Responding fd: 7
+[INFO] Accepted connection: 8
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 8 size: 561
+[INFO] Responding fd: 8
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8081
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 6
+[INFO] Request fd: 4 size: 0
+[INFO] Responding fd: 4
+[INFO] Accepted connection: 7
+[INFO] Request fd: 4 size: 0
+[INFO] Responding fd: 4
+[INFO] Request fd: 6 size: 662
+[INFO] Socket address initialized succesfully
+[INFO] Socket created succesfully
+[INFO] Socket binded succesfully
+[INFO] Server started listening on address: 0.0.0.0 port: 8080
+[INFO] Kqueue started succesfully
+[INFO] Server loop started
+[INFO] Accepted connection: 5
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Accepted connection: 6
+[INFO] Request fd: 3 size: 0
+[INFO] Responding fd: 3
+[INFO] Request fd: 5 size: 169
