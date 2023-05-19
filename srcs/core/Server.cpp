@@ -14,10 +14,7 @@ void Server::startSocketAddress() {
 	this->_socketAddress.sin_port = htons(this->_port);
 	this->_socketAddress.sin_addr.s_addr = inet_addr(_ip.c_str());
 
-	stringstream ss;
-
 	Logger::log("Socket address initialized succesfully", INFO);
-
 }
 
 void Server::startSocket() {
