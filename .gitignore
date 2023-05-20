@@ -14,3 +14,4 @@ obj/
 webserv
 webserv_sani
 logs/test_log.log
+logs/*.log

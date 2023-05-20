@@ -1,5 +1,5 @@
 #include "Message.hpp"
-#include "Logger.hpp"
+#include "../Logger/Logger.hpp"
 
 
 std::string Message::get()
@@ -50,20 +50,12 @@ void Message::request(const fd client, size_t buffer_size)
 	ss_buffer << "Buffer: \n" << str_buff << "\n";
 	Logger::log(ss_buffer.str(), INFO);
 	std::vector<std::string> request = split(buff, "\n");
-	//std::vector<std::string>::iterator ite = request.end();
 	std::vector<std::string>::iterator start = request.begin();
 	std::vector<std::string> r_line = split((*start), " ");
 	this->_request.method = r_line[0];
 	this->_request.target = r_line[1];
 	this->_request.version = r_line[2];
-	//start++;
-	// for (std::vector<std::string>::iterator it = start; it != ite; it++)
-	// 	cout << *it << "\n";
-	// cout << this->_request.method << endl;
-	// cout << this->_request.target << endl;
-	// cout << this->_request.version << endl;
-	
-	//delete[] (buff);
+	delete [] buff;
 }
 
 void Message::response(const fd client)

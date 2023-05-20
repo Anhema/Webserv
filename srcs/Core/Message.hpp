@@ -1,7 +1,7 @@
 #ifndef MESSAGE_HPP
 # define MESSAGE_HPP
 
-# include "Utilities.hpp"
+# include "../Utilities/Utilities.hpp"
 # include <unistd.h>
 
 typedef struct s_request {
