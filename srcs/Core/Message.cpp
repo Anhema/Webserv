@@ -1,5 +1,5 @@
 #include "Message.hpp"
-#include "../Logger/Logger.hpp"
+#include "Logger.hpp"
 
 
 std::string Message::get()
@@ -13,6 +13,15 @@ std::string Message::get()
 		path.append(this->_request.target);
 		std::cout << "FILE: ---" << path << "---\n";
 		this->_response.htmlFile = read_file(path);
+	}
+	if (this->_response.htmlFile == "")
+	{
+		std::cout << "FILE: ---404---\n";
+		this->_response.htmlFile = read_file("www/404.html");
+		this->_response.extension = get_extension("/404.html");
+		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
+			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		return (message.str());
 	}
 	this->_response.extension = get_extension(path);
 	std::cout << "EXTENSION: ---" << this->_response.extension << "---\n";
@@ -29,10 +38,6 @@ void Message::request(const fd client, size_t buffer_size)
 	
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
-	//std::unique_ptr<char []>buffer;
-
-	//const int BUFFER = 30720;
-	//char buff[BUFFER];
 	
 	char *buff= new char[buffer_size];
 
@@ -55,7 +60,6 @@ void Message::request(const fd client, size_t buffer_size)
 	this->_request.method = r_line[0];
 	this->_request.target = r_line[1];
 	this->_request.version = r_line[2];
-	delete [] buff;
 }
 
 void Message::response(const fd client)
