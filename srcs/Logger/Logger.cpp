@@ -12,43 +12,19 @@ Logger::VerboseNoMatchException::VerboseNoMatchException(): std::invalid_argumen
 
 void Logger::log_error(string const &message)
 {
-    std::fstream log_file;
-
-    log_file.open("logs/test_log.log", std::ios_base::app);
-
-    log_file << "[ERROR] " << message << endl;
     cout << BOLDRED << "[ERROR] " << NC << message << endl;
-
-    log_file.close();
-
 }
 
 void Logger::log_warning(string const &message)
 {
-    std::fstream log_file;
-
-    log_file.open("logs/test_log.log", std::ios_base::app);
-
-    log_file << "[WARNING] " << message << endl;
     if (VERBOSE <= WARNING)
         cout << BOLDMAGENTA << "[WARNING] " << NC << message << endl;
-
-    log_file.close();
-
 }
 
 void Logger::log_info(string const &message)
 {
-    std::fstream log_file;
-
-    log_file.open("logs/test_log.log", std::ios_base::app);
-
-    log_file << "[INFO] " << message << endl;
     if (VERBOSE <= INFO)
         cout << BOLDGREEN << "[INFO] " << NC << message << endl;
-
-    log_file.close();
-
 }
 
 void Logger::log(string const &message, levels level)
