@@ -1,8 +1,8 @@
 NAME		=	webserv
 NAME_SANI	=	$(addsuffix _sani, $(NAME))
-CXX			=	c++
+CXX			=	c++ -g3
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic -Winvalid-pch
-SANI_FLAG	=	-fsanitize=address -g3
+SANI_FLAG	=	-fsanitize=address
 OBJDIR		=	objs/
 OBJDIR_SANI	=	objs_sani/
 PCHDIR		=	pch/

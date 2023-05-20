@@ -1,8 +1,9 @@
 #include "Message.hpp"
-#include "../Logger/Logger.hpp"
+#include "Logger.hpp"
 
 
-std::string Message::get() {
+std::string Message::get()
+{
 	std::ostringstream message;
 	std::string path = "www";
 	if (this->_request.target == "/")
@@ -20,38 +21,53 @@ std::string Message::get() {
 	return (message.str());
 }
 
-void Message::request(const fd client, size_t buffer_size) {
+void Message::request(const fd client, size_t buffer_size)
+{
 
 	stringstream  ss;
-
+	stringstream  ss_buffer;
+	
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
-	std::unique_ptr<char []>buffer;
+	//std::unique_ptr<char []>buffer;
 
-	buffer.reset(new char[buffer_size]);
-	if (read(client, buffer.get(), buffer_size) < 0)
+	//const int BUFFER = 30720;
+	//char buff[BUFFER];
+	
+	char *buff= new char[buffer_size];
+
+	//buffer.reset(new char[buffer_size]);
+	if (read(client, buff, buffer_size) < 0)
 	{
-		 cout << ("Failed to read bytes from client socket connection\n");
-		 return ;
+		Logger::log("Failed to read bytes from client socket connection", ERROR);
+		return ;
 	}
+	buff[buffer_size - 1] = '\0';
+	string str_buff(buff);
 
-
-	std::vector<std::string> request = split(buffer.get(), "\n");
-	std::vector<std::string>::iterator ite = request.end();
+	cout << "str len;" << str_buff.size() << endl;
+	
+	ss_buffer << "Buffer: \n" << str_buff << "\n";
+	Logger::log(ss_buffer.str(), INFO);
+	std::vector<std::string> request = split(buff, "\n");
+	//std::vector<std::string>::iterator ite = request.end();
 	std::vector<std::string>::iterator start = request.begin();
 	std::vector<std::string> r_line = split((*start), " ");
 	this->_request.method = r_line[0];
 	this->_request.target = r_line[1];
 	this->_request.version = r_line[2];
-	start++;
-	for (std::vector<std::string>::iterator it = start; it != ite; it++)
-		cout << *it << "\n";
-	cout << this->_request.method << endl;
-	cout << this->_request.target << endl;
-	cout << this->_request.version << endl;
+	//start++;
+	// for (std::vector<std::string>::iterator it = start; it != ite; it++)
+	// 	cout << *it << "\n";
+	// cout << this->_request.method << endl;
+	// cout << this->_request.target << endl;
+	// cout << this->_request.version << endl;
+	
+	//delete[] (buff);
 }
 
-void Message::response(const fd client) {
+void Message::response(const fd client)
+{
 	stringstream  ss;
 
 	ss << "Responding fd: " << client;
@@ -68,8 +84,8 @@ void Message::response(const fd client) {
 
 	send_bytes = write(client, this->_server_message.c_str(), this->_server_message.size());
 	if (send_bytes == this->_server_message.size())
-		cout << ("-------- SERVER RESPONSE SENT TO CLIENT --------\n");
+		Logger::log("-------- SERVER RESPONSE SENT TO CLIENT --------", ERROR);
 	else
-		cout << ("------- ERROR SENDING RESPONSE TO CLIENT -------\n");
+		Logger::log("------- ERROR SENDING RESPONSE TO CLIENT -------", ERROR);
 }
 

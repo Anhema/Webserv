@@ -75,7 +75,7 @@ void Server::getEvents(int &events) {
 
 void Server::monitorConnection(const fd connection) {
 
-	EV_SET(_serverEvents, connection, EVFILT_WRITE | EVFILT_READ, EV_ADD, 0, 0, 0);
+	EV_SET(_serverEvents, connection, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, 0);
 
 	if (kevent(_kq, _serverEvents, 1, NULL, 0, NULL) == -1) {
 
@@ -88,7 +88,7 @@ void Server::monitorConnection(const fd connection) {
 
 }
 
-void Server::acceptClient() {
+int Server::acceptClient() {
 
 	const fd new_connection = accept(_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress_len);
 	if (new_connection == -1)
@@ -99,6 +99,7 @@ void Server::acceptClient() {
 
 	ss << "Accepted connection: " << new_connection;
 	Logger::log(ss.str(), INFO);
+	return (new_connection);
 }
 
 void Server::disconnectClient(const fd client) {
@@ -107,8 +108,9 @@ void Server::disconnectClient(const fd client) {
 	close(client);
 }
 
-void Server::eventLoop(int new_events) {
 
+void Server::eventLoop(int new_events)
+{
 	for (int i = 0; i < new_events; i++)
 	{
 		const fd event_fd = _serverEvents[i].ident;

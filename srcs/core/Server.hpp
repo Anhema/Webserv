@@ -61,7 +61,7 @@ private:
 	void 	serverLoop();
 	void 	eventLoop(int new_events);
 	void	getEvents(int &events);
-	void	acceptClient();
+	int		acceptClient();
 	void	disconnectClient(const fd client);
 	size_t 	sendResponse(const fd client);
 	void	receiveHeader(const fd client, size_t buffer_size);
