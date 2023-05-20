@@ -80,7 +80,9 @@ void Message::response(const fd client)
 
 	send_bytes = write(client, this->_server_message.c_str(), this->_server_message.size());
 	if (send_bytes == this->_server_message.size())
+	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
+	}
 	else
 		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
 }
