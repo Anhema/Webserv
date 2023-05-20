@@ -114,7 +114,11 @@ void Server::eventLoop(int new_events)
 	for (int i = 0; i < new_events; i++)
 	{
 		const fd event_fd = _serverEvents[i].ident;
-
+//		if (_serverEvents[i].flags & EV_ERROR)
+//		{
+//			Logger::log("EV_FLAG", ERROR);
+//			continue;
+//		}
 		if (event_fd == _socket_fd)
 			this->acceptClient();
 		if (_serverEvents[i].flags & EV_EOF)

@@ -5,6 +5,9 @@
 
 class Configuration {
 private:
+	std::vector<int> _ServerPorts;
+
+
 };
 
 #endif
