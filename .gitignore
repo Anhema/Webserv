@@ -13,4 +13,4 @@ obj/
 *.idea
 webserv
 webserv_sani
-
+logs/test_log.log
