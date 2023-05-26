@@ -93,7 +93,6 @@ fd Server::acceptClient(struct kevent *event_array, std::map<fd, Server *>active
         throw (std::runtime_error(ss.str()));
     }
 
-
     stringstream ss;
 
     ss << "Accepted connection: " << new_client;

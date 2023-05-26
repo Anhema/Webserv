@@ -22,8 +22,7 @@ void ServerHandler::startServers()
     }
     catch (std::exception &e)
     {
-        this->_server_count += 3;
-        this->startServers();
+        exit(EXIT_FAILURE);
     }
 
 }
@@ -92,16 +91,20 @@ void ServerHandler::eventLoop()
 		if (events[i].filter & EVFILT_READ)
 		{
 			cout << "Reading: " << events[i].ident << "\n";
-			this->active_fds[event_fd]->message.request(event_fd, this->events[i].data);
-//			server_list.at(0)->message.request(event_fd, events[i].data);
+            if (this->active_fds.count(event_fd))
+                this->active_fds[event_fd]->message.request(event_fd, this->events[i].data);
+            else
+                server_list.at(0)->message.request(event_fd, events[i].data);
 		}
 		if (events[i].filter &EVFILT_WRITE)
 		{
 			cout << "Writing: " << events[i].ident << "\n";
-			server_list.at(0)->message.response(event_fd);
+            if (this->active_fds.count(event_fd))
+                this->active_fds[event_fd]->message.response(event_fd);
+            else
+                server_list.at(0)->message.response(event_fd);
 		}
 	}
-
 }
 
 void ServerHandler::mainLoop()
@@ -112,4 +115,3 @@ void ServerHandler::mainLoop()
 		this->eventLoop();
 	}
 }
-
