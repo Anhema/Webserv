@@ -45,7 +45,7 @@ private:
 	struct sockaddr_in	_socketAddress;
 
 public:
-    fd		    acceptClient(struct kevent *event_array, int kq) const;
+    fd		    acceptClient(struct kevent *event_array, std::map<fd, Server *>, int kq) const;
 
 private:
 	void	    bindSocket();

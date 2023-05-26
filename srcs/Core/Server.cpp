@@ -72,25 +72,24 @@ void Server::startListen() {
 		<< inet_ntoa(_socketAddress.sin_addr)
 		<< " port: "
 		<< ntohs(_socketAddress.sin_port);
-
 	Logger::log(ss.str(), INFO);
 }
 
-fd Server::acceptClient(struct kevent *event_array, int kq) const
+fd Server::acceptClient(struct kevent *event_array, std::map<fd, Server *>active_fd, int kq) const
 {
     const fd new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
 
     if (new_client == -1)
         throw (std::runtime_error("Failed to accept incoming connection"));
 
+    EV_SET(event_array, new_client, EVFILT_WRITE, EV_ADD, 0, 0, 0);
+    EV_SET(event_array, new_client, EVFILT_READ, EV_ADD, 0, 0, 0);
 
-    EV_SET(event_array, new_client, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, 0);
-
-    if (kevent(kq, event_array, 1, NULL, 0, NULL) == -1) {
-
+    if (kevent(kq, event_array, 1, NULL, 0, NULL) == -1)
+	{
         stringstream ss;
 
-        ss << "kevent failed to monitor fd:" << new_client;
+        ss << "kevent failed to monitor fd: " << new_client;
         throw (std::runtime_error(ss.str()));
     }
 
@@ -99,5 +98,6 @@ fd Server::acceptClient(struct kevent *event_array, int kq) const
 
     ss << "Accepted connection: " << new_client;
     Logger::log(ss.str(), INFO);
+	active_fd[new_client] = (Server *)this;
     return (new_client);
 }

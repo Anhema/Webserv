@@ -35,7 +35,8 @@ void Message::request(const fd client, size_t buffer_size)
 
 	stringstream  ss;
 	stringstream  ss_buffer;
-	
+
+
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
 	
