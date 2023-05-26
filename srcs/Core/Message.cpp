@@ -11,23 +11,30 @@ std::string Message::get()
 	else
 	{
 		path.append(this->_request.target);
-		std::cout << "FILE: ---" << path << "---\n";
 		this->_response.htmlFile = read_file(path);
 	}
 	if (this->_response.htmlFile == "")
 	{
-		std::cout << "FILE: ---404---\n";
 		this->_response.htmlFile = read_file("www/404.html");
 		this->_response.extension = get_extension("/404.html");
-		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
+		message << "HTTP/1.1 404 OK\nContent-Type: text/" << this->_response.extension
 			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
 		return (message.str());
 	}
 	this->_response.extension = get_extension(path);
-	std::cout << "EXTENSION: ---" << this->_response.extension << "---\n";
 	message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
 			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
 	return (message.str());
+}
+
+void print_headers(std::map<string, string> headers)
+{
+	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		cout << it->first << ":" << it->second << "\n";
+		/* code */
+	}
+	
 }
 
 void Message::request(const fd client, size_t buffer_size)
@@ -35,11 +42,13 @@ void Message::request(const fd client, size_t buffer_size)
 
 	stringstream  ss;
 	stringstream  ss_buffer;
+
+	int body_start = 0;
 	
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
 	
-	char *buff= new char[buffer_size];
+	char *buff= new char[buffer_size + 1];
 
 	//buffer.reset(new char[buffer_size]);
 	if (read(client, buff, buffer_size) < 0)
@@ -47,20 +56,73 @@ void Message::request(const fd client, size_t buffer_size)
 		Logger::log("Failed to read bytes from client socket connection", ERROR);
 		return ;
 	}
-	buff[buffer_size - 1] = '\0';
+	buff[buffer_size] = '\0';
 	string str_buff(buff);
 
-	cout << "str len;" << str_buff.size() << endl;
+	for (size_t i = 0; i < str_buff.length(); i++)
+	{
+		if (str_buff[i] == '\n' && str_buff[i + 1] != '\n')
+			body_start++;
+		if (str_buff[i] == '\n' && str_buff[i + 1] == '\n')
+			break;
+	}
+		
+
+	cout << str_buff << endl;
 	
-	ss_buffer << "Buffer: \n" << str_buff << "\n";
-	Logger::log(ss_buffer.str(), INFO);
-	std::vector<std::string> request = split(buff, "\n");
+	// ss_buffer << "Buffer: \n" << str_buff << "\n";
+	// Logger::log(ss_buffer.str(), INFO);
+	std::vector<std::string> request = split(str_buff, "\n");
+	
 	std::vector<std::string>::iterator start = request.begin();
 	std::vector<std::string> r_line = split((*start), " ");
 	this->_request.method = r_line[0];
 	this->_request.target = r_line[1];
 	this->_request.version = r_line[2];
+	start++;
+
+	bool is_body = false;
+
+	int i = 1;
+	for (std::vector<string>::iterator it = start; it != request.end(); it++)
+	{
+		i++;
+		if (i == body_start)
+			is_body = true;
+			
+		if ((*it) == "\n")
+		{
+			is_body = true;
+			continue;
+		}
+		if (is_body)
+		{
+			this->_request.body.append(*it);
+		}
+		else
+		{
+			if ((*it) == "")
+				continue;
+			std::vector<std::string> tmp = split((*it), ":");
+			string val = ""; 
+			for (size_t i = 1; i < tmp.size(); i++)
+			{
+				val.append(tmp[i]);
+				if (i + 1 != tmp.size())
+					val.append(":");
+			}
+			this->_request.headers.insert(std::make_pair(tmp[0], val));
+			tmp.clear();
+		}
+	}
+	request.clear();
+	r_line.clear();
+
+	cout << "\n\nHEADERS\n";
+	print_headers(this->_request.headers);
+	cout << "\n\nBODY\n" << this->_request.body << "\n";
 }
+
 
 void Message::response(const fd client)
 {

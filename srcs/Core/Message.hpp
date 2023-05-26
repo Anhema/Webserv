@@ -9,7 +9,7 @@ typedef struct s_request {
 	std::string							target;
 	std::string							version;
 	std::map<std::string, std::string>	headers;
-	std::vector<std::string>			body;
+	std::string							body;
 }		t_request;
 
 
