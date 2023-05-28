@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# Webserv
-=======
 # Webserv
 
 ## Index
@@ -165,8 +162,11 @@ https://trungams.github.io/2020-08-23-a-simple-http-server-from-scratch/
 
 ### HTTP Messages
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Session
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
 
 ### RFC
@@ -178,5 +178,3 @@ https://datatracker.ietf.org/doc/html/rfc7230
 https://diego.com.es/concepto-y-funcionamiento-de-cgi
 
 http://www.mnuwer.dbasedeveloper.co.uk/dlearn/web/session03.htm
-
->>>>>>> 015635a33aece9575aa31435909ec1a003c5a006
