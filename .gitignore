@@ -12,4 +12,7 @@ obj/
 *.a
 *.idea
 webserv
-
+webserv_sani
+logs/test_log.log
+logs/*.log
+logs/
