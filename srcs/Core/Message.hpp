@@ -7,6 +7,7 @@
 typedef struct s_request {
 	std::string							method;
 	std::string							target;
+	std::string							connection;
 	std::string							version;
 	std::map<std::string, std::string>	headers;
 	std::string							body;
@@ -31,6 +32,7 @@ public:
 	std::string		get();
 	void			request(const fd client, size_t buffer_size);
 	string 			_server_message;
+	string			&getConnectionType(void);
 };
 
 #endif

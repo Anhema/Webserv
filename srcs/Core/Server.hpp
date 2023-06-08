@@ -47,7 +47,7 @@ private:
 	fd 						_socket_fd;
 
 public:
-    fd		 	   acceptClient(struct kevent *event_array, std::map<fd, Server *> &socket_map, int kq) const;
+    fd		 	   acceptClient(std::map<fd, Server *> &socket_map, int kq) const;
 
 public:
 	void 			disconnectClient(int kq, const fd client);

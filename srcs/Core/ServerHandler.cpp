@@ -77,7 +77,7 @@ void ServerHandler::eventLoop()
 
 		ocurrence = isSocketFd(event_fd);
 		if (ocurrence != this->server_list.end())
-			(*ocurrence)->acceptClient(this->events, this->active_fds, this->_kq);
+			(*ocurrence)->acceptClient(this->active_fds, this->_kq);
 		else if (events[i].flags & EV_EOF)
 		{
 
@@ -107,6 +107,8 @@ void ServerHandler::eventLoop()
 
 			server->message[event_fd].response(event_fd);
 			server->disableWrite(this->_kq, event_fd);
+			if (server->message[event_fd].getConnectionType().find("close"))
+				server->disconnectClient(this->_kq, event_fd);
 		}
 	}
 }

@@ -56,6 +56,8 @@ void Server::startSocket()
 	if (setsockopt(this->_socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
 		throw (std::runtime_error("SO_REUSEADDR"));
 
+	fcntl(this->_socket_fd, F_SETFL, O_NONBLOCK);
+
 	Logger::log("Socket created succesfully", INFO);
 }
 
@@ -132,7 +134,7 @@ void Server::startListen()
 	Logger::log(ss.str(), INFO);
 }
 
-fd Server::acceptClient(__unused struct kevent *event_array, std::map<fd, Server *> &active_fd, int kq) const
+fd Server::acceptClient(std::map<fd, Server *> &active_fd, int kq) const
 {
 
     const	fd		new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
@@ -140,6 +142,7 @@ fd Server::acceptClient(__unused struct kevent *event_array, std::map<fd, Server
     if (new_client == -1)
         throw (std::runtime_error("Failed to accept incoming connection"));
 
+	fcntl(new_client, F_SETFL, O_NONBLOCK);
 	this->enableEvent(kq, new_client, (struct kevent *)&this->_read_event, EVFILT_READ);
 	this->disableEvent(kq, new_client, (struct kevent *)&this->_write_event, EVFILT_WRITE);
 

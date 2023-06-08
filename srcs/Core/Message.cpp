@@ -1,6 +1,7 @@
 #include "Message.hpp"
 #include "Logger.hpp"
 
+string &Message::getConnectionType() { return this->_request.connection; }
 
 std::string Message::get()
 {
@@ -71,14 +72,16 @@ void Message::request(const fd client, size_t buffer_size)
 	}
 		
 
-//	cout << str_buff << endl;
-	
+	cout << str_buff << endl;
+
 	// ss_buffer << "Buffer: \n" << str_buff << "\n";
 	// Logger::log(ss_buffer.str(), INFO);
 	std::vector<std::string> request = split(str_buff, "\n");
-	
+
+
 	std::vector<std::string>::iterator start = request.begin();
 	std::vector<std::string> r_line = split((*start), " ");
+
 	this->_request.method = r_line[0];
 	this->_request.target = r_line[1];
 	this->_request.version = r_line[2];
@@ -118,16 +121,20 @@ void Message::request(const fd client, size_t buffer_size)
 			tmp.clear();
 		}
 	}
+
 	request.clear();
 	r_line.clear();
 
+	this->_request.connection =  this->_request.headers["Connection"];
+
 	cout << "Target: " << this->_request.target << endl;
 	cout << "Method: " << this->_request.method << endl;
+	cout << "Connection: (" << this->_request.connection << ")" << endl;
+
 //	cout << "\n\nHEADERS\n";
 //	print_headers(this->_request.headers);
 //	cout << "\n\nBODY\n" << this->_request.body << "\n";
 }
-
 
 void Message::response(const fd client)
 {
@@ -147,6 +154,8 @@ void Message::response(const fd client)
 	}
 
 	send_bytes = write(client, this->_server_message.c_str(), this->_server_message.size());
+
+
 	if (send_bytes == this->_server_message.size())
 	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);

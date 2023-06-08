@@ -1,5 +1,4 @@
 #include "Logger.hpp"
-#include "Server.hpp"
 #include "ServerHandler.hpp"
 
 
@@ -7,7 +6,7 @@ int main(void)
 {
     try
     {
-        ServerHandler server(1);
+        ServerHandler server(3);
         server.mainLoop();
 
     }
