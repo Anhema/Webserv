@@ -8,6 +8,7 @@ int main(void)
     {
         ServerHandler server(3);
         server.mainLoop();
+		getadd
 
     }
     catch (std::exception &e)

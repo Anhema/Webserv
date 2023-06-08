@@ -14,7 +14,6 @@ ServerHandler::~ServerHandler()
 
 void ServerHandler::startServers()
 {
-
     try
     {
         for (int i = 0; i < this->_server_count; i++)
@@ -24,7 +23,6 @@ void ServerHandler::startServers()
     {
         exit(EXIT_FAILURE);
     }
-
 }
 
 void ServerHandler::startKqueue()
@@ -80,7 +78,6 @@ void ServerHandler::eventLoop()
 			(*ocurrence)->acceptClient(this->active_fds, this->_kq);
 		else if (events[i].flags & EV_EOF)
 		{
-
 			if (this->active_fds.count(event_fd))
 				server = this->active_fds.find(event_fd)->second;
 			else
@@ -89,7 +86,6 @@ void ServerHandler::eventLoop()
 		}
 		else if (events[i].filter == EVFILT_READ)
 		{
-
 			if (this->active_fds.count(event_fd))
 				server = this->active_fds.find(event_fd)->second;
 			else
