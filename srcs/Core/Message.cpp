@@ -22,7 +22,12 @@ std::string Message::m_get()
 	{
 		this->_response.htmlFile = read_file(path);
 		this->_response.extension = get_extension(path);
-		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
+		message << "HTTP/1.1 200 OK\nContent-Type:";
+		if (this->_response.extension == "png" || this->_response.extension == "jpg")
+			message << "image/";
+		else
+			message << "text/";
+		message << this->_response.extension
 				<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
 	}
 	return (message.str());
@@ -198,4 +203,3 @@ void Message::response(const fd client)
 		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
 	this->_request.headers.clear();
 }
-
