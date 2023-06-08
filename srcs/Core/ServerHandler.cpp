@@ -71,49 +71,42 @@ void ServerHandler::eventLoop()
 {
 	for (int i = 0; i < this->_new_events; i++)
 	{
-		cout << "N events: " << this->_new_events << endl;
-		server_iterator ocurrence;
-		const fd event_fd = events[i].ident;
+		server_iterator	ocurrence;
+		Server			*server = NULL;
+		const fd		event_fd = events[i].ident;
 
 		ocurrence = isSocketFd(event_fd);
 		if (ocurrence != this->server_list.end())
-		{
-            cout << "kq " << this->_kq << " " << "array " << this->events << endl;
 			(*ocurrence)->acceptClient(this->events, this->active_fds, this->_kq);
-		}
 		else if (events[i].flags & EV_EOF)
 		{
-			Server *manager;
 
 			if (this->active_fds.count(event_fd))
-				manager = this->active_fds.find(event_fd)->second;
+				server = this->active_fds.find(event_fd)->second;
 			else
-				manager = this->active_fds.begin()->second;
-			manager->disconnectClient(this->_kq, event_fd);
+				server = this->active_fds.begin()->second;
+			server->disconnectClient(this->_kq, event_fd);
 		}
 		else if (events[i].filter == EVFILT_READ)
 		{
-			Server *reader;
 
 			if (this->active_fds.count(event_fd))
-				reader = this->active_fds.find(event_fd)->second;
+				server = this->active_fds.find(event_fd)->second;
 			else
-				reader = this->active_fds.begin()->second;
+				server = this->active_fds.begin()->second;
 
-			reader->message[event_fd].request(event_fd, events[i].data);
-			reader->enableWrite(this->_kq, event_fd);
+			server->message[event_fd].request(event_fd, events[i].data);
+			server->enableWrite(this->_kq, event_fd);
 		}
 		else if (events[i].filter == EVFILT_WRITE)
 		{
-			Server *responder;
-
             if (this->active_fds.count(event_fd))
-				responder = this->active_fds.find(event_fd)->second;
+				server = this->active_fds.find(event_fd)->second;
             else
-				responder = this->active_fds.begin()->second;
+				server = this->active_fds.begin()->second;
 
-			responder->message[event_fd].response(event_fd);
-			responder->disableWrite(this->_kq, event_fd);
+			server->message[event_fd].response(event_fd);
+			server->disableWrite(this->_kq, event_fd);
 		}
 	}
 }
@@ -122,7 +115,7 @@ void ServerHandler::mainLoop()
 {
 	for (;;)
 	{
-		Logger::log("New loop", WARNING);
+//		Logger::log("New loop", WARNING);
 		this->updateEvents();
 		this->eventLoop();
 	}
