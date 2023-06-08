@@ -3,7 +3,8 @@
 
 #include "../Utilities/Utilities.hpp"
 
-class Configuration {
+class Configuration
+{
 private:
 	std::vector<int> _ServerPorts;
 
