@@ -33,6 +33,7 @@ fd Server::getSocket() const { return _socket_fd; }
 
 string Server::getName() { return _server_name; }
 
+
 void Server::startSocketAddress() {
 
 	this->_socketAddress.sin_family = AF_INET;
@@ -44,23 +45,63 @@ void Server::startSocketAddress() {
 
 void Server::startSocket() {
 
-	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	this->_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (_socket_fd < 0)
+	if (this->_socket_fd < 0)
 		throw (std::runtime_error("initialing fd"));
+
+	const char reuse = 1;
+
+	if (setsockopt(this->_socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
+		throw (std::runtime_error("SO_REUSEADDR"));
+
 	Logger::log("Socket created succesfully", INFO);
 
 }
 
-void Server::bindSocket() {
+void Server::bindSocket()
+{
 
 	if (bind(_socket_fd, (sockaddr *)&_socketAddress, _socketAddress_len) < 0)
 		throw (std::runtime_error("can't bind socket"));
 	Logger::log("Socket binded succesfully", INFO);
 }
 
-void Server::startListen() {
+void Server::enableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const
+{
+	EV_SET(k_struct, event_fd, event, EV_ADD | EV_ENABLE, 0, 0, 0);
 
+	if (kevent(kq, k_struct, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to add event"));
+}
+
+void Server::disableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const
+{
+	EV_SET(k_struct, event_fd, event, EV_ADD | EV_DISABLE, 0, 0, 0);
+
+	if (kevent(kq, k_struct, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to disable event"));
+}
+
+void Server::enableWrite(int kq, const fd event_fd) const
+{
+	EV_SET((struct kevent *)&this->_write_event, event_fd, EVFILT_WRITE, EV_ENABLE, 0, 0, 0);
+
+	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to enable write"));
+}
+
+void Server::disableWrite(int kq, const fd event_fd) const
+{
+	EV_SET((struct kevent *)&this->_write_event, event_fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
+
+	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to disable write"));
+}
+
+
+void Server::startListen()
+{
 	stringstream ss;
 
 	if (listen(_socket_fd, Server::max_listen_queue) < 0)
@@ -75,23 +116,16 @@ void Server::startListen() {
 	Logger::log(ss.str(), INFO);
 }
 
-fd Server::acceptClient(struct kevent *event_array, std::map<fd, Server *>active_fd, int kq) const
+fd Server::acceptClient(__unused struct kevent *event_array, std::map<fd, Server *> &active_fd, int kq) const
 {
-    const fd new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
+
+    const	fd		new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
 
     if (new_client == -1)
         throw (std::runtime_error("Failed to accept incoming connection"));
 
-    EV_SET(event_array, new_client, EVFILT_WRITE, EV_ADD, 0, 0, 0);
-    EV_SET(event_array, new_client, EVFILT_READ, EV_ADD, 0, 0, 0);
-
-    if (kevent(kq, event_array, 1, NULL, 0, NULL) == -1)
-	{
-        stringstream ss;
-
-        ss << "kevent failed to monitor fd: " << new_client;
-        throw (std::runtime_error(ss.str()));
-    }
+	this->enableEvent(kq, new_client, (struct kevent *)&this->_read_event, EVFILT_READ);
+	this->disableEvent(kq, new_client, (struct kevent *)&this->_write_event, EVFILT_WRITE);
 
     stringstream ss;
 

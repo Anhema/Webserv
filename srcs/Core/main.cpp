@@ -7,7 +7,7 @@ int main(void)
 {
     try
     {
-        ServerHandler server(3);
+        ServerHandler server(1);
         server.mainLoop();
 
     }

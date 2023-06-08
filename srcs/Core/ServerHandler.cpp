@@ -74,35 +74,51 @@ void ServerHandler::eventLoop()
 		server_iterator ocurrence;
 		const fd event_fd = events[i].ident;
 
-		if (events[i].flags & EV_ERROR)
-		{
-			Logger::log("EV_FLAG", ERROR);
-			continue;
-		}
 		ocurrence = isSocketFd(event_fd);
 		if (ocurrence != this->server_list.end())
 		{
             cout << "kq " << this->_kq << " " << "array " << this->events << endl;
 			(*ocurrence)->acceptClient(this->events, this->active_fds, this->_kq);
-			continue;
 		}
-		if (events[i].flags & EV_EOF)
+		else if (events[i].flags & EV_EOF)
+		{
+			stringstream ss;
+
+			ss << "EV EOF: fd " << event_fd;
+			Logger::log(ss.str(), INFO);
 			close(event_fd);
-		if (events[i].filter & EVFILT_READ)
-		{
-			cout << "Reading: " << events[i].ident << "\n";
-            if (this->active_fds.count(event_fd))
-                this->active_fds[event_fd]->message.request(event_fd, this->events[i].data);
-            else
-                server_list.at(0)->message.request(event_fd, events[i].data);
 		}
-		if (events[i].filter &EVFILT_WRITE)
+		else if (events[i].filter == EVFILT_READ)
 		{
+			Server *reader;
+
+			cout << "Reading: " << events[i].ident << "\n";
+			if (this->active_fds.count(event_fd))
+			{
+				reader = this->active_fds.find(event_fd)->second;
+			}
+			else
+			{
+				reader = this->active_fds.begin()->second;
+			}
+			reader->message.request(event_fd, events[i].data);
+			reader->enableWrite(this->_kq, event_fd);
+		}
+		else if (events[i].filter == EVFILT_WRITE)
+		{
+			Server *responder;
+
 			cout << "Writing: " << events[i].ident << "\n";
             if (this->active_fds.count(event_fd))
-                this->active_fds[event_fd]->message.response(event_fd);
+			{
+				responder = this->active_fds.find(event_fd)->second;
+			}
             else
-                server_list.at(0)->message.response(event_fd);
+			{
+				responder = this->active_fds.begin()->second;
+			}
+			responder->message.response(event_fd);
+			responder->disableWrite(this->_kq, event_fd);
 		}
 	}
 }
@@ -111,6 +127,7 @@ void ServerHandler::mainLoop()
 {
 	for (;;)
 	{
+		Logger::log("New loop", WARNING);
 		this->updateEvents();
 		this->eventLoop();
 	}

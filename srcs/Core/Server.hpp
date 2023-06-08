@@ -25,9 +25,9 @@ public:
 	Server(const Server &obj);
 	~Server();
 
-	Server operator=(const Server &obj);
-    fd  getSocket(void) const;
-    string getName(void);
+	Server	operator=(const Server &obj);
+    fd		getSocket(void) const;
+    string	getName(void);
 
 
 
@@ -37,30 +37,38 @@ public:
     Message                 message;
 
 private:
-	const string		_ip;
-	const int 			_port;
-	const u_int32_t 	_socketAddress_len;
-    const string        _server_name;
-	fd 					_socket_fd;
-	struct sockaddr_in	_socketAddress;
+	const	string			_ip;
+	const	int 			_port;
+	const	u_int32_t 		_socketAddress_len;
+    const	string       	_server_name;
+	struct	sockaddr_in		_socketAddress;
+	struct	kevent			_read_event;
+	struct	kevent			_write_event;
+	fd 						_socket_fd;
 
 public:
-    fd		    acceptClient(struct kevent *event_array, std::map<fd, Server *>, int kq) const;
+    fd		 	   acceptClient(struct kevent *event_array, std::map<fd, Server *> &socket_map, int kq) const;
+
+public:
+	void			enableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
+	void			disableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
+	void			enableWrite(int kq, const fd event_fd) const;
+	void			disableWrite(int kq, const fd event_fd) const;
 
 private:
-	void	    bindSocket();
-	void    	startSocket();
-	void	    startSocketAddress();
-	void 	    startListen();
-	void    	startKqueue();
-	void	    startSocketEvents();
+	void	    	bindSocket();
+	void    		startSocket();
+	void	    	startSocketAddress();
+	void 	    	startListen();
+	void    		startKqueue();
+	void	    	startSocketEvents();
 
 private:
-	void 	    monitorConnection(const fd connection);
-	void    	serverLoop();
-	void 	    eventLoop(int new_events);
-	void	    getEvents(int &events);
-	void	    disconnectClient(const fd client);
+	void 	    	monitorConnection(const fd connection);
+	void    		serverLoop();
+	void 	    	eventLoop(int new_events);
+	void	    	getEvents(int &events);
+	void	    	disconnectClient(const fd client);
 };
 
 #endif

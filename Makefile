@@ -47,8 +47,7 @@ sani: $(NAME_SANI)
 run: all
 	./$(NAME)
 
-re:
- make
+re: all
 
 clean:
 	$(RM) $(OBJDIR)
