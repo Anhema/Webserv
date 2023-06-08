@@ -29,7 +29,7 @@ private:
 	t_response	_response;
 
 public:
-	void			response(const fd client);
+	void			response(const fd client, size_t buffer_size);
 	std::string		m_get();
 	std::string		m_post();
 	std::string		m_delete();

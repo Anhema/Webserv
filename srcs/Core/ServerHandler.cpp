@@ -101,9 +101,9 @@ void ServerHandler::eventLoop()
             else
 				server = this->active_fds.begin()->second;
 
-			server->message[event_fd].response(event_fd);
+			server->message[event_fd].response(event_fd, events[i].data);
 			server->disableWrite(this->_kq, event_fd);
-			if (server->message[event_fd].getConnectionType().find("close"))
+			if (server->message[event_fd].getConnectionType() == "close")
 				server->disconnectClient(this->_kq, event_fd);
 		}
 	}

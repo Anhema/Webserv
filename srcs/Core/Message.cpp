@@ -1,5 +1,6 @@
 #include "Message.hpp"
 #include "Logger.hpp"
+#include <sys/socket.h>
 
 string &Message::getConnectionType() { return this->_request.connection; }
 
@@ -42,7 +43,7 @@ std::string Message::m_post()
 		this->_response.htmlFile = read_file(path.append("/index.html"));
 	else
 		path.append(this->_request.uri);
-	std::ifstream ifs(path);
+	std::ifstream ifs(path, std::ios::binary);
 	if (!ifs.is_open())
 	{
 		this->_response.htmlFile = read_file("www/404.html");
@@ -159,7 +160,7 @@ void Message::request(const fd client, size_t buffer_size)
 		{
 			if ((*it) == "")
 				continue;
-			std::vector<std::string> tmp = split((*it), ":");
+			std::vector<std::string> tmp = split((*it), ": ");
 			string val = ""; 
 			for (size_t i = 1; i < tmp.size(); i++)
 			{
@@ -167,6 +168,7 @@ void Message::request(const fd client, size_t buffer_size)
 				if (i + 1 != tmp.size())
 					val.append(":");
 			}
+			val.erase(val.begin(), val.begin() + 1);
 			this->_request.headers.insert(std::make_pair(tmp[0], val));
 			tmp.clear();
 		}
@@ -178,20 +180,22 @@ void Message::request(const fd client, size_t buffer_size)
 	cout << "\n\nHEADERS\n";
 	print_headers(this->_request.headers);
 	cout << "\n\nBODY\n" << this->_request.body << "\n\n";
+
+	cout << "\n\n" << this->_request.headers.find("Connection")->second << "\n\n";
 }
 
 //	cout << "\n\nHEADERS\n";
 //	print_headers(this->_request.headers);
 //	cout << "\n\nBODY\n" << this->_request.body << "\n";
 
-void Message::response(const fd client)
+void Message::response(const fd client, size_t buffer_size)
 {
 	stringstream  ss;
 
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 	cout << "****Writing****" << endl;
-	size_t send_bytes = 0;
+	long send_bytes = 0;
 
 	std::ostringstream message;
 	if (this->_request.method == "GET")
@@ -201,14 +205,28 @@ void Message::response(const fd client)
 	else
 		this->_server_message = this->m_post();
 
-	send_bytes = write(client, this->_server_message.c_str(), this->_server_message.size());
+	long tmp = 0;
 
+	while (tmp < (long)this->_server_message.size())
+	{
+		send_bytes = send(client, this->_server_message.c_str() + tmp, this->_server_message.size() - tmp, 0);
+		if (send_bytes == -1)
+			continue;
+		tmp += send_bytes;
+		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << " BufferSize: " << buffer_size << endl;
+	}
 
-	if (send_bytes == this->_server_message.size())
+	//tmp = 0;
+	//send_bytes = 0;
+	if (send_bytes == (long)this->_server_message.size())
 	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
 	}
 	else
+	{
 		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
+		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << endl;
+	}
+
 	this->_request.headers.clear();
 }

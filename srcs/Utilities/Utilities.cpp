@@ -5,20 +5,19 @@ std::string read_file(std::string file_name)
 	std::ifstream   file;
 	std::string     result;
 	std::string     line;
+	std::ostringstream buffer;
 
 	file.open(file_name.c_str());
-	if (file.is_open())
-	{
-		while (std::getline(file, line))
-		{
-			result.append(line);
-			result.append("\n");
-		}
-	}
-	else
+
+	if (file.fail())
 	{
 		std::cout << "Error opening file\n";
 	}
+
+
+	buffer << file.rdbuf();
+	result = buffer.str();
+	
 	file.close();
 	return (result);
 }
