@@ -34,7 +34,7 @@ public:
 public:
 	static const u_int16_t 	max_listen_queue = 128;
 	static const u_int16_t	maxEvents = 1024;
-    Message                 message;
+    Message                 message[Server::maxEvents];
 
 private:
 	const	string			_ip;
@@ -50,6 +50,7 @@ public:
     fd		 	   acceptClient(struct kevent *event_array, std::map<fd, Server *> &socket_map, int kq) const;
 
 public:
+	void 			disconnectClient(int kq, const fd client);
 	void			enableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
 	void			disableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
 	void			enableWrite(int kq, const fd event_fd) const;
@@ -60,15 +61,7 @@ private:
 	void    		startSocket();
 	void	    	startSocketAddress();
 	void 	    	startListen();
-	void    		startKqueue();
-	void	    	startSocketEvents();
 
-private:
-	void 	    	monitorConnection(const fd connection);
-	void    		serverLoop();
-	void 	    	eventLoop(int new_events);
-	void	    	getEvents(int &events);
-	void	    	disconnectClient(const fd client);
 };
 
 #endif

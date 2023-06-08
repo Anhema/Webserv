@@ -24,6 +24,8 @@ std::string Message::get()
 	this->_response.extension = get_extension(path);
 	message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
 			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+	cout << "Extension: " << this->_response.extension << endl;
+	cout << "Path: " << path << endl;
 	return (message.str());
 }
 
@@ -47,6 +49,7 @@ void Message::request(const fd client, size_t buffer_size)
 	
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
+	cout << "****Reading****" << endl;
 	
 	char *buff= new char[buffer_size + 1];
 
@@ -68,7 +71,7 @@ void Message::request(const fd client, size_t buffer_size)
 	}
 		
 
-	cout << str_buff << endl;
+//	cout << str_buff << endl;
 	
 	// ss_buffer << "Buffer: \n" << str_buff << "\n";
 	// Logger::log(ss_buffer.str(), INFO);
@@ -118,9 +121,11 @@ void Message::request(const fd client, size_t buffer_size)
 	request.clear();
 	r_line.clear();
 
-	cout << "\n\nHEADERS\n";
-	print_headers(this->_request.headers);
-	cout << "\n\nBODY\n" << this->_request.body << "\n";
+	cout << "Target: " << this->_request.target << endl;
+	cout << "Method: " << this->_request.method << endl;
+//	cout << "\n\nHEADERS\n";
+//	print_headers(this->_request.headers);
+//	cout << "\n\nBODY\n" << this->_request.body << "\n";
 }
 
 
@@ -130,6 +135,7 @@ void Message::response(const fd client)
 
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
+	cout << "****Writing****" << endl;
 	size_t send_bytes = 0;
 
 	std::ostringstream message;

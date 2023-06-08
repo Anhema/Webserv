@@ -34,7 +34,8 @@ fd Server::getSocket() const { return _socket_fd; }
 string Server::getName() { return _server_name; }
 
 
-void Server::startSocketAddress() {
+void Server::startSocketAddress()
+{
 
 	this->_socketAddress.sin_family = AF_INET;
 	this->_socketAddress.sin_port = htons(this->_port);
@@ -43,8 +44,8 @@ void Server::startSocketAddress() {
 	Logger::log("Socket address initialized succesfully", INFO);
 }
 
-void Server::startSocket() {
-
+void Server::startSocket()
+{
 	this->_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (this->_socket_fd < 0)
@@ -56,12 +57,10 @@ void Server::startSocket() {
 		throw (std::runtime_error("SO_REUSEADDR"));
 
 	Logger::log("Socket created succesfully", INFO);
-
 }
 
 void Server::bindSocket()
 {
-
 	if (bind(_socket_fd, (sockaddr *)&_socketAddress, _socketAddress_len) < 0)
 		throw (std::runtime_error("can't bind socket"));
 	Logger::log("Socket binded succesfully", INFO);
@@ -99,6 +98,23 @@ void Server::disableWrite(int kq, const fd event_fd) const
 		throw (std::runtime_error("kqueue failed to disable write"));
 }
 
+void Server::disconnectClient(int kq, const fd client)
+{
+	EV_SET((struct kevent *)&this->_write_event, client, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to delete write"));
+
+	EV_SET((struct kevent *)&this->_read_event, client, EVFILT_READ, EV_DELETE, 0, 0, 0);
+	if (kevent(kq, &this->_read_event, 1, NULL, 0, NULL) < 0)
+		throw (std::runtime_error("kqueue failed to delete read"));
+
+	stringstream ss;
+
+	ss << "EV EOF: fd " << client;
+	Logger::log(ss.str(), INFO);
+
+	close(client);
+}
 
 void Server::startListen()
 {

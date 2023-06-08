@@ -61,7 +61,7 @@ server_iterator ServerHandler::isSocketFd(const fd file_descripor)
 
 void ServerHandler::updateEvents()
 {
-	this->_new_events = kevent(this->_kq, NULL, 0, events, Server::maxEvents, NULL);
+	this->_new_events = kevent(this->_kq, NULL, 0, events, 1, NULL);
 
 	if (this->_new_events == -1)
 		throw (std::runtime_error("error retrieving new events"));
@@ -71,6 +71,7 @@ void ServerHandler::eventLoop()
 {
 	for (int i = 0; i < this->_new_events; i++)
 	{
+		cout << "N events: " << this->_new_events << endl;
 		server_iterator ocurrence;
 		const fd event_fd = events[i].ident;
 
@@ -82,42 +83,36 @@ void ServerHandler::eventLoop()
 		}
 		else if (events[i].flags & EV_EOF)
 		{
-			stringstream ss;
+			Server *manager;
 
-			ss << "EV EOF: fd " << event_fd;
-			Logger::log(ss.str(), INFO);
-			close(event_fd);
+			if (this->active_fds.count(event_fd))
+				manager = this->active_fds.find(event_fd)->second;
+			else
+				manager = this->active_fds.begin()->second;
+			manager->disconnectClient(this->_kq, event_fd);
 		}
 		else if (events[i].filter == EVFILT_READ)
 		{
 			Server *reader;
 
-			cout << "Reading: " << events[i].ident << "\n";
 			if (this->active_fds.count(event_fd))
-			{
 				reader = this->active_fds.find(event_fd)->second;
-			}
 			else
-			{
 				reader = this->active_fds.begin()->second;
-			}
-			reader->message.request(event_fd, events[i].data);
+
+			reader->message[event_fd].request(event_fd, events[i].data);
 			reader->enableWrite(this->_kq, event_fd);
 		}
 		else if (events[i].filter == EVFILT_WRITE)
 		{
 			Server *responder;
 
-			cout << "Writing: " << events[i].ident << "\n";
             if (this->active_fds.count(event_fd))
-			{
 				responder = this->active_fds.find(event_fd)->second;
-			}
             else
-			{
 				responder = this->active_fds.begin()->second;
-			}
-			responder->message.response(event_fd);
+
+			responder->message[event_fd].response(event_fd);
 			responder->disableWrite(this->_kq, event_fd);
 		}
 	}
