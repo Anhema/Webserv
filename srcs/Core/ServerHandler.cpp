@@ -78,24 +78,21 @@ void ServerHandler::eventLoop()
 			(*ocurrence)->acceptClient(this->active_fds, this->_kq);
 		else if (events[i].flags & EV_EOF)
 		{
-			if (this->active_fds.count(event_fd))
-				server = this->active_fds.find(event_fd)->second;
-			else
-				server = this->active_fds.begin()->second;
-			server->disconnectClient(this->_kq, event_fd);
+            //cout << "kq " << this->_kq << " " << "array " << this->events << endl;
+			(*ocurrence)->acceptClient(this->events, this->active_fds, this->_kq);
+			continue;
 		}
 		else if (events[i].filter == EVFILT_READ)
 		{
-			if (this->active_fds.count(event_fd))
-				server = this->active_fds.find(event_fd)->second;
-			else
-				server = this->active_fds.begin()->second;
-
-			server->message[event_fd].request(event_fd, events[i].data);
-			server->enableWrite(this->_kq, event_fd);
+			//cout << "Reading: " << events[i].ident << "\n";
+            if (this->active_fds.count(event_fd))
+                this->active_fds[event_fd]->message.request(event_fd, this->events[i].data);
+            else
+                server_list.at(0)->message.request(event_fd, events[i].data);
 		}
 		else if (events[i].filter == EVFILT_WRITE)
 		{
+			//cout << "Writing: " << events[i].ident << "\n";
             if (this->active_fds.count(event_fd))
 				server = this->active_fds.find(event_fd)->second;
             else

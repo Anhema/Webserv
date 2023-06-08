@@ -4,25 +4,25 @@
 
 1. HTTP Server introduction
 2. HTTP Server
-    - HTTP Messages
-        - Headers
-        - HTTP Request
-        - HTTP Response
-    - Upload files
-    - RFC
-    - CGI
+	- HTTP Messages
+		- Headers
+		- HTTP Request
+		- HTTP Response
+	- Upload files
+	- RFC
+	- CGI
 2. Configuration file
-    - Basic info
-    - Error pages
-    - Upload size limit
-    - Rules
-        - HTTP Method
-        - HTTP Redirections
-        - File Routes
-        - Directory List
-    - Default file
-    - CGI Exec
-    - CGI Functionality
+	- Basic info
+	- Error pages
+	- Upload size limit
+	- Rules
+		- HTTP Method
+		- HTTP Redirections
+		- File Routes
+		- Directory List
+	- Default file
+	- CGI Exec
+	- CGI Functionality
 3. References
 
 <br>
@@ -83,7 +83,7 @@ HTTP is the most common application layer protocol that serves as the basis for 
     - A start line: For an HTTP request, this line includes an HTTP method (GET, POST, HEAD, etc), a request target (URI), and a string that indicates the HTTP version (e.g HTTP/1.1). For an HTTP response, the start line (or status line) will have the HTTP version that the server used, a status code, an optionally, a message describing the status code. The start line of a message should be terminated by a CRLF character.
     - Header fields: A list of key - value pairs that appear right after the start line and contain metadata about the HTTP connection and message. Each field should be on a single line and have the format field-name: field-value
     - Message body: An optional sequence of bytes. The message body is often present in response messages from the server, and sometimes in requests sent by the client, depending on the HTTP method. An HTTP message body can have any format, as long as both client and server have no issue understanding it.
-
+    
 <br>
 
 <br>
@@ -131,7 +131,7 @@ After the connected agent has sent its request, the web server processes it, and
     1. The first line, the status line, consists of an acknowledgment of the HTTP version used, followed by a response status code (and its brief meaning in human-readable text).
     2. Subsequent lines represent specific HTTP headers, giving the client information about the data sent (for example, type, data size, compression algorithm used, hints about caching). Similarly to the block of HTTP headers for a client request, these HTTP headers form a block ending with an empty line.
     3. The final block is a data block, which contains the optional data.
-
+ 
 <br>
 
 **Response status codes**
@@ -162,8 +162,11 @@ https://trungams.github.io/2020-08-23-a-simple-http-server-from-scratch/
 
 ### HTTP Messages
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Session
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
 
 ### RFC
@@ -175,4 +178,3 @@ https://datatracker.ietf.org/doc/html/rfc7230
 https://diego.com.es/concepto-y-funcionamiento-de-cgi
 
 http://www.mnuwer.dbasedeveloper.co.uk/dlearn/web/session03.htm
-

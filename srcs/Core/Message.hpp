@@ -8,6 +8,7 @@ typedef struct s_request {
 	std::string							method;
 	std::string							target;
 	std::string							connection;
+	std::string							uri;
 	std::string							version;
 	std::map<std::string, std::string>	headers;
 	std::string							body;
@@ -29,7 +30,9 @@ private:
 
 public:
 	void			response(const fd client);
-	std::string		get();
+	std::string		m_get();
+	std::string		m_post();
+	std::string		m_delete();
 	void			request(const fd client, size_t buffer_size);
 	string 			_server_message;
 	string			&getConnectionType(void);
