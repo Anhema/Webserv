@@ -34,6 +34,23 @@
 				</tbody>
 			</table>
 		</section>
+		<section>
+			<h2>Formulario de Satisfacción</h2>
+			<form id="satisfaction-form" enctype="multipart/form-data">
+				<label for="rating">¿Cómo calificarías nuestro servicio?</label>
+				<select id="rating" name="rating">
+					<option value="5">Excelente</option>
+					 <option value="4">Muy bueno</option>
+					<option value="3">Bueno</option>
+					<option value="2">Regular</option>
+					<option value="1">Malo</option>
+				</select>
+				<label for="file">Adjuntar archivo:</label>
+				<input type="file" id="file" name="file">
+				<button type="submit">Enviar</button>
+			</form>
+			<p id="thanks-message" class="hidden">¡Gracias por tu feedback!</p>
+		</section>
 	</main>
 	<footer>
 		<p>© 2023 Venta de Alubias</p>

@@ -31,3 +31,20 @@ for (let i = 0; i < products.length; i++) {
 	`;
 	productTable.appendChild(row);
 }
+
+const satisfactionForm = document.getElementById('satisfaction-form');
+const thanksMessage = document.getElementById('thanks-message');
+
+satisfactionForm.addEventListener('submit', function(event) {
+	event.preventDefault();
+	const formData = new FormData(satisfactionForm);
+	const xhr = new XMLHttpRequest();
+	xhr.open('POST', '/upload', true);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			thanksMessage.classList.remove('hidden');
+			satisfactionForm.reset();
+		}
+	};
+	xhr.send(formData);
+});
