@@ -247,7 +247,7 @@ void Message::response(const fd client, size_t buffer_size)
 	cout << "Total sent: " << totalSent << " of " << this->_server_message.size() << endl;
 	//tmp = 0;
 	//send_bytes = 0;
-	if (send_bytes == (long)this->_server_message.size())
+	if (totalSent == (long)this->_server_message.size())
 	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
 	}

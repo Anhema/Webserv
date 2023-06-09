@@ -1,9 +1,23 @@
 #include "ServerHandler.hpp"
 
+ServerHandler::ServerHandler(std::vector<t_server_config> configurations)
+{
+	for (std::vector<t_server_config>::iterator conf_it = configurations.begin(); conf_it != configurations.end(); conf_it++)
+	{
+		cout << "Llega\n";
+		for (std::vector<int>::iterator port_it = conf_it->ports.begin(); port_it != conf_it->ports.end(); port_it++)
+		{
+			cout << "New server\n";
+			cout << "Conf ip: " << (conf_it->ip) << endl;
+			this->server_list.push_back(new Server(*conf_it, *port_it));
+		}
+	}
+	this->startKqueue();
+	this->monitorSockets();
+}
+
 ServerHandler::ServerHandler(int server_count): _server_count(server_count)
 {
-	this->startServers();
-	this->startKqueue();
 	this->monitorSockets();
 }
 
@@ -12,18 +26,6 @@ ServerHandler::~ServerHandler()
 	this->server_list.clear();
 }
 
-void ServerHandler::startServers()
-{
-    try
-    {
-        for (int i = 0; i < this->_server_count; i++)
-            this->server_list.push_back(new Server(LOCALHOST, START_PORT + i, DEFAULT_NAME));
-    }
-    catch (std::exception &e)
-    {
-        exit(EXIT_FAILURE);
-    }
-}
 
 void ServerHandler::startKqueue()
 {

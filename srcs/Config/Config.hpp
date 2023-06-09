@@ -18,13 +18,14 @@ typedef struct	s_route_config
 	string				redirection;
 }	t_route_config;
 
-typedef struct s_bracket_config
+typedef struct s_server_config
 {
 	std::vector<int>	ports;
+	string 				ip;
 	std::vector<string>	names;
 	size_t 				max_body_size;
 	t_error_pages 		errorPages;
-}	t_bracket_config;
+}	t_server_config;
 
 class Configuration
 {

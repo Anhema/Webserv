@@ -1,27 +1,39 @@
 #include "Server.hpp"
 #include "../Logger/Logger.hpp"
 
-Server::Server(std::string ip, int port, string name):  _ip(ip),
-                                                        _port(port),
-                                                        _socketAddress_len(sizeof(_socketAddress)),
-                                                        _server_name(name)
-{
 
+Server::Server(t_server_config options, int port):
+_ip(options.ip),
+_port(port),
+_socketAddress_len(sizeof(_socketAddress)),
+m_config(options)
+{
+	cout << "Enters\n";
     this->startSocketAddress();
     this->startSocket();
     this->bindSocket();
     this->startListen();
 }
 
-Server::Server():   _ip("0.0.0.0"),
-                    _port(0000),
-                    _socketAddress_len(sizeof(_socketAddress)),
-                    _server_name("default") {}
-
-Server::Server(const Server &obj):  _ip(obj._ip),
-                                    _port(obj._port),
-                                    _socketAddress_len(sizeof(_socketAddress)),
-                                    _server_name(obj._server_name) {}
+//Server::Server(std::string ip, int port, string name):  _ip(ip),
+//                                                        _port(port),
+//                                                        _socketAddress_len(sizeof(_socketAddress))
+//{
+//
+//    this->startSocketAddress();
+//    this->startSocket();
+//    this->bindSocket();
+//    this->startListen();
+//}
+//
+//Server::Server():   _ip("0.0.0.0"),
+//                    _port(0000),
+//                    _socketAddress_len(sizeof(_socketAddress)),
+//
+//Server::Server(const Server &obj):  _ip(obj._ip),
+//                                    _port(obj._port),
+//                                    _socketAddress_len(sizeof(_socketAddress))
+//									{}
 
 Server::~Server() {
 
@@ -33,7 +45,6 @@ fd Server::getSocket() const { return _socket_fd; }
 
 void Server::startSocketAddress()
 {
-
 	this->_socketAddress.sin_family = AF_INET;
 	this->_socketAddress.sin_port = htons(this->_port);
 	this->_socketAddress.sin_addr.s_addr = inet_addr(_ip.c_str());
