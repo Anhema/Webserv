@@ -134,7 +134,7 @@ void Server::startListen()
 fd Server::acceptClient(std::map<fd, Server *> &active_fd, int kq) const
 {
 
-    const	fd		new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
+    const fd	new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
 
     if (new_client == -1)
         throw (std::runtime_error("Failed to accept incoming connection"));
