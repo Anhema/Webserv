@@ -46,20 +46,20 @@ private:
 	fd 						_socket_fd;
 
 public:
-    fd		 	   acceptClient(std::map<fd, Server *> &socket_map, int kq) const;
+    fd		 	   			acceptClient(std::map<fd, Server *> &socket_map, int kq) const;
 
 public:
-	void 			disconnectClient(int kq, const fd client);
-	void			enableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
-	void			disableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
-	void			enableWrite(int kq, const fd event_fd) const;
-	void			disableWrite(int kq, const fd event_fd) const;
+	void 					disconnectClient(int kq, const fd client);
+	void					enableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
+	void					disableEvent(int kq, const fd event_fd, struct kevent *k_struct, short event) const;
+	void					enableWrite(int kq, const fd event_fd) const;
+	void					disableWrite(int kq, const fd event_fd) const;
 
 private:
-	void	    	bindSocket();
-	void    		startSocket();
-	void	    	startSocketAddress();
-	void 	    	startListen();
+	void	    			bindSocket();
+	void    				startSocket();
+	void	    			startSocketAddress();
+	void 	    			startListen();
 
 };
 
