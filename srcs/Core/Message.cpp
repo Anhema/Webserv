@@ -8,11 +8,14 @@ std::string Message::m_get()
 {
 	std::ostringstream message;
 	std::string path = "www";
+
 	if (this->_request.uri == "/")
 		this->_response.htmlFile = read_file(path.append("/index.html"));
 	else
 		path.append(this->_request.uri);
+
 	std::ifstream ifs(path);
+
 	if (!ifs.is_open())
 	{
 		this->_response.htmlFile = read_file("www/404.html");
@@ -112,10 +115,26 @@ void Message::request(const fd client, size_t buffer_size)
 	
 	char *buff= new char[buffer_size + 1];
 
-	if (read(client, buff, buffer_size) < 0)
+	ssize_t totalSent = 0;
+	ssize_t send_bytes = 0;
+	size_t err_count = 0;
+
+	while (totalSent < (ssize_t)buffer_size)
 	{
-		Logger::log("Failed to read bytes from client socket connection", ERROR);
-		return ;
+		send_bytes = recv(client, buff + totalSent, buffer_size, 0);
+		if (send_bytes == -1)
+		{
+			err_count++;
+			continue;
+		}
+		if (err_count >= Message::maxRecvErrors)
+		{
+			Logger::log("Failed to read bytes from client socket connection", ERROR);
+			return ;
+		}
+		else
+			err_count = 0;
+		totalSent += send_bytes;
 	}
 	buff[buffer_size] = '\0';
 	string str_buff(buff);
@@ -195,7 +214,6 @@ void Message::response(const fd client, size_t buffer_size)
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 	cout << "****Writing****" << endl;
-	long send_bytes = 0;
 
 	std::ostringstream message;
 	if (this->_request.method == "GET")
@@ -205,17 +223,28 @@ void Message::response(const fd client, size_t buffer_size)
 	else
 		this->_server_message = this->m_post();
 
-	long tmp = 0;
+	ssize_t totalSent = 0;
+	ssize_t send_bytes = 0;
+	size_t err_count = 0;
 
-	while (tmp < (long)this->_server_message.size())
+	while (totalSent < (ssize_t)this->_server_message.size())
 	{
-		send_bytes = send(client, this->_server_message.c_str() + tmp, this->_server_message.size() - tmp, 0);
+		send_bytes = send(client, this->_server_message.c_str() + totalSent, this->_server_message.size() - totalSent, 0);
+		if (err_count >= Message::maxSendErrors)
+		{
+			Logger::log("timeout sending request", WARNING);
+		}
 		if (send_bytes == -1)
+		{
+			err_count++;
 			continue;
-		tmp += send_bytes;
+		}
+		else
+			err_count = 0;
+		totalSent += send_bytes;
 		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << " BufferSize: " << buffer_size << endl;
 	}
-
+	cout << "Total sent: " << totalSent << " of " << this->_server_message.size() << endl;
 	//tmp = 0;
 	//send_bytes = 0;
 	if (send_bytes == (long)this->_server_message.size())

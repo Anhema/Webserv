@@ -31,9 +31,6 @@ Server::~Server() {
 
 fd Server::getSocket() const { return _socket_fd; }
 
-string Server::getName() { return _server_name; }
-
-
 void Server::startSocketAddress()
 {
 

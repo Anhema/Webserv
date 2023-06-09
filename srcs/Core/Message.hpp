@@ -4,7 +4,8 @@
 # include "../Utilities/Utilities.hpp"
 # include <unistd.h>
 
-typedef struct s_request {
+typedef struct s_request
+{
 	std::string							method;
 	std::string							target;
 	std::string							connection;
@@ -12,7 +13,7 @@ typedef struct s_request {
 	std::string							version;
 	std::map<std::string, std::string>	headers;
 	std::string							body;
-}		t_request;
+}	t_request;
 
 
 typedef struct s_response
@@ -22,20 +23,24 @@ typedef struct s_response
 	int									n;
 }	t_response;
 
-class Message {
+class Message
+{
 
 private:
 	t_request	_request;
 	t_response	_response;
 
 public:
-	void			response(const fd client, size_t buffer_size);
-	std::string		m_get();
-	std::string		m_post();
-	std::string		m_delete();
-	void			request(const fd client, size_t buffer_size);
-	string 			_server_message;
-	string			&getConnectionType(void);
+	void				response(const fd client, size_t buffer_size);
+	std::string			m_get();
+	std::string			m_post();
+	std::string			m_delete();
+	void				request(const fd client, size_t buffer_size);
+	string 				_server_message;
+	string				&getConnectionType(void);
+	static const size_t	maxSendErrors = 1024;
+	static const size_t	maxRecvErrors = 1024;
+
 };
 
 #endif

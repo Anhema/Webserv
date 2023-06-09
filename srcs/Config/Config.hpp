@@ -8,7 +8,7 @@ typedef struct s_route_config
 	string				route;
 	string 				source_dir;
 	bool				directory_listing;
-	std::vector<string>	accpeted_methods;
+	std::vector<string>	accepted_methods;
 }	t_route_config;
 
 typedef struct s_bracket_config

@@ -104,7 +104,10 @@ void ServerHandler::eventLoop()
 			server->message[event_fd].response(event_fd, events[i].data);
 			server->disableWrite(this->_kq, event_fd);
 			if (server->message[event_fd].getConnectionType() == "close")
+			{
+				cout << "Getter:" << server->message[event_fd].getConnectionType() << endl;
 				server->disconnectClient(this->_kq, event_fd);
+			}
 		}
 	}
 }

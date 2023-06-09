@@ -27,8 +27,6 @@ public:
 
 	Server	operator=(const Server &obj);
     fd		getSocket(void) const;
-    string	getName(void);
-
 
 
 public:

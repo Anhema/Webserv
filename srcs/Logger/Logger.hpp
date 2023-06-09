@@ -4,7 +4,7 @@
 # include "Utilities.hpp"
 
 # ifndef VERBOSE
-# define VERBOSE ERROR
+# define VERBOSE INFO
 # endif
 
 # ifndef LOG_FILE
