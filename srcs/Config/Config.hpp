@@ -20,12 +20,15 @@ typedef struct	s_route_config
 
 typedef struct s_server_config
 {
-	std::vector<int>	ports;
-	string 				ip;
-	std::vector<string>	names;
-	size_t 				max_body_size;
-	t_error_pages 		errorPages;
+	std::vector<int>			ports;
+	string 						ip;
+	std::vector<string>			names;
+	size_t 						max_body_size;
+	t_error_pages 				errorPages;
+	std::vector<t_route_config> routes;
+	s_server_config 	&operator=(s_server_config &rhs);
 }	t_server_config;
+
 
 class Configuration
 {

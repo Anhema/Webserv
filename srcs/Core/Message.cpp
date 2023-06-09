@@ -2,7 +2,18 @@
 #include "Logger.hpp"
 #include <sys/socket.h>
 
+
 string &Message::getConnectionType() { return this->_request.connection; }
+
+void Message::setConfig(t_server_config &config)
+{
+	this->m_configuration = config;
+}
+
+void Message::buildHeader()
+{
+
+}
 
 std::string Message::m_get()
 {
@@ -233,6 +244,7 @@ void Message::response(const fd client, size_t buffer_size)
 		if (err_count >= Message::maxSendErrors)
 		{
 			Logger::log("timeout sending request", WARNING);
+			break;
 		}
 		if (send_bytes == -1)
 		{

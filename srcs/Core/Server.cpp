@@ -8,8 +8,9 @@ _port(port),
 _socketAddress_len(sizeof(_socketAddress)),
 m_config(options)
 {
-	cout << "Enters\n";
-    this->startSocketAddress();
+	for (int i = 0; i < Server::maxEvents; i++)
+		this->message[i].setConfig(options);
+	this->startSocketAddress();
     this->startSocket();
     this->bindSocket();
     this->startListen();
