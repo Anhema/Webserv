@@ -118,7 +118,7 @@ void Message::request(const fd client, size_t buffer_size)
 	stringstream  ss;
 	stringstream  ss_buffer;
 
-	int body_start = 0;
+	ssize_t body_start = 0;
 	
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
@@ -129,6 +129,12 @@ void Message::request(const fd client, size_t buffer_size)
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
 	size_t err_count = 0;
+	bool is_header = true;
+	string header = "";
+	string body = "";
+	string request = "";
+	ssize_t content = 0;
+
 
 	while (totalSent < (ssize_t)buffer_size)
 	{
@@ -145,80 +151,76 @@ void Message::request(const fd client, size_t buffer_size)
 		}
 		else
 			err_count = 0;
+		buff[send_bytes + totalSent] = '\0';
+		header = buff;
+		if (header.find("\r\n\r\n") && is_header)
+		{
+			body = header.substr(header.find("\r\n\r\n") + 4, header.size());
+			header = header.substr(0, header.find("\r\n\r\n"));
+			body_start = header.size() + 4;
+
+			cout << "----HEADER----\n\n" << header;
+			
+			std::vector<std::string> request = split(header, "\n");
+			std::vector<std::string>::iterator start = request.begin();
+			std::vector<std::string> r_line = split((*start), " ");
+
+			this->_request.method = r_line[0];
+			this->_request.uri = r_line[1];
+			this->_request.version = r_line[2];
+			start++;
+
+			int i = 1;
+			for (std::vector<string>::iterator it = start; it != request.end(); it++)
+			{
+				i++;
+				if ((*it) == "")
+					continue;
+				std::vector<std::string> tmp = split((*it), ": ");
+				if (tmp[0] == "Content-Length")
+					content = std::stoi(tmp[1]);
+				string val = ""; 
+				for (size_t i = 1; i < tmp.size(); i++)
+				{
+					val.append(tmp[i]);
+					if (i + 1 != tmp.size())
+						val.append(":");
+				}
+				val.erase(val.begin(), val.begin() + 1);
+				this->_request.headers.insert(std::make_pair(tmp[0], val));
+				tmp.clear();
+			}
+
+			is_header = false;
+			
+			if (content == 0 || (ssize_t)body.size() == content)
+				break;
+			buffer_size += content + 1;
+
+			delete []buff;
+			buff = new char[buffer_size];
+			totalSent = body.size();
+			continue;
+		}
+		if (!is_header)
+			body = body.append(buff);
 		totalSent += send_bytes;
 	}
 	buff[buffer_size] = '\0';
 	string str_buff(buff);
 
-	for (size_t i = 0; i < str_buff.length(); i++)
-	{
-		if (str_buff[i] == '\n' && str_buff[i + 1] != '\n')
-			body_start++;
-		if (str_buff[i] == '\n' && str_buff[i + 1] == '\n')
-			break;
-	}
-	std::vector<std::string> request = split(str_buff, "\n");
-
-
-	std::vector<std::string>::iterator start = request.begin();
-	std::vector<std::string> r_line = split((*start), " ");
-
-	this->_request.method = r_line[0];
-	this->_request.uri = r_line[1];
-	this->_request.version = r_line[2];
-	start++;
-
-	bool is_body = false;
-
-	int i = 1;
-	for (std::vector<string>::iterator it = start; it != request.end(); it++)
-	{
-		i++;
-		if (i == body_start)
-			is_body = true;
-			
-		if ((*it) == "\n")
-		{
-			is_body = true;
-			continue;
-		}
-		if (is_body)
-		{
-			this->_request.body.append(*it);
-		}
-		else
-		{
-			if ((*it) == "")
-				continue;
-			std::vector<std::string> tmp = split((*it), ": ");
-			string val = ""; 
-			for (size_t i = 1; i < tmp.size(); i++)
-			{
-				val.append(tmp[i]);
-				if (i + 1 != tmp.size())
-					val.append(":");
-			}
-			val.erase(val.begin(), val.begin() + 1);
-			this->_request.headers.insert(std::make_pair(tmp[0], val));
-			tmp.clear();
-		}
-	}
-
-	request.clear();
-	r_line.clear();
-	delete[] buff;
-	cout << "\n\nHEADERS\n";
+	this->_request.body = body;
+	cout << "----HEADER----\n\n";
 	print_headers(this->_request.headers);
-	cout << "\n\nBODY\n" << this->_request.body << "\n\n";
 
-	cout << "\n\n" << this->_request.headers.find("Connection")->second << "\n\n";
+	cout << "\n-----BODY-----\n\n" << this->_request.body << "\n----" << this->_request.body.size() << "----\n\n";
+
+	//request.clear();
+	//r_line.clear();
+	delete[] buff;
 }
 
-//	cout << "\n\nHEADERS\n";
-//	print_headers(this->_request.headers);
-//	cout << "\n\nBODY\n" << this->_request.body << "\n";
-
-void Message::response(const fd client, size_t buffer_size)
+void Message::response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
 
@@ -254,9 +256,9 @@ void Message::response(const fd client, size_t buffer_size)
 		else
 			err_count = 0;
 		totalSent += send_bytes;
-		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << " BufferSize: " << buffer_size << endl;
+//		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << " BufferSize: " << buffer_size << endl;
 	}
-	cout << "Total sent: " << totalSent << " of " << this->_server_message.size() << endl;
+//	cout << "Total sent: " << totalSent << " of " << this->_server_message.size() << endl;
 	//tmp = 0;
 	//send_bytes = 0;
 	if (totalSent == (long)this->_server_message.size())
