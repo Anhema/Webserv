@@ -108,37 +108,23 @@ std::string Message::m_delete()
 void print_headers(std::map<string, string> headers)
 {
 	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
-		cout << it->first << ":" << it->second << "\n";
-	
+	{
+		cout << "(" << it->first << ") -> (" << it->second << ")\n";
+	}
+
 }
 
-void Message::request(const fd client, size_t buffer_size)
+string Message::m_readHeader(const fd client)
 {
+	string 			header;
+	ssize_t			send_bytes = 0;
+	size_t			err_count = 0;
+	char			buffer;
 
-	stringstream  ss;
-	stringstream  ss_buffer;
-
-	ssize_t body_start = 0;
-	
-	ss << "Request fd: " << client << " size: " << buffer_size;
-	Logger::log(ss.str(), INFO);
-	cout << "****Reading****" << endl;
-	
-	char *buff= new char[buffer_size + 1];
-
-	ssize_t totalSent = 0;
-	ssize_t send_bytes = 0;
-	size_t err_count = 0;
-	bool is_header = true;
-	string header = "";
-	string body = "";
-	string request = "";
-	ssize_t content = 0;
-
-
-	while (totalSent < (ssize_t)buffer_size)
+	while (header.find(HEADER_END) == string::npos)
 	{
-		send_bytes = recv(client, buff + totalSent, buffer_size, 0);
+		send_bytes = recv(client, &buffer, 1, 0);
+		header.push_back(buffer);
 		if (send_bytes == -1)
 		{
 			err_count++;
@@ -146,78 +132,77 @@ void Message::request(const fd client, size_t buffer_size)
 		}
 		if (err_count >= Message::maxRecvErrors)
 		{
-			Logger::log("Failed to read bytes from client socket connection", ERROR);
-			return ;
+			header.clear();
+			return header;
+
 		}
-		else
-			err_count = 0;
-		buff[send_bytes + totalSent] = '\0';
-		header = buff;
-		if (header.find("\r\n\r\n") && is_header)
-		{
-			body = header.substr(header.find("\r\n\r\n") + 4, header.size());
-			header = header.substr(0, header.find("\r\n\r\n"));
-			body_start = header.size() + 4;
-
-			cout << "----HEADER----\n\n" << header;
-			
-			std::vector<std::string> request = split(header, "\n");
-			std::vector<std::string>::iterator start = request.begin();
-			std::vector<std::string> r_line = split((*start), " ");
-
-			this->_request.method = r_line[0];
-			this->_request.uri = r_line[1];
-			this->_request.version = r_line[2];
-			start++;
-
-			int i = 1;
-			for (std::vector<string>::iterator it = start; it != request.end(); it++)
-			{
-				i++;
-				if ((*it) == "")
-					continue;
-				std::vector<std::string> tmp = split((*it), ": ");
-				if (tmp[0] == "Content-Length")
-					content = std::stoi(tmp[1]);
-				string val = ""; 
-				for (size_t i = 1; i < tmp.size(); i++)
-				{
-					val.append(tmp[i]);
-					if (i + 1 != tmp.size())
-						val.append(":");
-				}
-				val.erase(val.begin(), val.begin() + 1);
-				this->_request.headers.insert(std::make_pair(tmp[0], val));
-				tmp.clear();
-			}
-
-			is_header = false;
-			
-			if (content == 0 || (ssize_t)body.size() == content)
-				break;
-			buffer_size += content + 1;
-
-			delete []buff;
-			buff = new char[buffer_size];
-			totalSent = body.size();
-			continue;
-		}
-		if (!is_header)
-			body = body.append(buff);
-		totalSent += send_bytes;
 	}
-	buff[buffer_size] = '\0';
-	string str_buff(buff);
+	return header;
+}
 
-	this->_request.body = body;
-	cout << "----HEADER----\n\n";
+void Message::m_parseHeader(const std::string &header)
+{
+	std::vector<std::string> request = split(header, "\n");
+	std::vector<std::string>::iterator line = request.begin();
+	std::vector<std::string> r_line = split((*line), " ");
+
+	this->_request.method = r_line[0];
+	this->_request.uri = r_line[1];
+	this->_request.version = r_line[2];
+	while (++line != request.end())
+	{
+		char *tmp_key = std::strtok((char *)line->c_str(), ": ");
+
+		if (!tmp_key)
+			break;
+
+		const string key(tmp_key);
+//		cout << "Key: " << key;
+
+		char *tmp_value = std::strtok(NULL, "\n\r");
+
+		if (!tmp_value)
+			break;
+
+		const string value(&tmp_value[1]);
+//		cout << " Value: " << value << endl;
+//
+		this->_request.headers[key] = value;
+	}
+//	cout << "Request size: " << request.size() << endl;
+//	cout << "Full header: " << header << endl;
+
+}
+
+void Message::request(const fd client, size_t buffer_size)
+{
+
+	stringstream  	ss;
+	stringstream  	ss_buffer;
+
+	ss << "Request fd: " << client << " size: " << buffer_size;
+	Logger::log(ss.str(), INFO);
+	cout << "****Reading****" << endl;
+
+	const string header = this->m_readHeader(client);
+
+	if (header.empty())
+	{
+		Logger::log("Failed to read header", ERROR);
+		return;
+	}
+
+	this->m_parseHeader(header);
 	print_headers(this->_request.headers);
+//	this->_request.body = body;
+//	cout << "----HEADER----\n\n";
+//	cout << header << endl;
+//	print_headers(this->_request.headers);
 
 	cout << "\n-----BODY-----\n\n" << this->_request.body << "\n----" << this->_request.body.size() << "----\n\n";
 
 	//request.clear();
 	//r_line.clear();
-	delete[] buff;
 }
 
 void Message::response(const fd client, size_t __unused buffer_size)

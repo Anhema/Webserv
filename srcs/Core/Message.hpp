@@ -5,6 +5,8 @@
 # include <unistd.h>
 # include "Config.hpp"
 
+# define HEADER_END "\r\n\r\n"
+
 namespace HttpStatus {
 
 
@@ -145,13 +147,15 @@ public:
 	std::string				m_get();
 	std::string				m_post();
 	std::string				m_delete();
+	string					m_readHeader(const fd client);
+	void					m_parseHeader(const string &header);
 	std::string 			_server_message;
 	void					response(const fd client, size_t buffer_size);
 	void 					buildHeader();
 	void					request(const fd client, size_t buffer_size);
 	string					&getConnectionType(void);
-	static const int		maxSendErrors = 10000;
-	static const int		maxRecvErrors = 10000;
+	static const int		maxSendErrors	= 10000;
+	static const int		maxRecvErrors	= 10000;
 };
 
 #endif
