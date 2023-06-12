@@ -94,7 +94,8 @@ void ServerHandler::eventLoop()
 				server = this->active_fds.begin()->second;
 
 			server->message[event_fd].request(event_fd, events[i].data);
-			server->enableWrite(this->_kq, event_fd);
+			if (server->message[event_fd].finishedReading)
+				server->enableWrite(this->_kq, event_fd);
 		}
 		else if (events[i].filter == EVFILT_WRITE)
 		{

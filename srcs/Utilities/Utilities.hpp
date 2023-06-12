@@ -27,6 +27,9 @@ std::vector<std::string>	split(std::string str, std::string separator);
 void						debug_log(std::string log);
 std::string					read_file(std::string file_name);
 std::string					get_extension(std::string file_name);
+void						capitalize(string &s, string sep);
+char						*capitalize(char *s, string sep);
+bool						isSet(char c, string set);
 
 
 # define NC				"\033[0m"

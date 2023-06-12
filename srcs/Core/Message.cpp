@@ -1,7 +1,12 @@
 #include "Message.hpp"
 #include "Logger.hpp"
 #include <sys/socket.h>
+#include "Utilities.hpp"
+#include <fcntl.h>
 
+Message::Message(): m_readStatus(ReadType::HEADER), finishedReading(false) {}
+
+Message::~Message() {}
 
 string &Message::getConnectionType() { return this->_request.connection; }
 
@@ -13,6 +18,27 @@ void Message::setConfig(t_server_config &config)
 void Message::buildHeader()
 {
 
+}
+
+void Message::m_createFile(const std::string &filename, const std::string &extension, std::ofstream &outfile)
+{
+	char			buffer[100];
+	time_t 			t;
+	struct tm		*timeptr;
+
+	t = time(NULL);
+	timeptr = localtime(&t);
+	strftime(buffer, sizeof(buffer), "%d-%m-%y_%H-%M", timeptr);
+
+	string composition_name;
+
+	composition_name.append(filename);
+	composition_name.append(buffer);
+	composition_name.append(extension);
+
+	outfile.open(composition_name.c_str(), std::ios::binary);
+	if (outfile.fail())
+		throw (std::runtime_error("can't create outfile for POST"));
 }
 
 std::string Message::m_get()
@@ -117,15 +143,15 @@ void print_headers(std::map<string, string> headers)
 string Message::m_readHeader(const fd client)
 {
 	string 			header;
-	ssize_t			send_bytes = 0;
+	ssize_t			read_bytes = 0;
 	size_t			err_count = 0;
 	char			buffer;
 
 	while (header.find(HEADER_END) == string::npos)
 	{
-		send_bytes = recv(client, &buffer, 1, 0);
+		read_bytes = recv(client, &buffer, 1, 0);
 		header.push_back(buffer);
-		if (send_bytes == -1)
+		if (read_bytes == -1)
 		{
 			err_count++;
 			continue;
@@ -146,32 +172,94 @@ void Message::m_parseHeader(const std::string &header)
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = split((*line), " ");
 
-	this->_request.method = r_line[0];
-	this->_request.uri = r_line[1];
-	this->_request.version = r_line[2];
 	while (++line != request.end())
 	{
 		char *tmp_key = std::strtok((char *)line->c_str(), ": ");
-
 		if (!tmp_key)
 			break;
 
+		capitalize(tmp_key, " -");
+
 		const string key(tmp_key);
-//		cout << "Key: " << key;
 
 		char *tmp_value = std::strtok(NULL, "\n\r");
-
 		if (!tmp_value)
 			break;
 
 		const string value(&tmp_value[1]);
-//		cout << " Value: " << value << endl;
-//
 		this->_request.headers[key] = value;
 	}
-//	cout << "Request size: " << request.size() << endl;
+
+	this->_request.method = r_line[0];
+	this->_request.uri = r_line[1];
+	this->_request.version = r_line[2];
+	this->_request.connection = this->_request.headers["Connection"];
+	this->_request.content_length = std::atol(this->_request.headers["Content-Length"].c_str());
+
+	if (this->_request.content_length)
+	{
+		this->m_readStatus = ReadType::BODY;
+		cout << "Tiene body\n";
+	}
+	else
+	{
+		Logger::log("Finished read -> true", INFO);
+		this->finishedReading = true;
+	}
+
+
+//	cout << "Requ size: " << request.size() << endl;
 //	cout << "Full header: " << header << endl;
 
+}
+
+void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &file)
+{
+	static size_t	totalRead;
+	size_t 			read_errors = 0;
+	size_t 			loopRead = 0;
+	ssize_t 		read_bytes = 0;
+	char			*buffer;
+	const size_t 	buffer_size = 1024;
+
+
+	buffer = new char[buffer_size];
+	cout << "Entra a leer el body\n";
+	cout << "Readed: " << totalRead << "/" << this->_request.content_length << "\n";
+	while (loopRead < (size_t)fd_size && totalRead < this->_request.content_length)
+	{
+		read_bytes = recv(client, buffer, buffer_size, 0);
+
+		if (read_errors >= Message::maxRecvErrors)
+		{
+			Logger::log("timeout reading request", WARNING);
+			break;
+		}
+		if (read_bytes == -1)
+		{
+			read_errors++;
+			continue;
+		}
+		else
+			read_errors = 0;
+
+		file.write(buffer, read_bytes);
+
+		totalRead += read_bytes;
+		loopRead += read_bytes;
+
+		cout << "Read: " << totalRead << "/" << this->_request.content_length << endl;
+//		cout << "Wrote: " << totalWrote << "/" << this->_request.content_length << endl;
+	}
+
+	if (totalRead >= this->_request.content_length || this->_request.content_length == 0)
+	{
+		Logger::log("Finished read -> FINISHED BODY", INFO);
+		this->m_readStatus = ReadType::FINISHED_BODY;
+		this->finishedReading = true;
+	}
+
+	delete [] buffer;
 }
 
 void Message::request(const fd client, size_t buffer_size)
@@ -179,27 +267,32 @@ void Message::request(const fd client, size_t buffer_size)
 
 	stringstream  	ss;
 	stringstream  	ss_buffer;
+	std::ofstream 	outfile;
 
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
 	cout << "****Reading****" << endl;
 
-	const string header = this->m_readHeader(client);
-
-	if (header.empty())
+	this->m_createFile("test", ".jpg", outfile);
+	if (this->m_readStatus == ReadType::HEADER)
 	{
-		Logger::log("Failed to read header", ERROR);
-		return;
+		const string header = this->m_readHeader(client);
+		if (header.empty())
+		{
+			Logger::log("Failed to read header", ERROR);
+			return;
+		}
+		this->m_parseHeader(header);
+		print_headers(this->_request.headers);
 	}
-
-	this->m_parseHeader(header);
-	print_headers(this->_request.headers);
-//	this->_request.body = body;
-//	cout << "----HEADER----\n\n";
-//	cout << header << endl;
-//	print_headers(this->_request.headers);
-
-	cout << "\n-----BODY-----\n\n" << this->_request.body << "\n----" << this->_request.body.size() << "----\n\n";
+	else if (this->m_readStatus == ReadType::BODY)
+	{
+		this->m_readBody(client, buffer_size, outfile);
+		cout << "Body Size: " << this->_request.body.size() << " Body:\n";
+//		cout << this->_request.body;
+	}
+	if (this->m_readStatus == ReadType::FINISHED_BODY)
+		outfile.close();
 
 	//request.clear();
 	//r_line.clear();

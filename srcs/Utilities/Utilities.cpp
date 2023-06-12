@@ -50,3 +50,31 @@ std::vector<std::string>    split(std::string str, std::string del)
 	result.push_back(str.substr(0, end));
 	return (result);
 }
+
+bool	isSet(char c, string set)
+{
+	for (string::iterator it = set.begin(); it != set.end(); it++)
+		if (*it == c)
+			return true;
+	return false;
+}
+
+char *capitalize(char *s, string sep)
+{
+	for (size_t i = 0; i < std::strlen(s); i++)
+	{
+		s[i] = std::toupper(s[i]);
+		while (s[++i] && !isSet(s[i], sep))
+			continue;
+	}
+	return s;
+}
+void capitalize(string &s, string sep)
+{
+	for (string::iterator it = s.begin(); it != s.end(); it++)
+	{
+		if (isSet(*it, sep))
+			continue;
+		std::toupper(*it);
+	}
+}

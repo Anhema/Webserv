@@ -7,6 +7,17 @@
 
 # define HEADER_END "\r\n\r\n"
 
+
+namespace ReadType
+{
+	enum Type
+	{
+		HEADER,
+		BODY,
+		FINISHED_BODY
+	};
+}
+
 namespace HttpStatus {
 
 
@@ -120,6 +131,7 @@ typedef struct s_request
 	std::string							connection;
 	std::string							uri;
 	std::string							version;
+	size_t 								content_length;
 	std::map<std::string, std::string>	headers;
 	std::string							body;
 }	t_request;
@@ -136,26 +148,36 @@ typedef struct s_response
 class Message
 {
 
+public:
+	Message();
+	~Message();
 
 private:
 	t_server_config			m_configuration;
 	t_request				_request;
 	t_response				_response;
-
-public:
-	void					setConfig(t_server_config &config);
 	std::string				m_get();
 	std::string				m_post();
 	std::string				m_delete();
 	string					m_readHeader(const fd client);
 	void					m_parseHeader(const string &header);
+	void 					m_readBody(const fd client, const size_t fd_size, std::ofstream &file);
+	void					m_createFile(const string &filename, const string &extension, std::ofstream &outfile);
+	ReadType::Type			m_readStatus;
+
+public:
+	void					setConfig(t_server_config &config);
 	std::string 			_server_message;
 	void					response(const fd client, size_t buffer_size);
 	void 					buildHeader();
 	void					request(const fd client, size_t buffer_size);
 	string					&getConnectionType(void);
+
+	bool					finishedReading;
+
 	static const int		maxSendErrors	= 10000;
 	static const int		maxRecvErrors	= 10000;
 };
 
 #endif
+
