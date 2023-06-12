@@ -36,19 +36,47 @@
 		</section>
 		<section>
 			<h2>Formulario de Satisfacción</h2>
-			<form id="satisfaction-form" enctype="multipart/form-data">
-				<label for="rating">¿Cómo calificarías nuestro servicio?</label>
-				<select id="rating" name="rating">
-					<option value="5">Excelente</option>
-					 <option value="4">Muy bueno</option>
-					<option value="3">Bueno</option>
-					<option value="2">Regular</option>
-					<option value="1">Malo</option>
-				</select>
-				<label for="file">Adjuntar archivo:</label>
-				<input type="file" id="file" name="file">
-				<button type="submit">Enviar</button>
+			<form id="uploadForm" enctype="multipart/form-data">
+				<input type="file" name="fileToUpload" id="fileToUpload">
+				<br><br>
+				<input type="submit" value="Upload File">
 			</form>
+			<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					var uploadForm = document.getElementById('uploadForm');
+
+					uploadForm.addEventListener('submit', function(e) {
+						e.preventDefault(); // Prevent form submission
+
+						var formData = new FormData();
+						var fileInput = document.getElementById('fileToUpload').files[0];
+						formData.append('file', fileInput);
+
+						fetch('http://localhost:8080', {
+							method: 'POST',
+							body: formData
+						})
+								.then(function(response) {
+									if (response.ok) {
+										return response.text();
+									} else {
+										throw new Error('Error: ' + response.status);
+									}
+								})
+								.then(function(data) {
+									// Handle success response
+									uploadForm.reset()
+									alert("Upload succesfull!")
+									console.log(data);
+								})
+								.catch(function(error) {
+									// Handle error
+									alert("Upload error")
+									console.log(error);
+								});
+					});
+				});
+			</script>
 			<p id="thanks-message" class="hidden">¡Gracias por tu feedback!</p>
 		</section>
 	</main>

@@ -38,16 +38,6 @@ const thanksMessage = document.getElementById('thanks-message');
 satisfactionForm.addEventListener('submit', function(event) {
 	event.preventDefault();
 	const formData = new FormData(satisfactionForm);
-	const res = await fetch('http://localhost:8080', {
-			method: 'POST',
-			body: JSON.stringify(formData),
-		},
-	)
-	if (res.ok)
-	{
-		thanksMessage.classList.remove('hidden');
-		satisfactionForm.reset();
-	}
 	const xhr = new XMLHttpRequest();
 	xhr.open('POST', '', true);
 	xhr.onreadystatechange = function() {

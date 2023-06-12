@@ -32,6 +32,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	string composition_name;
 
+	composition_name.append("uploads/")
 	composition_name.append(filename);
 	composition_name.append(buffer);
 	composition_name.append(extension);
@@ -206,11 +207,6 @@ void Message::m_parseHeader(const std::string &header)
 		Logger::log("Finished read -> true", INFO);
 		this->finishedReading = true;
 	}
-
-
-//	cout << "Requ size: " << request.size() << endl;
-//	cout << "Full header: " << header << endl;
-
 }
 
 void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &file)
@@ -218,9 +214,9 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 	static size_t	totalRead;
 	size_t 			read_errors = 0;
 	size_t 			loopRead = 0;
-	ssize_t 		read_bytes = 0;
+	ssize_t 		read_bytes;
 	char			*buffer;
-	const size_t 	buffer_size = 1024;
+	const size_t 	buffer_size = 30720;
 
 
 	buffer = new char[buffer_size];
@@ -257,6 +253,7 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 		Logger::log("Finished read -> FINISHED BODY", INFO);
 		this->m_readStatus = ReadType::FINISHED_BODY;
 		this->finishedReading = true;
+		totalRead = 0;
 	}
 
 	delete [] buffer;
