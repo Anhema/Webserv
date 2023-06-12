@@ -32,7 +32,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	string composition_name;
 
-	composition_name.append("uploads/")
+	composition_name.append("uploads/");
 	composition_name.append(filename);
 	composition_name.append(buffer);
 	composition_name.append(extension);
