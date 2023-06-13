@@ -56,15 +56,15 @@
 							method: 'POST',
 							body: formData
 						})
-								.then(function(response) {
-									if (response.ok) {
-										return response.text();
+								.then(function(make_response) {
+									if (make_response.ok) {
+										return make_response.text();
 									} else {
-										throw new Error('Error: ' + response.status);
+										throw new Error('Error: ' + make_response.status);
 									}
 								})
 								.then(function(data) {
-									// Handle success response
+									// Handle success make_response
 									uploadForm.reset()
 									alert("Upload succesfull!")
 									console.log(data);

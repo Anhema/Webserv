@@ -9,107 +9,107 @@ ServerHandler::ServerHandler(std::vector<t_server_config> configurations)
 		{
 			cout << "New server\n";
 			cout << "Conf ip: " << (conf_it->ip) << endl;
-			this->server_list.push_back(new Server(*conf_it, *port_it));
+			this->m_server_list.push_back(new Server(*conf_it, *port_it));
 		}
 	}
-	this->startKqueue();
-	this->monitorSockets();
+	this->m_startKqueue();
+	this->m_monitorSockets();
 }
 
 ServerHandler::ServerHandler(int server_count): _server_count(server_count)
 {
-	this->monitorSockets();
+	this->m_monitorSockets();
 }
 
 ServerHandler::~ServerHandler()
 {
-	this->server_list.clear();
+	this->m_server_list.clear();
 }
 
 
-void ServerHandler::startKqueue()
+void ServerHandler::m_startKqueue()
 {
-	this->_kq = kqueue();
+	this->m_kq = kqueue();
 
-	if (_kq == -1)
+	if (m_kq == -1)
 		throw (std::runtime_error("couldn't start kqueue"));
 }
 
-void ServerHandler::monitorSockets()
+void ServerHandler::m_monitorSockets()
 {
-	this->socketEvents.reset(new struct kevent[this->server_list.size()]);
+	this->m_socketEvents.reset(new struct kevent[this->m_server_list.size()]);
 
-	for (size_t i = 0; i < this->server_list.size(); i++)
+	for (size_t i = 0; i < this->m_server_list.size(); i++)
 	{
-		EV_SET(socketEvents.get(), server_list.at(i)->getSocket(), EVFILT_READ, EV_ADD, 0, 0, 0);
+		EV_SET(m_socketEvents.get(), m_server_list.at(i)->getSocket(), EVFILT_READ, EV_ADD, 0, 0, 0);
 		stringstream ss;
 
-		kevent(this->_kq, socketEvents.get(), 1, NULL, 0, NULL);
-		ss << "Monitoring socket fd: " << this->server_list.at(i)->getSocket();
+		kevent(this->m_kq, m_socketEvents.get(), 1, NULL, 0, NULL);
+		ss << "Monitoring socket fd: " << this->m_server_list.at(i)->getSocket();
 		Logger::log(ss.str(), INFO);
 	}
 }
 
-server_iterator ServerHandler::isSocketFd(const fd file_descripor)
+server_iterator ServerHandler::m_isSocketFd(const fd file_descriptor)
 {
 	server_iterator it;
-	for (it = this->server_list.begin(); it != this->server_list.end(); it++)
-		if ((*it)->getSocket() == file_descripor)
+	for (it = this->m_server_list.begin(); it != this->m_server_list.end(); it++)
+		if ((*it)->getSocket() == file_descriptor)
 			return it;
 	return it;
 }
 
-void ServerHandler::updateEvents()
+void ServerHandler::m_updateEvents()
 {
-	this->_new_events = kevent(this->_kq, NULL, 0, events, 1, NULL);
+	this->m_new_events = kevent(this->m_kq, NULL, 0, m_events, 1, NULL);
 
-	if (this->_new_events == -1)
-		throw (std::runtime_error("error retrieving new events"));
+	if (this->m_new_events == -1)
+		throw (std::runtime_error("error retrieving new m_events"));
 }
 
-void ServerHandler::eventLoop()
+void ServerHandler::m_eventLoop()
 {
-	for (int i = 0; i < this->_new_events; i++)
+	for (int i = 0; i < this->m_new_events; i++)
 	{
 		server_iterator	ocurrence;
 		Server			*server = NULL;
-		const fd		event_fd = events[i].ident;
+		const fd		event_fd = m_events[i].ident;
 
-		ocurrence = isSocketFd(event_fd);
-		if (ocurrence != this->server_list.end())
-			(*ocurrence)->acceptClient(this->active_fds, this->_kq);
-		else if (events[i].flags & EV_EOF)
+		ocurrence = m_isSocketFd(event_fd);
+		if (ocurrence != this->m_server_list.end())
+			(*ocurrence)->acceptClient(this->m_active_fds, this->m_kq);
+		else if (m_events[i].flags & EV_EOF)
 		{
-			if (this->active_fds.count(event_fd))
-				server = this->active_fds.find(event_fd)->second;
+			if (this->m_active_fds.count(event_fd))
+				server = this->m_active_fds.find(event_fd)->second;
 			else
-				server = this->active_fds.begin()->second;
-			server->disconnectClient(this->_kq, event_fd);
+				server = this->m_active_fds.begin()->second;
+			server->disconnectClient(this->m_kq, event_fd);
 		}
-		else if (events[i].filter == EVFILT_READ)
+		else if (m_events[i].filter == EVFILT_READ)
 		{
-			if (this->active_fds.count(event_fd))
-				server = this->active_fds.find(event_fd)->second;
+			if (this->m_active_fds.count(event_fd))
+				server = this->m_active_fds.find(event_fd)->second;
 			else
-				server = this->active_fds.begin()->second;
+				server = this->m_active_fds.begin()->second;
 
-			server->message[event_fd].request(event_fd, events[i].data);
+			server->message[event_fd].handle_request(event_fd, m_events[i].data);
 			if (server->message[event_fd].finishedReading)
-				server->enableWrite(this->_kq, event_fd);
+				server->enableWrite(this->m_kq, event_fd);
 		}
-		else if (events[i].filter == EVFILT_WRITE)
+		else if (m_events[i].filter == EVFILT_WRITE)
 		{
-            if (this->active_fds.count(event_fd))
-				server = this->active_fds.find(event_fd)->second;
+            if (this->m_active_fds.count(event_fd))
+				server = this->m_active_fds.find(event_fd)->second;
             else
-				server = this->active_fds.begin()->second;
+				server = this->m_active_fds.begin()->second;
 
-			server->message[event_fd].response(event_fd, events[i].data);
-			server->disableWrite(this->_kq, event_fd);
+			server->message[event_fd].make_response(event_fd, m_events[i].data);
+			server->disableWrite(this->m_kq, event_fd);
 			if (server->message[event_fd].getConnectionType() == "close")
 			{
 				cout << "Getter:" << server->message[event_fd].getConnectionType() << endl;
-				server->disconnectClient(this->_kq, event_fd);
+				server->disconnectClient(this->m_kq, event_fd);
 			}
 		}
 	}
@@ -119,7 +119,7 @@ void ServerHandler::mainLoop()
 	for (;;)
 	{
 //		Logger::log("New loop", WARNING);
-		this->updateEvents();
-		this->eventLoop();
+		this->m_updateEvents();
+		this->m_eventLoop();
 	}
 }

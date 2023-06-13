@@ -37,13 +37,13 @@ The **web server** includes several parts that control how web users access host
 
 ![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://static.javatpoint.com/blog/images/web-servers2.png)
 
-A web client, for example, a web browser, sends an **HTTP** request to a web server via a network. The web server which is powered by an **HTTP server**:
+A web client, for example, a web browser, sends an **HTTP** handle_request to a web server via a network. The web server which is powered by an **HTTP server**:
 
-    - Receives this request and processes it
-    - Determines the appropriate response after doing certain checks
-    - Sends this response to the web client.
+    - Receives this handle_request and processes it
+    - Determines the appropriate make_response after doing certain checks
+    - Sends this make_response to the web client.
 
-The response sent by the **HTTP** server may also include data from files (for example, HTML documents) stored on the webserver.
+The make_response sent by the **HTTP** server may also include data from files (for example, HTML documents) stored on the webserver.
 
 We will be using **TCP** (Transmission Control Protocol) to implement our **HTTP** server.
 
@@ -62,7 +62,7 @@ Server will use a **TCP/IP** socket registered to an IP address on the computer.
 
 ## HTTP Server
 
-HTTP communication usually takes place over TCP. A typical HTTP session often consists of three steps: The client and server establish a TCP connection stream, the client sends HTTP request over TCP connection, and then the server processes that request and sends back a reply. The second and third step can be repeated any number of times, until both client and server decide to close the underlying TCP connection. To put it in a simple diagram, this is how the process looks like in the perspective of TCP.
+HTTP communication usually takes place over TCP. A typical HTTP session often consists of three steps: The client and server establish a TCP connection stream, the client sends HTTP handle_request over TCP connection, and then the server processes that handle_request and sends back a reply. The second and third step can be repeated any number of times, until both client and server decide to close the underlying TCP connection. To put it in a simple diagram, this is how the process looks like in the perspective of TCP.
 ![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](https://res.cloudinary.com/practicaldev/image/fetch/s--FkljvNhV--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_800/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/qbtgkb5i8msewgalxnnk.png)
 
 As a server, these are the main steps that we need to take care of:
@@ -78,11 +78,11 @@ As a server, these are the main steps that we need to take care of:
 
 ### HTTP Messages
 
-HTTP is the most common application layer protocol that serves as the basis for many communications over the web. In a client-server setting, HTTP messages are the requests and responses objects exchanged between the two parties. An HTTP client sends a HTTP request to an HTTP server, and the server will reply with an HTTP response. The messages must follow some format specified in the RFCs. For the small scope of my project, I picked out the most basic components to implement in my program. In short, an HTTP message should consist of:
+HTTP is the most common application layer protocol that serves as the basis for many communications over the web. In a client-server setting, HTTP messages are the requests and responses objects exchanged between the two parties. An HTTP client sends a HTTP handle_request to an HTTP server, and the server will reply with an HTTP make_response. The messages must follow some format specified in the RFCs. For the small scope of my project, I picked out the most basic components to implement in my program. In short, an HTTP message should consist of:
 
-    - A start line: For an HTTP request, this line includes an HTTP method (GET, POST, HEAD, etc), a request target (URI), and a string that indicates the HTTP version (e.g HTTP/1.1). For an HTTP response, the start line (or status line) will have the HTTP version that the server used, a status code, an optionally, a message describing the status code. The start line of a message should be terminated by a CRLF character.
+    - A start line: For an HTTP request, this line includes an HTTP method (GET, POST, HEAD, etc), a handle_request target (URI), and a string that indicates the HTTP version (e.g HTTP/1.1). For an HTTP make_response, the start line (or status line) will have the HTTP version that the server used, a status code, an optionally, a message describing the status code. The start line of a message should be terminated by a CRLF character.
     - Header fields: A list of key - value pairs that appear right after the start line and contain metadata about the HTTP connection and message. Each field should be on a single line and have the format field-name: field-value
-    - Message body: An optional sequence of bytes. The message body is often present in response messages from the server, and sometimes in requests sent by the client, depending on the HTTP method. An HTTP message body can have any format, as long as both client and server have no issue understanding it.
+    - Message body: An optional sequence of bytes. The message body is often present in make_response messages from the server, and sometimes in requests sent by the client, depending on the HTTP method. An HTTP message body can have any format, as long as both client and server have no issue understanding it.
     
 <br>
 
@@ -90,11 +90,11 @@ HTTP is the most common application layer protocol that serves as the basis for 
 
 **HTTP Headers**
 
-HTTP headers let the client and the server pass additional information with an HTTP request or response. An HTTP header consists of its case-insensitive name followed by a colon (:), then by its value.
+HTTP headers let the client and the server pass additional information with an HTTP handle_request or make_response. An HTTP header consists of its case-insensitive name followed by a colon (:), then by its value.
 Headers can be grouped according to their contexts:
 
     - Request headers contain more information about the resource to be fetched, or about the client requesting the resource.
-    - Response headers hold additional information about the response, like its location or about the server providing it.
+    - Response headers hold additional information about the make_response, like its location or about the server providing it.
     - Representation headers contain information about the body of the resource, like its MIME type, or encoding/compression applied.
     - Payload headers contain representation-independent information about payload data, including content length and the encoding used for transport.
 
@@ -102,9 +102,9 @@ Headers can be grouped according to their contexts:
 
 **HTTP Request**
 
-Once the connection is established, the user-agent can send the request (a user-agent is typically a web browser, but can be anything else, a crawler, for example). A client request consists of text directives, separated by CRLF (carriage return, followed by line feed), divided into three blocks:
+Once the connection is established, the user-agent can send the handle_request (a user-agent is typically a web browser, but can be anything else, a crawler, for example). A client handle_request consists of text directives, separated by CRLF (carriage return, followed by line feed), divided into three blocks:
 
-    1. The first line contains a request method followed by its parameters:
+    1. The first line contains a handle_request method followed by its parameters:
         - The path of the document, as an absolute URL without the protocol or domain name
         - The HTTP protocol version
     2. Subsequent lines represent an HTTP header, giving the server information about what type of data is appropriate (for example, what language, what MIME types), or other data altering its behavior (for example, not sending an answer if it is already cached). These HTTP headers form a block which ends with an empty line.
@@ -114,7 +114,7 @@ Once the connection is established, the user-agent can send the request (a user-
 
 **Request Methods**
 
-HTTP defines a set of request methods indicating the desired action to be performed upon a resource. Although they can also be nouns, these requests methods are sometimes referred as HTTP verbs. The most common requests are GET and POST:
+HTTP defines a set of handle_request methods indicating the desired action to be performed upon a resource. Although they can also be nouns, these requests methods are sometimes referred as HTTP verbs. The most common requests are GET and POST:
 
     - The GET method requests a data representation of the specified resource. Requests using GET should only retrieve data.
     - The POST method sends data to a server so it may change its state. This is the method often used for HTML Forms.
@@ -126,20 +126,20 @@ HTTP defines a set of request methods indicating the desired action to be perfor
 
 **HTTP Response**
 
-After the connected agent has sent its request, the web server processes it, and ultimately returns a response. Similar to a client request, a server response is formed of text directives, separated by CRLF, though divided into three blocks:
+After the connected agent has sent its handle_request, the web server processes it, and ultimately returns a make_response. Similar to a client handle_request, a server make_response is formed of text directives, separated by CRLF, though divided into three blocks:
 
-    1. The first line, the status line, consists of an acknowledgment of the HTTP version used, followed by a response status code (and its brief meaning in human-readable text).
-    2. Subsequent lines represent specific HTTP headers, giving the client information about the data sent (for example, type, data size, compression algorithm used, hints about caching). Similarly to the block of HTTP headers for a client request, these HTTP headers form a block ending with an empty line.
+    1. The first line, the status line, consists of an acknowledgment of the HTTP version used, followed by a make_response status code (and its brief meaning in human-readable text).
+    2. Subsequent lines represent specific HTTP headers, giving the client information about the data sent (for example, type, data size, compression algorithm used, hints about caching). Similarly to the block of HTTP headers for a client handle_request, these HTTP headers form a block ending with an empty line.
     3. The final block is a data block, which contains the optional data.
  
 <br>
 
 **Response status codes**
 
-HTTP response status codes indicate if a specific HTTP request has been successfully completed. Responses are grouped into five classes: informational responses, successful responses, redirects, client errors, and servers errors.
+HTTP make_response status codes indicate if a specific HTTP handle_request has been successfully completed. Responses are grouped into five classes: informational responses, successful responses, redirects, client errors, and servers errors.
 
-    - 200: OK. The request has succeeded.
-    - 301: Moved Permanently. This response code means that the URI of requested resource has been changed.
+    - 200: OK. The handle_request has succeeded.
+    - 301: Moved Permanently. This make_response code means that the URI of requested resource has been changed.
     - 404: Not Found. The server cannot find the requested resource.
 
 

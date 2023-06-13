@@ -3,76 +3,77 @@
 
 
 Server::Server(t_server_config options, int port):
-_ip(options.ip),
-_port(port),
-_socketAddress_len(sizeof(_socketAddress)),
-m_config(options)
+		m_ip(options.ip),
+		m_port(port),
+		m_socketAddress_len(sizeof(m_socketAddress)),
+		m_config(options)
 {
 	for (int i = 0; i < Server::maxEvents; i++)
 		this->message[i].setConfig(options);
-	this->startSocketAddress();
-    this->startSocket();
-    this->bindSocket();
-    this->startListen();
+	this->m_startSocketAddress();
+	this->m_startSocket();
+	this->m_bindSocket();
+	this->m_startListen();
 }
 
-//Server::Server(std::string ip, int port, string name):  _ip(ip),
-//                                                        _port(port),
-//                                                        _socketAddress_len(sizeof(_socketAddress))
+//Server::Server(std::string ip, int port, string name):  m_ip(ip),
+//                                                        m_port(port),
+//                                                        m_socketAddress_len(sizeof(m_socketAddress))
 //{
 //
-//    this->startSocketAddress();
-//    this->startSocket();
-//    this->bindSocket();
-//    this->startListen();
+//    this->m_startSocketAddress();
+//    this->m_startSocket();
+//    this->m_bindSocket();
+//    this->m_startListen();
 //}
 //
-//Server::Server():   _ip("0.0.0.0"),
-//                    _port(0000),
-//                    _socketAddress_len(sizeof(_socketAddress)),
+//Server::Server():   m_ip("0.0.0.0"),
+//                    m_port(0000),
+//                    m_socketAddress_len(sizeof(m_socketAddress)),
 //
-//Server::Server(const Server &obj):  _ip(obj._ip),
-//                                    _port(obj._port),
-//                                    _socketAddress_len(sizeof(_socketAddress))
+//Server::Server(const Server &obj):  m_ip(obj.m_ip),
+//                                    m_port(obj.m_port),
+//                                    m_socketAddress_len(sizeof(m_socketAddress))
 //									{}
 
-Server::~Server() {
+Server::~Server()
+{
 
-    cout << "Closing socket: " << _socket_fd << "\n";
-	close(_socket_fd);
+    cout << "Closing socket: " << m_socket_fd << "\n";
+	close(m_socket_fd);
 }
 
-fd Server::getSocket() const { return _socket_fd; }
+fd Server::getSocket() const { return m_socket_fd; }
 
-void Server::startSocketAddress()
+void Server::m_startSocketAddress()
 {
-	this->_socketAddress.sin_family = AF_INET;
-	this->_socketAddress.sin_port = htons(this->_port);
-	this->_socketAddress.sin_addr.s_addr = inet_addr(_ip.c_str());
+	this->m_socketAddress.sin_family = AF_INET;
+	this->m_socketAddress.sin_port = htons(this->m_port);
+	this->m_socketAddress.sin_addr.s_addr = inet_addr(m_ip.c_str());
 
 	Logger::log("Socket address initialized succesfully", INFO);
 }
 
-void Server::startSocket()
+void Server::m_startSocket()
 {
-	this->_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	this->m_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (this->_socket_fd < 0)
+	if (this->m_socket_fd < 0)
 		throw (std::runtime_error("initialing fd"));
 
 	const char reuse = 1;
 
-	if (setsockopt(this->_socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
+	if (setsockopt(this->m_socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
 		throw (std::runtime_error("SO_REUSEADDR"));
 
-	fcntl(this->_socket_fd, F_SETFL, O_NONBLOCK);
+	fcntl(this->m_socket_fd, F_SETFL, O_NONBLOCK);
 
 	Logger::log("Socket created succesfully", INFO);
 }
 
-void Server::bindSocket()
+void Server::m_bindSocket()
 {
-	if (bind(_socket_fd, (sockaddr *)&_socketAddress, _socketAddress_len) < 0)
+	if (bind(m_socket_fd, (sockaddr *)&m_socketAddress, m_socketAddress_len) < 0)
 		throw (std::runtime_error("can't bind socket"));
 	Logger::log("Socket binded succesfully", INFO);
 }
@@ -95,28 +96,28 @@ void Server::disableEvent(int kq, const fd event_fd, struct kevent *k_struct, sh
 
 void Server::enableWrite(int kq, const fd event_fd) const
 {
-	EV_SET((struct kevent *)&this->_write_event, event_fd, EVFILT_WRITE, EV_ENABLE, 0, 0, 0);
+	EV_SET((struct kevent *)&this->m_write_event, event_fd, EVFILT_WRITE, EV_ENABLE, 0, 0, 0);
 
-	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+	if (kevent(kq, &this->m_write_event, 1, NULL, 0, NULL) < 0)
 		throw (std::runtime_error("kqueue failed to enable write"));
 }
 
 void Server::disableWrite(int kq, const fd event_fd) const
 {
-	EV_SET((struct kevent *)&this->_write_event, event_fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
+	EV_SET((struct kevent *)&this->m_write_event, event_fd, EVFILT_WRITE, EV_DISABLE, 0, 0, 0);
 
-	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+	if (kevent(kq, &this->m_write_event, 1, NULL, 0, NULL) < 0)
 		throw (std::runtime_error("kqueue failed to disable write"));
 }
 
 void Server::disconnectClient(int kq, const fd client)
 {
-	EV_SET((struct kevent *)&this->_write_event, client, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-	if (kevent(kq, &this->_write_event, 1, NULL, 0, NULL) < 0)
+	EV_SET((struct kevent *)&this->m_write_event, client, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+	if (kevent(kq, &this->m_write_event, 1, NULL, 0, NULL) < 0)
 		throw (std::runtime_error("kqueue failed to delete write"));
 
-	EV_SET((struct kevent *)&this->_read_event, client, EVFILT_READ, EV_DELETE, 0, 0, 0);
-	if (kevent(kq, &this->_read_event, 1, NULL, 0, NULL) < 0)
+	EV_SET((struct kevent *)&this->m_read_event, client, EVFILT_READ, EV_DELETE, 0, 0, 0);
+	if (kevent(kq, &this->m_read_event, 1, NULL, 0, NULL) < 0)
 		throw (std::runtime_error("kqueue failed to delete read"));
 
 	stringstream ss;
@@ -127,33 +128,33 @@ void Server::disconnectClient(int kq, const fd client)
 	close(client);
 }
 
-void Server::startListen()
+void Server::m_startListen()
 {
 	stringstream ss;
 
-	if (listen(_socket_fd, Server::max_listen_queue) < 0)
+	if (listen(m_socket_fd, Server::max_listen_queue) < 0)
 		throw (std::runtime_error("listen failed to start"));
 
-	ss	<< "Socked with fd: "
-        << _socket_fd
+	ss << "Socked with fd: "
+	   << m_socket_fd
         <<" started listening on address: "
-		<< inet_ntoa(_socketAddress.sin_addr)
+		<< inet_ntoa(m_socketAddress.sin_addr)
 		<< " port: "
-		<< ntohs(_socketAddress.sin_port);
+		<< ntohs(m_socketAddress.sin_port);
 	Logger::log(ss.str(), INFO);
 }
 
 fd Server::acceptClient(std::map<fd, Server *> &active_fd, int kq) const
 {
 
-    const fd	new_client = accept(this->_socket_fd, (sockaddr *)&_socketAddress, (socklen_t *)&_socketAddress);
+    const fd	new_client = accept(this->m_socket_fd, (sockaddr *)&m_socketAddress, (socklen_t *)&m_socketAddress);
 
     if (new_client == -1)
         throw (std::runtime_error("Failed to accept incoming connection"));
 
 	fcntl(new_client, F_SETFL, O_NONBLOCK);
-	this->enableEvent(kq, new_client, (struct kevent *)&this->_read_event, EVFILT_READ);
-	this->disableEvent(kq, new_client, (struct kevent *)&this->_write_event, EVFILT_WRITE);
+	this->enableEvent(kq, new_client, (struct kevent *)&this->m_read_event, EVFILT_READ);
+	this->disableEvent(kq, new_client, (struct kevent *)&this->m_write_event, EVFILT_WRITE);
 
     stringstream ss;
 

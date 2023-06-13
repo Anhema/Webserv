@@ -4,11 +4,11 @@
 #include "Utilities.hpp"
 #include <fcntl.h>
 
-Message::Message(): m_readStatus(ReadType::HEADER), finishedReading(false) {}
+Message::Message(): m_responseCode(HttpStatus::OK), m_readStatus(ReadType::HEADER), finishedReading(false) {}
 
 Message::~Message() {}
 
-string &Message::getConnectionType() { return this->_request.connection; }
+string &Message::getConnectionType() { return this->m_request.connection; }
 
 void Message::setConfig(t_server_config &config)
 {
@@ -47,31 +47,31 @@ std::string Message::m_get()
 	std::ostringstream message;
 	std::string path = "www";
 
-	if (this->_request.uri == "/")
-		this->_response.htmlFile = read_file(path.append("/index.html"));
+	if (this->m_request.uri == "/")
+		this->m_response.htmlFile = read_file(path.append("/index.html"));
 	else
-		path.append(this->_request.uri);
+		path.append(this->m_request.uri);
 
 	std::ifstream ifs(path);
 
 	if (!ifs.is_open())
 	{
-		this->_response.htmlFile = read_file("www/404.html");
-		this->_response.extension = get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->_response.extension
-			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		this->m_response.htmlFile = read_file("www/404.html");
+		this->m_response.extension = get_extension("/404.html");
+		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
 	else
 	{
-		this->_response.htmlFile = read_file(path);
-		this->_response.extension = get_extension(path);
-		message << "HTTP/1.1 200 OK\nContent-Type:";
-		if (this->_response.extension == "png" || this->_response.extension == "jpg")
+		this->m_response.htmlFile = read_file(path);
+		this->m_response.extension = get_extension(path);
+		message << "HTTP/1.1 "<< this->m_responseCode << " OK\nContent-Type:";
+		if (this->m_response.extension == "png" || this->m_response.extension == "jpg")
 			message << "image/";
 		else
 			message << "text/";
-		message << this->_response.extension
-				<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		message << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
 	return (message.str());
 }
@@ -80,24 +80,24 @@ std::string Message::m_post()
 {
 	std::ostringstream message;
 	std::string path = "www";
-	if (this->_request.uri == "/")
-		this->_response.htmlFile = read_file(path.append("/index.html"));
+	if (this->m_request.uri == "/")
+		this->m_response.htmlFile = read_file(path.append("/index.html"));
 	else
-		path.append(this->_request.uri);
+		path.append(this->m_request.uri);
 	std::ifstream ifs(path, std::ios::binary);
 	if (!ifs.is_open())
 	{
-		this->_response.htmlFile = read_file("www/404.html");
-		this->_response.extension = get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->_response.extension
-			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		this->m_response.htmlFile = read_file("www/404.html");
+		this->m_response.extension = get_extension("/404.html");
+		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
 	else
 	{
-		this->_response.htmlFile = read_file(path);
-		this->_response.extension = get_extension(path);
-		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
-				<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		this->m_response.htmlFile = read_file(path);
+		this->m_response.extension = get_extension(path);
+		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
 	return (message.str());
 }
@@ -106,27 +106,27 @@ std::string Message::m_delete()
 {
 	std::ostringstream message;
 	std::string path = "www";
-	if (this->_request.uri == "/")
-		this->_response.htmlFile = read_file(path.append("/index.html"));
+	if (this->m_request.uri == "/")
+		this->m_response.htmlFile = read_file(path.append("/index.html"));
 	else
-		path.append(this->_request.uri);
+		path.append(this->m_request.uri);
 	std::ifstream ifs(path);
 	if (!ifs.is_open())
 	{
-		this->_response.htmlFile = read_file("www/404.html");
-		this->_response.extension = get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->_response.extension
-			<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
-		cout << "Extension: " << this->_response.extension << endl;
+		this->m_response.htmlFile = read_file("www/404.html");
+		this->m_response.extension = get_extension("/404.html");
+		message << "HTTP/1.1 404 Not Found\nContent-Type: text/" << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
+		cout << "Extension: " << this->m_response.extension << endl;
 		cout << "Path: " << path << endl;
 	}
 	else
 	{
-		this->_response.htmlFile = read_file(path);
+		this->m_response.htmlFile = read_file(path);
 		std::remove(path.c_str());
-		this->_response.extension = get_extension(path);
-		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->_response.extension
-				<<"\nContent-Length: " << this->_response.htmlFile.size() << "\n\n" << this->_response.htmlFile;
+		this->m_response.extension = get_extension(path);
+		message << "HTTP/1.1 200 OK\nContent-Type: text/" << this->m_response.extension
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
 	//close()
 	return (message.str());
@@ -157,7 +157,7 @@ string Message::m_readHeader(const fd client)
 			err_count++;
 			continue;
 		}
-		if (err_count >= Message::maxRecvErrors)
+		if (err_count >= Message::s_maxRecvErrors)
 		{
 			header.clear();
 			return header;
@@ -188,16 +188,16 @@ void Message::m_parseHeader(const std::string &header)
 			break;
 
 		const string value(&tmp_value[1]);
-		this->_request.headers[key] = value;
+		this->m_request.headers[key] = value;
 	}
 
-	this->_request.method = r_line[0];
-	this->_request.uri = r_line[1];
-	this->_request.version = r_line[2];
-	this->_request.connection = this->_request.headers["Connection"];
-	this->_request.content_length = std::atol(this->_request.headers["Content-Length"].c_str());
+	this->m_request.method = r_line[0];
+	this->m_request.uri = r_line[1];
+	this->m_request.version = r_line[2];
+	this->m_request.connection = this->m_request.headers["Connection"];
+	this->m_request.content_length = std::atol(this->m_request.headers["Content-Length"].c_str());
 
-	if (this->_request.content_length)
+	if (this->m_request.content_length)
 	{
 		this->m_readStatus = ReadType::BODY;
 		cout << "Tiene body\n";
@@ -221,14 +221,14 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 
 	buffer = new char[buffer_size];
 	cout << "Entra a leer el body\n";
-	cout << "Readed: " << totalRead << "/" << this->_request.content_length << "\n";
-	while (loopRead < (size_t)fd_size && totalRead < this->_request.content_length)
+	cout << "Readed: " << totalRead << "/" << this->m_request.content_length << "\n";
+	while (loopRead < (size_t)fd_size && totalRead < this->m_request.content_length)
 	{
 		read_bytes = recv(client, buffer, buffer_size, 0);
 
-		if (read_errors >= Message::maxRecvErrors)
+		if (read_errors >= Message::s_maxRecvErrors)
 		{
-			Logger::log("timeout reading request", WARNING);
+			Logger::log("timeout reading handle_request", WARNING);
 			break;
 		}
 		if (read_bytes == -1)
@@ -244,11 +244,11 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 		totalRead += read_bytes;
 		loopRead += read_bytes;
 
-		cout << "Read: " << totalRead << "/" << this->_request.content_length << endl;
-//		cout << "Wrote: " << totalWrote << "/" << this->_request.content_length << endl;
+		cout << "Read: " << totalRead << "/" << this->m_request.content_length << endl;
+//		cout << "Wrote: " << totalWrote << "/" << this->m_request.content_length << endl;
 	}
 
-	if (totalRead >= this->_request.content_length || this->_request.content_length == 0)
+	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
 	{
 		Logger::log("Finished read -> FINISHED BODY", INFO);
 		this->m_readStatus = ReadType::FINISHED_BODY;
@@ -259,7 +259,7 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 	delete [] buffer;
 }
 
-void Message::request(const fd client, size_t buffer_size)
+void Message::handle_request(const fd client, size_t buffer_size)
 {
 
 	stringstream  	ss;
@@ -280,22 +280,18 @@ void Message::request(const fd client, size_t buffer_size)
 			return;
 		}
 		this->m_parseHeader(header);
-		print_headers(this->_request.headers);
+		print_headers(this->m_request.headers);
 	}
 	else if (this->m_readStatus == ReadType::BODY)
 	{
 		this->m_readBody(client, buffer_size, outfile);
-		cout << "Body Size: " << this->_request.body.size() << " Body:\n";
-//		cout << this->_request.body;
+		cout << "Body Size: " << this->m_request.body.size() << " Body:\n";
 	}
 	if (this->m_readStatus == ReadType::FINISHED_BODY)
 		outfile.close();
-
-	//request.clear();
-	//r_line.clear();
 }
 
-void Message::response(const fd client, size_t __unused buffer_size)
+void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
 
@@ -304,23 +300,23 @@ void Message::response(const fd client, size_t __unused buffer_size)
 	cout << "****Writing****" << endl;
 
 	std::ostringstream message;
-	if (this->_request.method == "GET")
-		this->_server_message = m_get();
-	else if (this->_request.method == "DELETE")
-		this->_server_message = this->m_delete();
+	if (this->m_request.method == "GET")
+		this->m_server_message = m_get();
+	else if (this->m_request.method == "DELETE")
+		this->m_server_message = this->m_delete();
 	else
-		this->_server_message = this->m_post();
+		this->m_server_message = this->m_post();
 
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
 	size_t err_count = 0;
 
-	while (totalSent < (ssize_t)this->_server_message.size())
+	while (totalSent < (ssize_t)this->m_server_message.size())
 	{
-		send_bytes = send(client, this->_server_message.c_str() + totalSent, this->_server_message.size() - totalSent, 0);
-		if (err_count >= Message::maxSendErrors)
+		send_bytes = send(client, this->m_server_message.c_str() + totalSent, this->m_server_message.size() - totalSent, 0);
+		if (err_count >= Message::s_maxSendErrors)
 		{
-			Logger::log("timeout sending request", WARNING);
+			Logger::log("timeout sending handle_request", WARNING);
 			break;
 		}
 		if (send_bytes == -1)
@@ -331,20 +327,20 @@ void Message::response(const fd client, size_t __unused buffer_size)
 		else
 			err_count = 0;
 		totalSent += send_bytes;
-//		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << " BufferSize: " << buffer_size << endl;
+//		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << " BufferSize: " << buffer_size << endl;
 	}
-//	cout << "Total sent: " << totalSent << " of " << this->_server_message.size() << endl;
+//	cout << "Total sent: " << totalSent << " of " << this->m_server_message.size() << endl;
 	//tmp = 0;
 	//send_bytes = 0;
-	if (totalSent == (long)this->_server_message.size())
+	if (totalSent == (long)this->m_server_message.size())
 	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
 	}
 	else
 	{
 		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
-		cout << "Sent: " << send_bytes << " Expected: " << _server_message.size() << endl;
+		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << endl;
 	}
 
-	this->_request.headers.clear();
+	this->m_request.headers.clear();
 }

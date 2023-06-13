@@ -29,22 +29,22 @@ public:
 
 private:
 	void 									startServer(t_server_config configuration);
-	void									startKqueue(void);
-	void									monitorSockets(void);
-	void 									eventLoop(void);
-	void									updateEvents(void);
-	server_iterator 						isSocketFd(const fd file_descriptor);
+	void									m_startKqueue(void);
+	void									m_monitorSockets(void);
+	void 									m_eventLoop(void);
+	void									m_updateEvents(void);
+	server_iterator 						m_isSocketFd(const fd file_descriptor);
 
 private:
-	std::vector<Server *>					server_list;
-	std::unique_ptr<struct kevent[]>		socketEvents;
-	std::map<fd, Server *>			        active_fds;
-	struct kevent							events[Server::maxEvents];
+	std::vector<Server *>					m_server_list;
+	std::unique_ptr<struct kevent[]>		m_socketEvents;
+	std::map<fd, Server *>			        m_active_fds;
+	struct kevent							m_events[Server::maxEvents];
 
 private:
-    int                                     _new_events;
+    int                                     m_new_events;
 	int			 							_server_count;
-	int										_kq;
+	int										m_kq;
 
 };
 

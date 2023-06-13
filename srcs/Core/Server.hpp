@@ -26,7 +26,7 @@ public:
 	Server(const Server &obj);
 	~Server();
 
-	Server	operator=(const Server &obj);
+	Server	&operator=(const Server &obj);
     fd		getSocket(void) const;
 
 
@@ -36,14 +36,14 @@ public:
     Message                 message[Server::maxEvents];
 
 private:
-	const	string			_ip;
-	const	int 			_port;
-	const	u_int32_t 		_socketAddress_len;
+	const	string			m_ip;
+	const	int 			m_port;
+	const	u_int32_t 		m_socketAddress_len;
 	const	t_server_config m_config;
-	struct	sockaddr_in		_socketAddress;
-	struct	kevent			_read_event;
-	struct	kevent			_write_event;
-	fd 						_socket_fd;
+	struct	sockaddr_in		m_socketAddress;
+	struct	kevent			m_read_event;
+	struct	kevent			m_write_event;
+	fd 						m_socket_fd;
 
 public:
     fd		 	   			acceptClient(std::map<fd, Server *> &socket_map, int kq) const;
@@ -56,10 +56,10 @@ public:
 	void					disableWrite(int kq, const fd event_fd) const;
 
 private:
-	void	    			bindSocket();
-	void    				startSocket();
-	void	    			startSocketAddress();
-	void 	    			startListen();
+	void	    			m_bindSocket();
+	void    				m_startSocket();
+	void	    			m_startSocketAddress();
+	void 	    			m_startListen();
 
 };
 
