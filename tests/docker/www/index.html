@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bean Emporium</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+	<header>
+		<h1>Bean Emporium</h1>
+		<nav>
+			<ul>
+				<li><a href="#">Inicio</a></li>
+				<li><a href="#">Productos</a></li>
+				<li><a href="#">Contacto</a></li>
+			</ul>
+		</nav>
+	</header>
+	<main>
+		<section>
+			<h2>Productos</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Imagen</th>
+						<th>Nombre</th>
+						<th>Descripción</th>
+						<th>Precio</th>
+					</tr>
+				</thead>
+				<tbody id="product-table">
+				</tbody>
+			</table>
+		</section>
+		<section>
+			<h2>Formulario de Satisfacción</h2>
+			<form id="uploadForm" enctype="multipart/form-data">
+				<input type="file" name="fileToUpload" id="fileToUpload">
+				<br><br>
+				<input type="submit" value="Upload File">
+			</form>
+			<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					var uploadForm = document.getElementById('uploadForm');
+
+					uploadForm.addEventListener('submit', function(e) {
+						e.preventDefault(); // Prevent form submission
+
+						var formData = new FormData();
+						var fileInput = document.getElementById('fileToUpload').files[0];
+						formData.append('file', fileInput);
+
+						fetch('http://localhost:8080', {
+							method: 'POST',
+							body: formData
+						})
+								.then(function(make_response) {
+									if (make_response.ok) {
+										return make_response.text();
+									} else {
+										throw new Error('Error: ' + make_response.status);
+									}
+								})
+								.then(function(data) {
+									// Handle success make_response
+									uploadForm.reset()
+									alert("Upload succesfull!")
+									console.log(data);
+								})
+								.catch(function(error) {
+									// Handle error
+									alert("Upload error")
+									console.log(error);
+								});
+					});
+				});
+			</script>
+			<p id="thanks-message" class="hidden">¡Gracias por tu feedback!</p>
+		</section>
+	</main>
+	<footer>
+		<p>© 2023 Venta de Alubias</p>
+	</footer>
+	<script src="script.js"></script>
+</body>
+</html>
