@@ -22,19 +22,19 @@ void Message::buildHeader()
 
 void Message::m_createFile(const std::string &filename, const std::string &extension, std::ofstream &outfile)
 {
-	char			buffer[100];
+	char			time_str[100];
 	time_t 			t;
-	struct tm		*timeptr;
+	struct tm		*time_ptr;
 
 	t = time(NULL);
-	timeptr = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%d-%m-%y_%H-%M", timeptr);
+	time_ptr = localtime(&t);
+	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
 
 	composition_name.append("uploads/");
 	composition_name.append(filename);
-	composition_name.append(buffer);
+	composition_name.append(time_str);
 	composition_name.append(extension);
 
 	outfile.open(composition_name.c_str(), std::ios::binary);
