@@ -132,8 +132,9 @@ std::string Message::m_delete()
 	return (message.str());
 }
 
-void print_headers(std::map<string, string> headers)
+void print_headers(std::map<string, string> headers, string method)
 {
+	cout << "(Method) -> " << "(" << method << ")\n";
 	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
 	{
 		cout << "(" << it->first << ") -> (" << it->second << ")\n";
@@ -217,11 +218,34 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 	ssize_t 		read_bytes;
 	char			*buffer;
 	const size_t 	buffer_size = 30720;
-
+	string			str = "";
 
 	buffer = new char[buffer_size];
 	cout << "Entra a leer el body\n";
 	cout << "Readed: " << totalRead << "/" << this->m_request.content_length << "\n";
+
+	string 			header;
+	size_t			err_count = 0;
+	char			header_buffer;
+
+	while (header.find(HEADER_END) == string::npos)
+	{
+		read_bytes = recv(client, &header_buffer, 1, 0);
+		header.push_back(header_buffer);
+		if (read_bytes == -1)
+		{
+			err_count++;
+			continue;
+		}
+		if (err_count >= Message::s_maxRecvErrors)
+		{
+			header.clear();
+		}
+		totalRead++;
+	}
+
+	read_bytes = 0;
+	
 	while (loopRead < (size_t)fd_size && totalRead < this->m_request.content_length)
 	{
 		read_bytes = recv(client, buffer, buffer_size, 0);
@@ -238,7 +262,7 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 		}
 		else
 			read_errors = 0;
-
+		str.append(buffer);
 		file.write(buffer, read_bytes);
 
 		totalRead += read_bytes;
@@ -247,6 +271,7 @@ void Message::m_readBody(const fd client, const size_t fd_size, std::ofstream &f
 		cout << "Read: " << totalRead << "/" << this->m_request.content_length << endl;
 //		cout << "Wrote: " << totalWrote << "/" << this->m_request.content_length << endl;
 	}
+	cout << "\n\n\n" << str << "\n\n\n";
 
 	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
 	{
@@ -270,7 +295,8 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	Logger::log(ss.str(), INFO);
 	cout << "****Reading****" << endl;
 
-	this->m_createFile("test", ".jpg", outfile);
+	if (this->m_request.method == "POST")
+		this->m_createFile("test", ".jpg", outfile);
 	if (this->m_readStatus == ReadType::HEADER)
 	{
 		const string header = this->m_readHeader(client);
@@ -280,7 +306,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			return;
 		}
 		this->m_parseHeader(header);
-		print_headers(this->m_request.headers);
+		print_headers(this->m_request.headers, this->m_request.method);
 	}
 	else if (this->m_readStatus == ReadType::BODY)
 	{
