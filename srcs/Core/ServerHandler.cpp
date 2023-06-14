@@ -111,7 +111,7 @@ void ServerHandler::m_eventLoop()
 				cout << "Getter:" << server->message[event_fd].getConnectionType() << endl;
 				server->disconnectClient(this->m_kq, event_fd);
 			}
-			server->message[event_fd].reset();
+			server->message[event_fd].clear();
 		}
 	}
 }

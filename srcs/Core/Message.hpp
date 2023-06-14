@@ -45,7 +45,7 @@ namespace HttpStatus {
 		Accepted = 202, //!< Indicates that the handle_request has been accepted for processing, but the processing has not been completed.
 		NonAuthoritativeInformation = 203, //!< Indicates that the handle_request was successful but the enclosed payload has been modified from that of the origin server's 200 (OK) make_response by a transforming proxy.
 		NoContent = 204, //!< Indicates that the server has successfully fulfilled the handle_request and that there is no additional content to send in the make_response payload body.
-		ResetContent = 205, //!< Indicates that the server has fulfilled the handle_request and desires that the user agent reset the \"document view\", which caused the handle_request to be sent, to its original state as received from the origin server.
+		ResetContent = 205, //!< Indicates that the server has fulfilled the handle_request and desires that the user agent clear the \"document view\", which caused the handle_request to be sent, to its original state as received from the origin server.
 		PartialContent = 206, //!< Indicates that the server is successfully fulfilling a range handle_request for the target resource by transferring one or more parts of the selected representation that correspond to the satisfiable ranges found in the requests's Range header field.
 		MultiStatus = 207, //!< Provides status for multiple independent operations.
 		AlreadyReported = 208, //!< Used inside a DAV:propstat make_response element to avoid enumerating the internal members of multiple bindings to the same collection repeatedly. [RFC 5842]
@@ -174,7 +174,7 @@ private:
 	void					m_createFile(const string &filename, const string &extension);
 
 public:
-	void 					reset(void);
+	void 					clear(void);
 	void					setConfig(t_server_config &config);
 	void					make_response(const fd client, size_t buffer_size);
 	void 					buildHeader();

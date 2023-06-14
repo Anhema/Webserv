@@ -30,7 +30,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	t = time(NULL);
 	time_ptr = localtime(&t);
-	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
+	strftime(time_str, sizeof(time_str), "-%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
 
@@ -44,7 +44,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	if (outfile.fail())
 		throw (std::runtime_error("can't create outfile for POST"));
 
-	string			needle;
+	string	needle;
 
 	needle.append("\r\n");
 	needle.append(this->m_body.boundary);
@@ -386,7 +386,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	this->m_request.headers.clear();
 }
 
-void Message::reset()
+void Message::clear()
 {
     Logger::log("Resetting message class", INFO);
 	this->m_body.data.clear();
