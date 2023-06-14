@@ -1,6 +1,6 @@
 #include "Utilities.hpp"
 
-std::string read_file(std::string file_name)
+std::string Utils::read_file(std::string file_name)
 {
 	std::ifstream   file;
 	std::string     result;
@@ -22,9 +22,9 @@ std::string read_file(std::string file_name)
 	return (result);
 }
 
-std::string get_extension(std::string file_name)
+std::string Utils::get_extension(std::string file_name)
 {
-	std::vector<std::string> ext = split(file_name, ".");
+	std::vector<std::string> ext = Utils::split(file_name, ".");
 	std::vector<std::string>::iterator ite = ext.end();
 	ite -= 1;
 	return (*ite);
@@ -35,7 +35,7 @@ void debug_log(std::string log)
 	std::cout << log << "\n";
 }
 
-std::vector<std::string>    split(std::string str, std::string del)
+std::vector<std::string>    Utils::split(std::string str, std::string del)
 {
 	std::vector<std::string>    result;
 	std::string                 line;
@@ -51,7 +51,7 @@ std::vector<std::string>    split(std::string str, std::string del)
 	return (result);
 }
 
-bool	isSet(char c, string set)
+bool	Utils::isSet(char c, string set)
 {
 	for (string::iterator it = set.begin(); it != set.end(); it++)
 		if (*it == c)
@@ -59,7 +59,7 @@ bool	isSet(char c, string set)
 	return false;
 }
 
-char *capitalize(char *s, string sep)
+char *Utils::capitalize(char *s, string sep)
 {
 	for (size_t i = 0; i < std::strlen(s); i++)
 	{
@@ -69,7 +69,7 @@ char *capitalize(char *s, string sep)
 	}
 	return s;
 }
-void capitalize(string &s, string sep)
+void Utils::capitalize(string &s, string sep)
 {
 	for (string::iterator it = s.begin(); it != s.end(); it++)
 	{

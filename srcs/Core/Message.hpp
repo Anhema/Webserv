@@ -8,12 +8,13 @@
 # define HEADER_END "\r\n\r\n"
 
 
-namespace ReadType
+namespace Request
 {
-	enum Type
+	enum Status
 	{
 		HEADER,
 		BODY,
+        BODY_HEADER,
 		FINISHED_BODY
 	};
 }
@@ -88,7 +89,7 @@ namespace HttpStatus {
 		ExpectationFailed = 417, //!< Indicates that the expectation given in the handle_request's Expect header field could not be met by at least one of the inbound servers.
 		ImATeapot = 418, //!< Any attempt to brew coffee with a teapot should result in the error code 418 I'm a teapot.
 		MisdirectedRequest = 421, //!< Indicates that the handle_request was directed at a server that is unable or unwilling to produce an authoritative make_response for the target URI.
-		UnprocessableContent = 422, //!< Means the server understands the content type of the request entity (hence a 415(Unsupported Media Type) status code is inappropriate), and the syntax of the handle_request entity is correct (thus a 400 (Bad Request) status code is inappropriate) but was unable to process the contained instructions.
+		UnprocessableContent = 422, //!< Means the server understands the content type of the request entity (hence a 415(Unsupported Media Status) status code is inappropriate), and the syntax of the handle_request entity is correct (thus a 400 (Bad Request) status code is inappropriate) but was unable to process the contained instructions.
 		UnprocessableEntity = 422, //!< Alias for UnprocessableContent for backward compatibility.
 		Locked = 423, //!< Means the source or destination resource of a method is locked.
 		FailedDependency = 424, //!< Means that the method could not be performed on the resource because the requested action depended on another action and that action failed.
@@ -120,10 +121,14 @@ namespace HttpStatus {
 	};
 }
 
-typedef struct s_header
+typedef struct s_body
 {
-
-}	t_header;
+	std::vector<char>					data;
+	string 								file_name;
+	string 								file_extension;
+	string 								boundary;
+	std::map<std::string, std::string>	headers;
+}	t_body;
 
 typedef struct s_request
 {
@@ -134,16 +139,12 @@ typedef struct s_request
 	std::string							version;
 	size_t 								content_length;
 	std::map<std::string, std::string>	headers;
-	std::string							body;
 }	t_request;
-
 
 typedef struct s_response
 {
-	t_header 							header;
 	std::string							htmlFile;
 	std::string							extension;
-	int									n;
 }	t_response;
 
 class Message
@@ -157,8 +158,9 @@ private:
 	t_server_config			m_configuration;
 	t_request				m_request;
 	t_response				m_response;
+	t_body 					m_body;
 	HttpStatus::Code		m_responseCode;
-	ReadType::Type			m_readStatus;
+	Request::Status			m_readStatus;
 	std::string 			m_server_message;
 
 private:
@@ -167,10 +169,12 @@ private:
 	std::string				m_delete();
 	string					m_readHeader(const fd client);
 	void					m_parseHeader(const string &header);
-	void 					m_readBody(const fd client, const size_t fd_size, std::ofstream &file);
-	void					m_createFile(const string &filename, const string &extension, std::ofstream &outfile);
+	void 					m_parseBody(const string &header);
+	void 					m_readBody(const fd client, const size_t fd_size);
+	void					m_createFile(const string &filename, const string &extension);
 
 public:
+	void 					reset(void);
 	void					setConfig(t_server_config &config);
 	void					make_response(const fd client, size_t buffer_size);
 	void 					buildHeader();
