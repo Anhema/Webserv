@@ -16,3 +16,6 @@ webserv_sani
 logs/test_log.log
 logs/*.log
 logs/
+
+tests/nginx/
+tests/www/
