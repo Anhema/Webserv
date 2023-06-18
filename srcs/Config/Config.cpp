@@ -31,39 +31,77 @@ bool something_between_positions(std::string str, size_t start, size_t end)
 	return false;
 }
 
+bool reamining_file(std::string str)
+{
+	size_t	i = 0;
+
+	while (i < str.size())
+	{
+		if (str.at(i) != '\n' && str.at(i) != ' ' && str.at(i) != '\t')
+			return true;
+		i++;
+	}
+	return false;
+}
+
+std::string get_location_path(std::string server_str)
+{
+	std::string path;
+
+	
+}
+
+t_server_config create_server(std::string server_str)
+{
+	t_server_config newServer;
+
+	std::vector<string> rules = split(server_str, ";");
+}
+
 bool getConfiguration(std::string conf_file, std::vector<t_server_config> *configuration)
 {
 	std::string file = read_file(conf_file);
+	std::vector<string> servers;
 
 	(void)configuration;
 	if (file.empty())
 	{
-		std::cout << "Empty configuration file\n";
+		std::cout << "Empty configuration file: file empty\n";
 		return false;
 	}
 
-	size_t start = file.find("server");
-	size_t first = file.find_first_not_of("\n");
-	if (first < start)
+	while (reamining_file(file))
 	{
-		if (file.at(first) != '\n')
+		size_t start = file.find("server");
+		size_t first = file.find_first_not_of("\n");
+		if (first < start)
 		{
-			std::cout << "Error in configuration file\n";
+			if (file.at(first) != '\n')
+			{
+				std::cout << "Error in configuration file: server not found\n";
+				return false;
+			}
+		}
+
+		size_t open_key = file.find_first_of("{", start + 6);
+		if (something_between_positions(file, start + 6, open_key))
+		{
+			std::cout << "Error in configuration file 2\n";
 			return false;
 		}
-	}
 
-	size_t open_key = file.find_first_of("{", start + 6);
-	if (something_between_positions(file, start + 6, open_key))
-	{
-		std::cout << "Error in configuration file 2\n";
-		return false;
-	}
+		if (get_end_key(file, open_key + 1) == 0)
+		{
+			std::cout << "Error in configuration file: all keys must be closed\n";
+			return false;
+		}
 
-	if (get_end_key(file, open_key + 1) == 0)
-	{
-		std::cout << "Error in configuration file 3\n";
-		return false;
+		std::string tmp_server = file.substr(open_key + 1, (get_end_key(file, open_key + 1) - open_key) - 1);
+		std::cout << "\n---------\n" << tmp_server << "\n---------\n";
+		servers.push_back(tmp_server);
+		file.erase(0,  get_end_key(file, open_key + 1) + 1);
+
+		//std::cout << "---------\n" << file << "\n\n------------\n";
 	}
 
 	return true;
