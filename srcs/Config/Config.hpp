@@ -25,8 +25,7 @@ typedef struct s_server_config
 	std::vector<string>			names;
 	size_t 						max_body_size;
 	t_error_pages 				errorPages;
-	std::vector<t_route_config> routes;
-	s_server_config 	&operator=(s_server_config &rhs);
+	std::vector<int>			routes;
 }	t_server_config;
 
 
@@ -38,5 +37,7 @@ private:
 
 
 };
+
+bool	getConfiguration(std::string conf_file, std::vector<t_server_config> *configuration);
 
 #endif

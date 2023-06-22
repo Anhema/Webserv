@@ -3,8 +3,23 @@
 #include "Config.hpp"
 
 
-int main(void)
+int main(int argc, char** argv)
 {
+	std::vector<t_server_config> configuration;
+
+	if (argc != 2 )
+	{
+		std::cout << "Invalid arguments\n";
+		return (0);
+	}
+	if (get_extension(argv[1]) != "conf")
+	{
+		std::cout << "Invalid extension\n";
+		return (0);
+	}
+	if (!getConfiguration(argv[1], &configuration))
+		return (0);
+
 	t_server_config first_server;
 
 	first_server.names.push_back("server1");

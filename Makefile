@@ -29,11 +29,11 @@ all: $(NAME)
 
 $(NAME):  $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCFLAG) $^ -o $(NAME)
-	$(CXX) $(CXXFLAGS) $(INCFLAG) $(SANI_FLAG) $^ -o $(NAME_SANI)
+	$(CXX) $(CXXFLAGS) $(SANI_FLAG) $(INCFLAG) $^ -o $(NAME_SANI)
 
 $(OBJDIR)%.o: srcs/*/%.cpp $(PCH_SRC) | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -Winvalid-pch $(INCDIRS) -c $< -o $@
-	$(CXX) $(CXXFLAGS) -Winvalid-pch $(INCDIRS) $(SANI_FLAG) -c $< -o $(@:.o=_sani.o)
+	$(CXX) $(CXXFLAGS) $(SANI_FLAG) -Winvalid-pch $(INCDIRS) -c $< -o $(@:.o=_sani.o)
 
 $(PCHDIR):
 	$(MKDIR) $(PCHDIR)
@@ -84,4 +84,4 @@ B_CYN	=	\e[1;36m
 B_WHT	=	\e[1;37m
 NC	=	\e[0m
 
-.PHONY: all run clean fclean const
+.PHONY: all run clean fclean const sani

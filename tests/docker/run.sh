@@ -1,5 +1,6 @@
 #!/bin/bash
 
-docker build -t webserv-nginx-docker .
+docker build -t nginx .
 
-docker run -it --rm -d  -p 8080:80 --name nginx-server webserv-nginx-docker
+docker run -it -d -p 8080:80 --name nginx nginx
+docker exec -it nginx /bin/bash
