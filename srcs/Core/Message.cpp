@@ -267,44 +267,10 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	size_t 			read_errors = 0;
 	size_t 			loopRead = 0;
 	ssize_t 		read_bytes;
-<<<<<<< HEAD
     const size_t 	buffer_size = 30720;
 	char		    buffer[buffer_size];
 
 	while (loopRead < fd_size && totalRead < this->m_request.content_length)
-=======
-	char			*buffer;
-	const size_t 	buffer_size = 30720;
-	string			str = "";
-
-	buffer = new char[buffer_size];
-	cout << "Entra a leer el body\n";
-	cout << "Readed: " << totalRead << "/" << this->m_request.content_length << "\n";
-
-	string 			header;
-	size_t			err_count = 0;
-	char			header_buffer;
-
-	while (header.find(HEADER_END) == string::npos)
-	{
-		read_bytes = recv(client, &header_buffer, 1, 0);
-		header.push_back(header_buffer);
-		if (read_bytes == -1)
-		{
-			err_count++;
-			continue;
-		}
-		if (err_count >= Message::s_maxRecvErrors)
-		{
-			header.clear();
-		}
-		totalRead++;
-	}
-
-	read_bytes = 0;
-	
-	while (loopRead < (size_t)fd_size && totalRead < this->m_request.content_length)
->>>>>>> ander
 	{
 		read_bytes = recv(client, buffer, buffer_size, 0);
 
@@ -320,27 +286,16 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 		}
 		else
 			read_errors = 0;
-<<<<<<< HEAD
 
 		for (ssize_t i = 0; i < read_bytes; i++)
 			this->m_body.data.push_back(buffer[i]);
-=======
-		str.append(buffer);
-		file.write(buffer, read_bytes);
->>>>>>> ander
 
 		totalRead += read_bytes;
 		loopRead += read_bytes;
 
 		cout << "Read: " << totalRead << "/" << this->m_request.content_length << endl;
 	}
-<<<<<<< HEAD
-	if (totalRead >= this->m_request.content_length)
-=======
-	cout << "\n\n\n" << str << "\n\n\n";
-
 	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
->>>>>>> ander
 	{
 		Logger::log("READ STATUS -> FINISHED BODY", INFO);
 		this->m_readStatus = Request::FINISHED_BODY;
@@ -359,24 +314,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	Logger::log(ss.str(), INFO);
 	cout << "****Reading****" << endl;
 
-<<<<<<< HEAD
 	switch (this->m_readStatus)
-=======
-	if (this->m_request.method == "POST")
-		this->m_createFile("test", ".jpg", outfile);
-	if (this->m_readStatus == ReadType::HEADER)
-	{
-		const string header = this->m_readHeader(client);
-		if (header.empty())
-		{
-			Logger::log("Failed to read header", ERROR);
-			return;
-		}
-		this->m_parseHeader(header);
-		print_headers(this->m_request.headers, this->m_request.method);
-	}
-	else if (this->m_readStatus == ReadType::BODY)
->>>>>>> ander
 	{
 		case Request::HEADER:
 			this->m_parseHeader(this->m_readHeader(client));

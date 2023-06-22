@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 		std::cout << "Invalid arguments\n";
 		return (0);
 	}
-	if (get_extension(argv[1]) != "conf")
+	if (Utils::get_extension(argv[1]) != "conf")
 	{
 		std::cout << "Invalid extension\n";
 		return (0);

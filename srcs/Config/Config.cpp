@@ -83,14 +83,14 @@ t_server_config create_server(std::string server_str)
 {
 	t_server_config newServer;
 
-	std::vector<string> rules = split(server_str, ";");
+	std::vector<string> rules = Utils::split(server_str, ";");
 
 	return (newServer);
 }
 
 bool getConfiguration(std::string conf_file, std::vector<t_server_config> *configuration)
 {
-	std::string file = read_file(conf_file);
+	std::string file = Utils::read_file(conf_file);
 	std::vector<string> servers;
 
 	(void)configuration;
