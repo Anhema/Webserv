@@ -1,5 +1,21 @@
 #include "Config.hpp"
 
+// std::string trim(const std::string &s)
+// {
+//     auto start = s.begin();
+//     while (start != s.end() && std::isspace(*start)) {
+//         start++;
+//     }
+ 
+//     auto end = s.end();
+//     do {
+//         end--;
+//     } while (std::distance(start, end) > 0 && std::isspace(*end));
+ 
+//     return std::string(start, end + 1);
+// }
+ 
+
 size_t get_end_key(std::string str, size_t start)
 {
 	int		n = 1;
@@ -24,7 +40,7 @@ bool something_between_positions(std::string str, size_t start, size_t end)
 
 	while (i < end)
 	{
-		if (str.at(i) != '\n' && str.at(i) != ' ' && str.at(i) != '\t')
+		if (str.at(i) != '\n' && str.at(i) != ' ' && str.at(i) != '\t' && str.at(i) != '\r' && str.at(i) != '\f' && str.at(i) != '\v')
 			return true;
 		i++;
 	}
@@ -37,7 +53,7 @@ bool reamining_file(std::string str)
 
 	while (i < str.size())
 	{
-		if (str.at(i) != '\n' && str.at(i) != ' ' && str.at(i) != '\t')
+		if (str.at(i) != '\n' && str.at(i) != ' ' && str.at(i) != '\t' && str.at(i) != '\f' && str.at(i) != '\v')
 			return true;
 		i++;
 	}
@@ -48,7 +64,19 @@ std::string get_location_path(std::string server_str)
 {
 	std::string path;
 
+	size_t start = server_str.find("location");
+	size_t open_key = server_str.find_first_of("{", start + 8);
+	path = server_str.substr(start + 8, open_key);
+	//path = trim(path);
+
+	if (open_key < start)
+	{
+		std::cout << "Error in configuration file: location error\n";
+	}
+	//size_t open_key = server_str.find_first_not_of("{", start + 6);
 	
+	//(void) server_str;
+	return (path);
 }
 
 t_server_config create_server(std::string server_str)
@@ -56,6 +84,8 @@ t_server_config create_server(std::string server_str)
 	t_server_config newServer;
 
 	std::vector<string> rules = split(server_str, ";");
+
+	return (newServer);
 }
 
 bool getConfiguration(std::string conf_file, std::vector<t_server_config> *configuration)
@@ -99,10 +129,13 @@ bool getConfiguration(std::string conf_file, std::vector<t_server_config> *confi
 		std::string tmp_server = file.substr(open_key + 1, (get_end_key(file, open_key + 1) - open_key) - 1);
 		std::cout << "\n---------\n" << tmp_server << "\n---------\n";
 		servers.push_back(tmp_server);
+		get_location_path(tmp_server);
 		file.erase(0,  get_end_key(file, open_key + 1) + 1);
 
 		//std::cout << "---------\n" << file << "\n\n------------\n";
 	}
+
+
 
 	return true;
 }
