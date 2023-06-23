@@ -42,10 +42,10 @@ $(OBJDIR):
 	$(MKDIR) $(OBJDIR)
 
 sani: $(NAME_SANI)
-	./$(NAME_SANI)
+	./$(NAME_SANI) default.conf
 
 run: all
-	./$(NAME)
+	./$(NAME) default.conf
 
 re: fclean $(OBJDIR) all
 

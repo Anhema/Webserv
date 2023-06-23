@@ -19,13 +19,15 @@ using std::stringstream;
 using std::size_t;
 using std::unique_ptr;
 
+# define WHITESPACE " \f\r\t\v"
+
 typedef long ssize_t;
 typedef int fd;
 // Cout colors
 
-
 namespace Utils
 {
+	bool						isport(std::string const &s);
 	std::vector<std::string>	split(std::string str, std::string separator);
 	void						debug_log(std::string log);
 	std::string					read_file(std::string file_name);

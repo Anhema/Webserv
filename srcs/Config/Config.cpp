@@ -1,4 +1,46 @@
 #include "Config.hpp"
+Configuration::KeysNotClosed::KeysNotClosed(): std::invalid_argument("Keys are not closed correctly") {}
+
+Configuration::SyntaxError::SyntaxError(): std::invalid_argument("Syntax Error") {}
+
+Configuration::SyntaxError::SyntaxError(const string &line): std::invalid_argument(("Error at line: " + line).c_str()) {}
+
+Configuration::InvalidValue::InvalidValue(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
+
+void Configuration::InvalidToken::print()
+{
+	(void) this->n;
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << this->m_line << ") "
+			<< "Invalid token: \"" << BOLDRED << this->m_token << NC << "\"\n";
+
+}
+
+Configuration::Exception::Exception(const std::string &line, const std::string &token, int n):
+m_line(line), m_token(token), n(n), message("parsing error") {}
+
+Configuration::InvalidToken::InvalidToken(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
+
+void Configuration::InvalidValue::print()
+{
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << this->m_line << ") "
+			<< "Invalid value for: \"" << this->m_token << "\"\n";
+}
+
+const std::vector<string> &Configuration::Keywords() {
+	static std::vector<string>	keywords;
+
+	if (keywords.empty())
+	{
+		keywords.push_back("listen");
+		keywords.push_back("server_name");
+		keywords.push_back("root");
+		keywords.push_back("index");
+		keywords.push_back("location");
+	}
+	return keywords;
+}
 
 // std::string trim(const std::string &s)
 // {
@@ -47,7 +89,7 @@ bool something_between_positions(std::string str, size_t start, size_t end)
 	return false;
 }
 
-bool reamining_file(std::string str)
+bool remaining_file(std::string str)
 {
 	size_t	i = 0;
 
@@ -79,28 +121,109 @@ std::string get_location_path(std::string server_str)
 	return (path);
 }
 
-t_server_config create_server(std::string server_str)
+std::vector<string> Configuration::tokenize(const std::string &raw)
 {
-	t_server_config newServer;
+	std::stringstream	line(raw);
+	std::vector<string>	tokens;
+	string 				tmp;
 
-	std::vector<string> rules = Utils::split(server_str, ";");
-
-	return (newServer);
+	while (line >> tmp)
+		tokens.push_back(tmp);
+	return tokens;
 }
 
-bool getConfiguration(std::string conf_file, std::vector<t_server_config> *configuration)
+std::vector<string> Configuration::parse_line(const std::string &raw)
+{
+	cout << "line -> " << raw << endl;
+	std::vector<string> tokens = tokenize(raw);
+	const string key = tokens.at(0);
+
+	if (std::find(Keywords().begin(), Keywords().end(), key) != Keywords().end())
+	{
+		cout << "Valid -> " << key << endl;
+	}
+	else
+	{
+		throw (Configuration::InvalidToken(raw, key, 0));
+	}
+	if (tokens.size() < 2)
+	{
+		throw (Configuration::InvalidValue(raw, key, 0));
+	}
+	return tokens;
+
+
+
+}
+
+void Configuration::printConfig(t_server_config &config)
+{
+	cout << "Ports -> ";
+	for (std::vector<int>::iterator it = config.ports.begin(); it != config.ports.end(); it++)
+		cout << *it << " ";
+
+	cout << endl;
+
+	cout << "Server Names -> ";
+	for (std::vector<string>::iterator it = config.names.begin(); it != config.names.end(); it++)
+		cout << *it << " ";
+	cout << endl;
+
+}
+
+int Configuration::strport(std::string const &s)
+{
+	if (!Utils::isport(s))
+		throw (std::invalid_argument("invalid port"));
+
+	return std::atoi(s.c_str());
+}
+
+
+void Configuration::parse_bracket(const std::string &server)
+{
+	t_server_config		config;
+
+	std::stringstream 	data(server);
+	string				line;
+
+	cout << "====New Bracket====\n";
+	while(std::getline(data, line))
+	{
+		this->status.current_line = line;
+		const std::vector<string>	tokens = parse_line(line);
+		const string 				&key = tokens.at(0);
+		if (key == "listen")
+		{
+			Configuration::save<int>(tokens, config.ports, this->strport);
+		}
+		else if (key == "server_name")
+		{
+			Configuration::save(tokens, config.names);
+		}
+
+	}
+	cout << BOLDGREEN << "====INFO====\n" << NC;
+	Configuration::printConfig(config);
+	this->configuration.push_back(config);
+	cout << BOLDGREEN << "====END====\n" << NC;
+
+
+}
+
+bool Configuration::getConfiguration(std::string conf_file)
 {
 	std::string file = Utils::read_file(conf_file);
 	std::vector<string> servers;
 
-	(void)configuration;
+	this->status.line_number = 0;
 	if (file.empty())
 	{
 		std::cout << "Empty configuration file: file empty\n";
 		return false;
 	}
 
-	while (reamining_file(file))
+	while (remaining_file(file))
 	{
 		size_t start = file.find("server");
 		size_t first = file.find_first_not_of("\n");
@@ -122,20 +245,17 @@ bool getConfiguration(std::string conf_file, std::vector<t_server_config> *confi
 
 		if (get_end_key(file, open_key + 1) == 0)
 		{
-			std::cout << "Error in configuration file: all keys must be closed\n";
-			return false;
+			throw (Configuration::KeysNotClosed());
 		}
 
-		std::string tmp_server = file.substr(open_key + 1, (get_end_key(file, open_key + 1) - open_key) - 1);
-		std::cout << "\n---------\n" << tmp_server << "\n---------\n";
+		std::string tmp_server = file.substr(open_key + 2, (get_end_key(file, open_key + 1) - open_key) - 2);
+//		std::cout << "\n---------\n" << tmp_server << "\n---------\n";
 		servers.push_back(tmp_server);
 		get_location_path(tmp_server);
+		parse_bracket(tmp_server);
 		file.erase(0,  get_end_key(file, open_key + 1) + 1);
 
 		//std::cout << "---------\n" << file << "\n\n------------\n";
 	}
-
-
-
 	return true;
 }

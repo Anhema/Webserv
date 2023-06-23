@@ -35,6 +35,15 @@ void debug_log(std::string log)
 	std::cout << log << "\n";
 }
 
+bool Utils::isport(const std::string &s)
+{
+	for (std::string::const_iterator it = s.begin(); it != s.end(); it++)
+		if (!isdigit(*it))
+			return false;
+
+	return std::atoi(s.c_str()) <= USHRT_MAX;
+}
+
 std::vector<std::string>    Utils::split(std::string str, std::string del)
 {
 	std::vector<std::string>    result;
