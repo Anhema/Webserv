@@ -3,35 +3,32 @@
 
 #include "../Utilities/Utilities.hpp"
 
-struct s_status
-{
-	string	current_line;
-	int		line_number;
-};
-
 typedef struct	s_error_pages
 {
 
 }	t_error_pages;
 
-typedef struct	s_route_config
+typedef struct	s_location
 {
 	string				route;
-	string 				source_dir;
+	string 				root;
 	string				directory_file;
+	string 				index;
 	bool				directory_listing;
 	std::vector<string>	accepted_methods;
 	string				redirection;
-}	t_route_config;
+}	t_location;
 
 typedef struct s_server_config
 {
 	std::vector<int>				ports;
-	string 							ip ;
 	std::vector<string>				names;
+	string 							ip ;
+	string 							root;
+	string 							index;
 	size_t 							max_body_size;
 	t_error_pages 					errorPages;
-	std::vector<t_route_config>		routes;
+	std::vector<t_location *>			locations;
 }	t_server_config;
 
 class Configuration {
@@ -42,9 +39,15 @@ public:
 
 private:
 	std::vector<t_server_config>			configuration;
-	struct s_status							status;
 
 private:
+
+	template<class T>
+	static void print_vector(T x)
+	{
+		for (typename T::iterator it = x.begin(); it != x.end(); it++)
+			cout << *it << " ";
+	}
 
 	// When the source type is different from src
 	// Accepts a function to convert to the needed type
@@ -56,17 +59,27 @@ private:
 	}
 	// When the src type is the same as dst
 	template<class T>
-	static void	save(const std::vector<string> &src, T &dst)
+	static void	save(const std::vector<string> &src, std::vector<T> &dst)
 	{
-		for (typename std::vector<string>::const_iterator it = src.begin() + 1; it != src.end(); it++)
+		for (std::vector<string>::const_iterator it = src.begin() + 1; it != src.end(); it++)
 			dst.push_back(*it);
 	}
+
+	template<class T>
+	static void	save(const std::vector<string> &src, T &dst)
+	{
+		dst = src.at(1);
+	}
+
 	void								parse_bracket(string const &server);
-	static const std::vector<string>	&Keywords();
-	std::vector<string>					parse_line(string const &raw);
+	std::vector<string>					parse_line(string const &raw, const std::vector<string> &keywords);
+	void								parse_location(const string &bracket, const std::vector<string> &start, t_server_config &config);
 	static std::vector<string>			tokenize(const string &raw);
 	static void							printConfig(t_server_config &config);
 	static int 							strport(std::string const &s);
+
+	static const std::vector<string>	&Keywords();
+	static const std::vector<string>	&Location_keywords();
 
 
 public:

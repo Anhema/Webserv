@@ -11,7 +11,7 @@ void Configuration::InvalidToken::print()
 {
 	(void) this->n;
 	cout	<< BOLDRED << "[ERROR]" << NC << " "
-			<< "in line " << RED "-> " << NC << "(" << this->m_line << ") "
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
 			<< "Invalid token: \"" << BOLDRED << this->m_token << NC << "\"\n";
 
 }
@@ -41,6 +41,19 @@ const std::vector<string> &Configuration::Keywords() {
 	}
 	return keywords;
 }
+
+const std::vector<string> &Configuration::Location_keywords() {
+	static std::vector<string>	keywords;
+
+	if (keywords.empty())
+	{
+		keywords.push_back("listen");
+		keywords.push_back("root");
+		keywords.push_back("index");
+	}
+	return keywords;
+}
+
 
 // std::string trim(const std::string &s)
 // {
@@ -132,24 +145,16 @@ std::vector<string> Configuration::tokenize(const std::string &raw)
 	return tokens;
 }
 
-std::vector<string> Configuration::parse_line(const std::string &raw)
+std::vector<string> Configuration::parse_line(const std::string &raw, const std::vector<string> &keywords)
 {
 	cout << "line -> " << raw << endl;
 	std::vector<string> tokens = tokenize(raw);
 	const string key = tokens.at(0);
 
-	if (std::find(Keywords().begin(), Keywords().end(), key) != Keywords().end())
-	{
-		cout << "Valid -> " << key << endl;
-	}
-	else
-	{
+	if (std::find(keywords.begin(), keywords.end(), key) == keywords.end())
 		throw (Configuration::InvalidToken(raw, key, 0));
-	}
 	if (tokens.size() < 2)
-	{
 		throw (Configuration::InvalidValue(raw, key, 0));
-	}
 	return tokens;
 
 
@@ -169,39 +174,86 @@ void Configuration::printConfig(t_server_config &config)
 		cout << *it << " ";
 	cout << endl;
 
+	cout << "Root -> " << config.root << endl;
+	cout << "Index -> " << config.index << endl;
+
+	if (config.locations.empty())
+		cout << "No locations found\n";
+	else
+	{
+		for (std::vector<t_location *>::iterator it = config.locations.begin(); it != config.locations.end(); it++)
+		{
+			cout << "====Location====\n";
+			cout << "\tRoute-> " << (*it)->route << "\n";
+			cout << "\tRoot-> " << (*it)->root << "\n";
+		}
+	}
+
 }
 
 int Configuration::strport(std::string const &s)
 {
-	if (!Utils::isport(s))
+	if (!Utils::isport(s) && s != "default_server;")
 		throw (std::invalid_argument("invalid port"));
 
 	return std::atoi(s.c_str());
 }
 
+void Configuration::parse_location(const std::string &bracket, const std::vector<string> &start, t_server_config &config)
+{
+	std::stringstream 	data(bracket);
+	t_location	* location = new t_location ;
+	std::string line;
+
+//	cout << "Location bracket: " << data.str() <<endl;
+
+	location->route = start.at(1);
+	while(std::getline(data, line) && (line.find("}") == std::string::npos))
+	{
+		const std::vector<string>	tokens = parse_line(line, Location_keywords());
+		const string 				&key = tokens.at(0);
+
+		cout << "tokens: ";
+		Configuration::print_vector(tokens);
+		cout << endl;
+
+		if (key == "root")
+			location->root = tokens.at(1);
+//			Configuration::save(tokens, location->root);
+	}
+	cout << "Root: " << location->root << endl;
+	cout << "Route: " << location->route << endl;
+	config.locations.push_back(location);
+}
 
 void Configuration::parse_bracket(const std::string &server)
 {
 	t_server_config		config;
-
 	std::stringstream 	data(server);
 	string				line;
+	size_t 				position = 0;
 
 	cout << "====New Bracket====\n";
-	while(std::getline(data, line))
+	while(std::getline(data, line) )
 	{
-		this->status.current_line = line;
-		const std::vector<string>	tokens = parse_line(line);
+		const std::vector<string>	tokens = parse_line(line, Keywords());
 		const string 				&key = tokens.at(0);
 		if (key == "listen")
-		{
 			Configuration::save<int>(tokens, config.ports, this->strport);
-		}
 		else if (key == "server_name")
-		{
 			Configuration::save(tokens, config.names);
-		}
+		else if (key == "root")
+			Configuration::save(tokens, config.root);
+		else if (key == "index")
+			Configuration::save(tokens, config.index);
+		else if (key == "location")
+		{
+			stringstream tmp;
+			tmp << data.seekp(position).rdbuf();
+			this->parse_location(tmp.str(), tokens, config);
 
+		}
+		position += line.size();
 	}
 	cout << BOLDGREEN << "====INFO====\n" << NC;
 	Configuration::printConfig(config);
@@ -216,7 +268,6 @@ bool Configuration::getConfiguration(std::string conf_file)
 	std::string file = Utils::read_file(conf_file);
 	std::vector<string> servers;
 
-	this->status.line_number = 0;
 	if (file.empty())
 	{
 		std::cout << "Empty configuration file: file empty\n";

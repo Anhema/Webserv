@@ -22,18 +22,22 @@ int main(int argc, char** argv)
 	try
 	{
 		config.getConfiguration(argv[1]);
+		return (0);
 	}
 	catch (Configuration::Exception &e)
 	{
 		e.print();
+		return (0);
 	}
 	catch (Configuration::SyntaxError &e)
 	{
 		cout  << e.what() << endl;
+		return (0);
 	}
 	catch (std::exception &e)
 	{
 		Logger::log(e.what(), ERROR);
+		return (0);
 	}
 
 
