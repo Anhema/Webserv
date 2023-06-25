@@ -181,6 +181,8 @@ public:
 	void					handle_request(const fd client, size_t buffer_size);
 	string					&getConnectionType(void);
 
+	std::string				error_page(std::string path, std::string error);
+
 	bool					finishedReading;
 
 	static const int		s_maxSendErrors	= 10000;

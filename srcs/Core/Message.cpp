@@ -22,6 +22,40 @@ void Message::buildHeader()
 
 }
 
+std::string Message::error_page(std::string path, std::string error)
+{
+	std::ostringstream	message;
+	std::string			error_name;
+
+	if (error == "400")
+		error_name = "Bad Request";
+	else if (error == "403")
+		error_name = "Forbidden";
+	else if (error == "404")
+		error_name = "Not Found";
+	else if (error == "405")
+		error_name = "Method Not Allowed";
+	else if (error == "500")
+		error_name = "Internal Server Error";
+	else if (error == "501")
+		error_name = "Not Implemened";
+	else if (error == "502")
+		error_name = "Bad Gateway";
+	else if (error == "505")
+		error_name = "Not Implemented";
+	if (path[path.size() - 1] == '/')
+		this->m_response.htmlFile = Utils::read_file(path.append(error).append(".html"));
+	else
+		this->m_response.htmlFile = Utils::read_file(path.append("/").append(error).append(".html"));
+
+	this->m_response.extension = "html";
+	message << "HTTP/1.1 "<< error << " " << error_name << "\r\nContent-Status: text/" << this->m_response.extension
+			<< "\r\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
+
+	return (message.str());
+
+}
+
 void Message::m_createFile(const std::string &filename, const std::string &extension)
 {
 	char			time_str[100];
@@ -78,12 +112,7 @@ std::string Message::m_get()
 	std::ifstream ifs(path);
 
 	if (!ifs.is_open())
-	{
-		this->m_response.htmlFile = Utils::read_file("www/404.html");
-		this->m_response.extension = Utils::get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Status: text/" << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
-	}
+		message << this->error_page("www/Errors/", "404");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -109,12 +138,7 @@ std::string Message::m_post()
 		path.append(this->m_request.uri);
 	std::ifstream ifs(path, std::ios::binary);
 	if (!ifs.is_open())
-	{
-		this->m_response.htmlFile = Utils::read_file("www/404.html");
-		this->m_response.extension = Utils::get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Status: text/" << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
-	}
+		message << this->error_page("www/Errors/", "404");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -135,14 +159,7 @@ std::string Message::m_delete()
 		path.append(this->m_request.uri);
 	std::ifstream ifs(path);
 	if (!ifs.is_open())
-	{
-		this->m_response.htmlFile = Utils::read_file("www/404.html");
-		this->m_response.extension = Utils::get_extension("/404.html");
-		message << "HTTP/1.1 404 Not Found\nContent-Status: text/" << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
-		cout << "Extension: " << this->m_response.extension << endl;
-		cout << "Path: " << path << endl;
-	}
+		message << this->error_page("www/Errors/", "404");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -151,7 +168,6 @@ std::string Message::m_delete()
 		message << "HTTP/1.1 200 OK\nContent-Status: text/" << this->m_response.extension
 				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
-	//close()
 	return (message.str());
 }
 
@@ -197,7 +213,7 @@ void Message::m_parseHeader(const std::string &header)
     if (header.empty())
         throw (std::runtime_error("bad header parsing"));
 
-	std::vector<std::string> request = Utils::split(header, "\n");
+	std::vector<std::string> request = Utils::split(header, "\r\n");
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
 
@@ -211,7 +227,7 @@ void Message::m_parseHeader(const std::string &header)
 
 		const string key(tmp_key);
 
-		char *tmp_value = std::strtok(NULL, "\n\r");
+		char *tmp_value = std::strtok(NULL, "\r\n");
 		if (!tmp_value)
 			break;
 
@@ -344,12 +360,21 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	cout << "****Writing****" << endl;
 
 	std::ostringstream message;
-	if (this->m_request.method == "GET")
+	if (this->m_request.method != "GET" && this->m_request.method != "DELETE" && this->m_request.method != "POST" && this->m_request.method != "CONNECT"
+		&& this->m_request.method != "HEAD" && this->m_request.method != "OPTIONS" && this->m_request.method != "PATCH" && this->m_request.method != "PUT" && this->m_request.method != "TRACE")
+		this->m_server_message = this->error_page("www/Errors/", "400");
+	else if (this->m_request.method == "GET")
 		this->m_server_message = m_get();
 	else if (this->m_request.method == "DELETE")
 		this->m_server_message = this->m_delete();
-	else
+	else if (this->m_request.method == "POST")
 		this->m_server_message = this->m_post();
+	else
+		this->m_server_message = this->error_page("www/Errors/", "501");
+
+	std::cout << "\n\n" << this->m_request.version << "\n\n";
+	if (this->m_request.version != "HTTP/1.1")
+		this->m_server_message = this->error_page("www/Errors/", "505");
 
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
