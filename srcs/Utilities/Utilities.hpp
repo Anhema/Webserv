@@ -10,7 +10,6 @@
 # include <sstream>
 # include <fstream>
 
-
 using std::string;
 using std::cout;
 using std::cerr;
@@ -20,6 +19,13 @@ using std::size_t;
 using std::unique_ptr;
 
 # define WHITESPACE " \f\r\t\v"
+# define GET_METHOD "get"
+# define POST_METHOD "post"
+# define DELETE_METHOD "delete"
+
+# define DEFAULT_ROOT_DIR "www/"
+# define DEFAULT_INDEX_FILE "index.html"
+# define DEFAULT_MAX_BODY 424242424242
 
 typedef long ssize_t;
 typedef int fd;

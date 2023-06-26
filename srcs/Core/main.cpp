@@ -5,6 +5,11 @@
 
 int main(int argc, char** argv)
 {
+
+
+	std::vector<Server> test;
+
+
 	std::vector<t_server_config> configuration;
 
 	if (argc != 2 )

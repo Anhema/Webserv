@@ -7,6 +7,22 @@ Configuration::SyntaxError::SyntaxError(const string &line): std::invalid_argume
 
 Configuration::InvalidValue::InvalidValue(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
 
+Configuration::BadCheck::BadCheck(const std::string &bad_token): token(bad_token) {}
+
+Configuration::TooManyArguments::TooManyArguments(const std::string &line, const int expected, const int have): Exception(line, line, expected)
+{
+	this->m_expected = expected;
+	this->m_have = have;
+}
+
+void Configuration::TooManyArguments::print()
+{
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
+			<< "Too many arguments, expected " << this->m_expected << " have " << this->m_have << endl;
+
+}
+
 void Configuration::InvalidToken::print()
 {
 	(void) this->n;
@@ -24,8 +40,90 @@ Configuration::InvalidToken::InvalidToken(const std::string &line, const std::st
 void Configuration::InvalidValue::print()
 {
 	cout	<< BOLDRED << "[ERROR]" << NC << " "
-			<< "in line " << RED "-> " << NC << "(" << this->m_line << ") "
-			<< "Invalid value for: \"" << this->m_token << "\"\n";
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
+			<< "Invalid value: \"" << BOLDRED << this->m_token << NC << "\"\n";
+}
+
+std::string Configuration::check_server_name(const std::string &name)
+{
+	// TODO
+	if (name.find("www.") != 0)
+		throw (Configuration::BadCheck(name));
+
+	return name;
+}
+
+void Configuration::save_server_name(const std::vector<string> &names, t_server_config &config)
+{
+	Configuration::save(names, config.names, Configuration::check_server_name);
+}
+
+int Configuration::check_server_ports(const std::string &port)
+{
+	if (!Utils::isport(port))
+		throw (Configuration::BadCheck(port));
+
+	return std::atoi(port.c_str());
+}
+
+void Configuration::save_server_ports(const std::vector<string> &ports, t_server_config &config)
+{
+	Configuration::save(ports, config.ports, Configuration::check_server_ports);
+}
+
+std::string Configuration::check_server_ip(const std::string &ip)
+{
+	if (inet_addr(ip.c_str()) == (in_addr_t)-1)
+		throw (Configuration::BadCheck(ip));
+	return ip;
+}
+
+void Configuration::save_server_ip(const std::vector<string> &ip, t_server_config &config)
+{
+	// TODO check for 4 numbers
+	// 42.42 works it shouldnt!!
+
+	if (ip.size() != 2)
+		throw (TooManyArguments("", 1, ip.size() - 1));
+	Configuration::save(ip, config.ip, Configuration::check_server_ip);
+}
+
+void Configuration::save_server_root(const std::vector<string> &root, t_server_config &config)
+{
+
+}
+
+void Configuration::save_to_server(const std::string &key, const std::string &line,  const std::vector<string> &tokens, t_server_config &config)
+{
+	static std::map<string, ConfigMemberFunction> functions;
+
+	if (functions.empty())
+	{
+		functions["server_name"] = &Configuration::save_server_name;
+		functions["ports"] = &Configuration::save_server_ports;
+		functions["ip"] = &Configuration::save_server_ip;
+		functions["root"] = &Configuration::save_server_root;
+	}
+	if (functions.find(key) != functions.end())
+	{
+		try
+		{
+			ConfigMemberFunction func = functions[key];
+			(Configuration().*func)(tokens, config);
+		}
+		catch (Configuration::BadCheck &e)
+		{
+			throw (Configuration::InvalidValue(line, e.token, 10));
+		}
+		catch (Configuration::TooManyArguments &e)
+		{
+			throw (Configuration::TooManyArguments(line, e.m_expected, e.m_have));
+		}
+	}
+	else
+	{
+		throw (Configuration::InvalidToken(line, key, 0));
+	}
 }
 
 const std::vector<string> &Configuration::Keywords() {
@@ -33,7 +131,8 @@ const std::vector<string> &Configuration::Keywords() {
 
 	if (keywords.empty())
 	{
-		keywords.push_back("listen");
+		keywords.push_back("ip");
+		keywords.push_back("ports");
 		keywords.push_back("server_name");
 		keywords.push_back("root");
 		keywords.push_back("index");
@@ -53,23 +152,6 @@ const std::vector<string> &Configuration::Location_keywords() {
 	}
 	return keywords;
 }
-
-
-// std::string trim(const std::string &s)
-// {
-//     auto start = s.begin();
-//     while (start != s.end() && std::isspace(*start)) {
-//         start++;
-//     }
- 
-//     auto end = s.end();
-//     do {
-//         end--;
-//     } while (std::distance(start, end) > 0 && std::isspace(*end));
- 
-//     return std::string(start, end + 1);
-// }
- 
 
 size_t get_end_key(std::string str, size_t start)
 {
@@ -156,26 +238,22 @@ std::vector<string> Configuration::parse_line(const std::string &raw, const std:
 	if (tokens.size() < 2)
 		throw (Configuration::InvalidValue(raw, key, 0));
 	return tokens;
-
-
-
 }
 
 void Configuration::printConfig(t_server_config &config)
 {
+	cout << "Ip -> " << config.ip << endl;
 	cout << "Ports -> ";
-	for (std::vector<int>::iterator it = config.ports.begin(); it != config.ports.end(); it++)
-		cout << *it << " ";
-
-	cout << endl;
+	print_vector(config.ports);
 
 	cout << "Server Names -> ";
-	for (std::vector<string>::iterator it = config.names.begin(); it != config.names.end(); it++)
-		cout << *it << " ";
-	cout << endl;
+	print_vector(config.names);
 
 	cout << "Root -> " << config.root << endl;
 	cout << "Index -> " << config.index << endl;
+	cout << "Accepted methods -> ";
+	print_vector(config.accepted_methods);
+	cout << "Max Body -> " << config.max_body_size << endl;
 
 	if (config.locations.empty())
 		cout << "No locations found\n";
@@ -226,6 +304,15 @@ void Configuration::parse_location(const std::string &bracket, const std::vector
 	config.locations.push_back(location);
 }
 
+void Configuration::set_default(t_server_config &data)
+{
+	data.accepted_methods.push_back(GET_METHOD);
+	data.root = DEFAULT_ROOT_DIR;
+	data.index = DEFAULT_INDEX_FILE;
+	data.max_body_size = DEFAULT_MAX_BODY;
+
+}
+
 void Configuration::parse_bracket(const std::string &server)
 {
 	t_server_config		config;
@@ -233,25 +320,22 @@ void Configuration::parse_bracket(const std::string &server)
 	string				line;
 	size_t 				position = 0;
 
+	this->set_default(config);
 	cout << "====New Bracket====\n";
 	while(std::getline(data, line) )
 	{
+		if (line.at(0) == Configuration::s_comment_char)
+			continue;
 		const std::vector<string>	tokens = parse_line(line, Keywords());
 		const string 				&key = tokens.at(0);
-		if (key == "listen")
-			Configuration::save<int>(tokens, config.ports, this->strport);
-		else if (key == "server_name")
-			Configuration::save(tokens, config.names);
-		else if (key == "root")
-			Configuration::save(tokens, config.root);
-		else if (key == "index")
-			Configuration::save(tokens, config.index);
-		else if (key == "location")
+
+		this->save_to_server(key, line, tokens, config);
+
+		if (key == "location")
 		{
 			stringstream tmp;
 			tmp << data.seekp(position).rdbuf();
 			this->parse_location(tmp.str(), tokens, config);
-
 		}
 		position += line.size();
 	}

@@ -4,11 +4,8 @@ ServerHandler::ServerHandler(std::vector<t_server_config> configurations)
 {
 	for (std::vector<t_server_config>::iterator conf_it = configurations.begin(); conf_it != configurations.end(); conf_it++)
 	{
-		cout << "Llega\n";
 		for (std::vector<int>::iterator port_it = conf_it->ports.begin(); port_it != conf_it->ports.end(); port_it++)
 		{
-			cout << "New server\n";
-			cout << "Conf ip: " << (conf_it->ip) << endl;
 			this->m_server_list.push_back(new Server(*conf_it, *port_it));
 		}
 	}
