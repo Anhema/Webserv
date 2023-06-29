@@ -22,17 +22,24 @@ std::string Utils::read_file(std::string file_name)
 	return (result);
 }
 
+bool	Utils::can_open_dir(std::string const &directory)
+{
+	DIR *dir = opendir(directory.c_str());
+
+	if (!dir)
+		return false;
+	else
+		closedir(dir);
+	return true;
+}
+
 std::string Utils::get_extension(std::string file_name)
 {
 	std::vector<std::string> ext = Utils::split(file_name, ".");
 	std::vector<std::string>::iterator ite = ext.end();
 	ite -= 1;
-	return (*ite);
-}
 
-void debug_log(std::string log)
-{
-	std::cout << log << "\n";
+	return (*ite);
 }
 
 bool Utils::isport(const std::string &s)
@@ -42,6 +49,18 @@ bool Utils::isport(const std::string &s)
 			return false;
 
 	return std::atoi(s.c_str()) <= USHRT_MAX;
+}
+
+bool Utils::can_open_file(const string &file)
+{
+	std::ifstream infile(file);
+
+	if (infile.is_open())
+	{
+		infile.close();
+		return true;
+	}
+	return false;
 }
 
 std::vector<std::string>    Utils::split(std::string str, std::string del)

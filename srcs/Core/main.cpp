@@ -2,16 +2,8 @@
 #include "ServerHandler.hpp"
 #include "Config.hpp"
 
-
 int main(int argc, char** argv)
 {
-
-
-	std::vector<Server> test;
-
-
-	std::vector<t_server_config> configuration;
-
 	if (argc != 2 )
 	{
 		std::cout << "Invalid arguments\n";
@@ -29,12 +21,12 @@ int main(int argc, char** argv)
 		config.getConfiguration(argv[1]);
 		return (0);
 	}
-	catch (Configuration::Exception &e)
+	catch (Parser::Exception &e)
 	{
 		e.print();
 		return (0);
 	}
-	catch (Configuration::SyntaxError &e)
+	catch (Parser::SyntaxError &e)
 	{
 		cout  << e.what() << endl;
 		return (0);
@@ -44,21 +36,4 @@ int main(int argc, char** argv)
 		Logger::log(e.what(), ERROR);
 		return (0);
 	}
-
-
-//	for (std::vector<t_server_config>::iterator it = configuration.begin(); it != configuration.end(); it++)
-//	{
-//		cout << "===============NEW-BRACKET===============\n";
-//		cout << "(ip) -> " << it->ip << endl;
-//	}
-
-    try
-    {
-        ServerHandler server(configuration);
-        server.mainLoop();
-    }
-    catch (std::exception &e)
-    {
-        Logger::log(e.what(), ERROR);
-    }
 }
