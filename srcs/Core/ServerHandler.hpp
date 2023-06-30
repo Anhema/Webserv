@@ -18,7 +18,7 @@ typedef std::vector<Server *>::iterator server_iterator;
 class ServerHandler {
 
 public:
-	ServerHandler(std::vector<t_server_config>configurations);
+	ServerHandler(std::vector<Data::Server>configurations);
 	ServerHandler(int server_count);
 	~ServerHandler();
 	ServerHandler(ServerHandler const &rhs);
@@ -28,7 +28,7 @@ public:
     void									mainLoop(void);
 
 private:
-	void 									startServer(t_server_config configuration);
+	void 									startServer(Data::Server configuration);
 	void									m_startKqueue(void);
 	void									m_monitorSockets(void);
 	void 									m_eventLoop(void);

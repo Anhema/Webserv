@@ -1,7 +1,7 @@
 #ifndef DIRECTIVE_HPP
 # define DIRECTIVE_HPP
 
-#ifndef __UNDEFINED_MAX_TOKENS
+#ifndef __WEBSERV_UNDEFINED_MAX_TOKENS
 # define UNDEFINED -1
 #endif
 
@@ -31,7 +31,7 @@ namespace Parser
 
 
 	public:
-		Directive(const std::string &keyword, const short max_tokens);
+		Directive(const std::string &keyword, short max_tokens);
 		virtual ~Directive();
 
 		template<class T>
@@ -42,7 +42,7 @@ namespace Parser
 
 		Parser::Errors		Error() const;
 		void				Throw(const std::string &line);
-		void 				handler(const std::vector<std::string> &tokens, struct s_server_config &dst);
+		void 				handler(const std::vector<std::string> &tokens, Data::Server &dst);
 
 	private:
 		void				m_iterate_through(const std::vector<std::string> &tokens);
@@ -50,7 +50,7 @@ namespace Parser
 	protected:
 		virtual void		m_validate_token(const std::string &token) = 0;
 		virtual void		m_format_checker(const std::vector<std::string> &tokens) = 0;
-		virtual void 		m_save(const std::vector<std::string> &tokens, struct s_server_config &dst) = 0;
+		virtual void 		m_save(const std::vector<std::string> &tokens, Data::Server &dst) = 0;
 	};
 }
 

@@ -55,7 +55,7 @@ public:
 	~Message();
 
 private:
-	t_server_config			m_configuration;
+	Data::Server			m_configuration;
 	t_request				m_request;
 	t_response				m_response;
 	t_body 					m_body;
@@ -75,7 +75,7 @@ private:
 
 public:
 	void 					reset(void);
-	void					setConfig(t_server_config &config);
+	void					setConfig(Data::Server &config);
 	void					make_response(const fd client, size_t buffer_size);
 	void 					buildHeader();
 	void					handle_request(const fd client, size_t buffer_size);

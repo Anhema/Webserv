@@ -19,7 +19,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, struct s_server_config &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
 		};
 
 		class Ip: public Parser::Directive
@@ -31,7 +31,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, struct s_server_config &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
 		};
 
 		class Ports: public Parser::Directive
@@ -43,7 +43,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, struct s_server_config &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
 		};
 
 		class Root: public Parser::Directive
@@ -55,7 +55,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, struct s_server_config &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
 		};
 
 		class MaxBody: public Parser::Directive
@@ -67,7 +67,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, struct s_server_config &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
 
 		private:
 			size_t	m_max_bytes;

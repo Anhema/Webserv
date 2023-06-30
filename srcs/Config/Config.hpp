@@ -5,6 +5,7 @@
 # include <arpa/inet.h>
 # include "Keys.hpp"
 # include "DataContainers.hpp"
+
 namespace Parser
 {
 	// Exceptions
@@ -77,43 +78,22 @@ namespace Parser
 	};
 }
 
-typedef void (*ConfigFunction)(const std::vector<std::string>&, t_server_config&);
+typedef void (*ConfigFunction)(const std::vector<std::string>&, Data::Server&);
 
 class Configuration {
 
 public:
 	bool getConfiguration(std::string conf_file);
 
-	std::vector<t_server_config> &getConfig() { return this->configuration; }
+	std::vector<Data::Server> &getConfig() { return this->configuration; }
 
 private:
-	std::vector<t_server_config> 	configuration;
+	std::vector<Data::Server> 	configuration;
 	static const char				s_comment_char = '#';
 
-private:
-	static std::string	check_server_name(std::string const &name);
-	void				save_server_name(const std::vector<string> &names, t_server_config &config);
-
-	static std::string	check_server_ip(std::string const &ip);
-	void				save_server_ip(const std::vector<string> &ip, t_server_config &config);
-
-	static int			check_server_ports(std::string const &port);
-	void				save_server_ports(const std::vector<string> &ports, t_server_config &config);
-
-	static std::string	check_server_root(std::string const &root);
-	void				save_server_root(const std::vector<string> &root, t_server_config &config);
-
-	static size_t		check_max_body(std::string const &value);
-	void				save_max_body(const std::vector<string> &root, t_server_config &config);
-
-	static std::string 	check_error_page(std::string const &page);
-	void				save_error_page(const std::vector<string> &pages, t_server_config &config);
-
-
-typedef void (Configuration::*ConfigMemberFunction)(const std::vector<std::string>&, t_server_config&);
 
 private:
-	static void save_to_server(string const &key, std::string const &line, const std::vector<string> &tokens, t_server_config &config);
+	static void save_to_server(string const &key, std::string const &line, const std::vector<string> &tokens, Data::Server &config);
 
 
 	template<class T>
@@ -123,31 +103,19 @@ private:
 		cout << "\n";
 	}
 
-	// When the source type is different from src
-	// Accepts a function to convert to the needed type
-	template<class T>
-	void save(const std::vector<string> &src, std::vector<T> &dst, T (*f)(string const &)) {
-		for (std::vector<string>::const_iterator it = src.begin() + 1; it != src.end(); it++)
-			dst.push_back((f)(*it));
-	}
-	template<class T>
-	void save(const std::vector<string> &src, T &dst, T (*f)(string const &)) {
-		dst = (f)(src.at(1));
-	}
-
-private:
+	private:
 	void								parse_bracket(string const &server);
-	void								parse_location(const string &bracket, const std::vector<string> &start, t_server_config &config);
+	void								parse_location(const string &bracket, const std::vector<string> &start, Data::Server &config);
 	std::vector<string> 				parse_line(string const &raw, const std::vector<string> &keywords);
 	static std::vector<string> 			tokenize(const string &raw);
-	static void 						set_default(t_server_config &data);
-	static void							set_default(t_location &location, t_server_config const &bracket);
-	static void 						set_default(t_error_pages &data);
-	static void							validateFiles(t_server_config &data);
+	static void 						set_default(Data::Server &data);
+	static void							set_default(Data::Location &location, Data::Server const &bracket);
+	static void 						set_default(Data::ErrorPages &data);
+	static void							validateFiles(Data::Server &data);
 
 
 private:
-	static void							printConfig(t_server_config &config);
+	static void							printConfig(Data::Server &config);
 	static int							strport(std::string const &s);
 	static const std::vector<string>	&Keywords();
 	static const std::vector<string>	&Location_keywords();

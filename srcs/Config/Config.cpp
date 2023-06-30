@@ -53,134 +53,9 @@ void Parser::InvalidValue::print()
 			<< "Invalid value: \"" << BOLDRED << this->m_token << NC << "\"\n";
 }
 
-s_location::s_location():
-		route(), root(), directory_file(), index(),
-		directory_listing(false), accepted_methods(), redirection()
-{}
 
-s_location::s_location(t_location const &cpy):
-route(cpy.route), root(cpy.root), directory_file(cpy.directory_file), index(cpy.index),
-directory_listing(cpy.directory_listing), accepted_methods(cpy.accepted_methods), redirection(cpy.redirection)
-{}
 
-std::string Configuration::check_server_name(const std::string &name)
-{
-	// TODO
-	if (name.find("www.") != 0)
-		throw (Parser::BadCheck(name));
-
-	return name;
-}
-
-void Configuration::save_server_name(const std::vector<string> &names, t_server_config &config)
-{
-	Configuration::save(names, config.names, Configuration::check_server_name);
-}
-
-int Configuration::check_server_ports(const std::string &port)
-{
-	if (!Utils::isport(port))
-		throw (Parser::BadCheck(port));
-
-	return std::atoi(port.c_str());
-}
-
-void Configuration::save_server_ports(const std::vector<string> &ports, t_server_config &config)
-{
-	Configuration::save(ports, config.ports, Configuration::check_server_ports);
-}
-
-std::string Configuration::check_server_ip(const std::string &ip)
-{
-	const std::string delimiter = ".";
-	const int min_numbers = 4;
-	const std::vector<string>numbers = Utils::split(ip, ".");
-
-	if (numbers.size() != min_numbers)
-		throw (Parser::BadCheck(ip));
-
-	for (std::vector<string>::const_iterator it = numbers.begin(); it != numbers.end(); it++)
-		if (std::atoi(it->c_str()) > 255)
-			throw (Parser::BadCheck(ip));
-
-	if (inet_addr(ip.c_str()) == (in_addr_t)-1)
-		throw (Parser::BadCheck(ip));
-	return ip;
-}
-
-void Configuration::save_server_ip(const std::vector<string> &ip, t_server_config &config)
-{
-	if (ip.size() != 2)
-		throw (Parser::TooManyArguments("", 1, ip.size() - 1));
-	Configuration::save(ip, config.ip, Configuration::check_server_ip);
-}
-
-std::string Configuration::check_server_root(const std::string &root)
-{
-	if (!Utils::can_open_dir(root.c_str()))
-		throw (Parser::BadCheck(root));
-	return root;
-}
-
-void Configuration::save_server_root(const std::vector<string> &root, t_server_config &config)
-{
-	if (root.size() != 2)
-		throw (Parser::TooManyArguments("", 1, root.size() - 1));
-	Configuration::save(root, config.root, check_server_root);
-}
-
-void Configuration::save_max_body(const std::vector<string> &root, t_server_config &config)
-{
-	if (root.size() != 2)
-		throw (Parser::TooManyArguments("", 1, root.size() - 1));
-	Configuration::save(root, config.max_body_size, Configuration::check_max_body);
-}
-
-size_t Configuration::check_max_body(const string &value)
-{
-	char *end;
-
-	const size_t input = std::strtol(value.c_str(), &end, 10);
-
-	if (strlen(end) != 1)
-		throw (Parser::BadCheck(value));
-
-	const char unit = *end;
-
-	switch (unit)
-	{
-		case 'M':
-			return input * 1024 * 1000;
-		case 'K':
-			return input * 1024;
-		default:
-			throw (Parser::BadCheck(value));
-	}
-
-	return 0;
-}
-
-void Configuration::save_error_page(const std::vector<string> &pages, t_server_config &config)
-{
-	if (pages.size() != 3)
-		throw (Parser::TooManyArguments("", 2, pages.size() - 1));
-
-	const std::string &error = pages.at(1);
-	const std::string &file = pages.at(2);
-
-	if (Utils::get_extension(file) != "html")
-		throw (Parser::BadCheck(file));
-
-	if (error == "404")
-		config.errors.error_404 = file;
-	else if (error == "502")
-		config.errors.error_502 = file;
-	else
-		throw (Parser::BadCheck(error));
-
-}
-
-void Configuration::save_to_server(const std::string &key, const std::string &line,  const std::vector<string> &tokens, struct s_server_config &config)
+void Configuration::save_to_server(const std::string &key, const std::string &line,  const std::vector<string> &tokens, Data::Server &config)
 {
 	static std::map<string, Parser::Directive *> directives;
 
@@ -291,24 +166,6 @@ bool remaining_file(std::string str)
 	return false;
 }
 
-std::string get_location_path(std::string server_str)
-{
-	std::string path;
-
-	size_t start = server_str.find("location");
-	size_t open_key = server_str.find_first_of("{", start + 8);
-	path = server_str.substr(start + 8, open_key);
-	//path = trim(path);
-
-	if (open_key < start)
-	{
-		std::cout << "Error in configuration file: location error\n";
-	}
-	//size_t open_key = server_str.find_first_not_of("{", start + 6);
-	
-	//(void) server_str;
-	return (path);
-}
 
 std::vector<string> Configuration::tokenize(const std::string &raw)
 {
@@ -334,7 +191,7 @@ std::vector<string> Configuration::parse_line(const std::string &raw, const std:
 	return tokens;
 }
 
-void Configuration::printConfig(t_server_config &config)
+void Configuration::printConfig(Data::Server &config)
 {
 	cout << "Ip -> " << config.ip << endl;
 	cout << "Ports -> ";
@@ -357,7 +214,7 @@ void Configuration::printConfig(t_server_config &config)
 		cout << "No locations found\n";
 	else
 	{
-		for (std::vector<t_location>::iterator it = config.locations.begin(); it != config.locations.end(); it++)
+		for (std::vector<Data::Location>::iterator it = config.locations.begin(); it != config.locations.end(); it++)
 		{
 			cout << "====Location====\n";
 			cout << "\tRoute-> " << (*it).route << "\n";
@@ -377,7 +234,7 @@ int Configuration::strport(std::string const &s)
 
 
 
-void Configuration::set_default(t_server_config &data)
+void Configuration::set_default(Data::Server &data)
 {
 	data.accepted_methods.push_back(GET_METHOD);
 	data.root = DEFAULT_ROOT_DIR;
@@ -386,20 +243,20 @@ void Configuration::set_default(t_server_config &data)
 
 }
 
-void Configuration::set_default(t_error_pages &data)
+void Configuration::set_default(Data::ErrorPages &data)
 {
 	data.error_404 = DEFAULT_404;
 	data.error_502 = DEFAULT_502;
 }
 
-void Configuration::set_default(t_location &location, t_server_config const &bracket)
+void Configuration::set_default(Data::Location &location, Data::Server const &bracket)
 {
 	// Dont add index
 	location.root = bracket.root;
 	location.accepted_methods = bracket.accepted_methods;
 }
 
-void Configuration::validateFiles(t_server_config &data)
+void Configuration::validateFiles(Data::Server &data)
 {
 	std::string root = data.root;
 
@@ -407,35 +264,14 @@ void Configuration::validateFiles(t_server_config &data)
 		throw (Parser::InvalidFile("", data.errors.error_502, 0));
 }
 
-void Configuration::parse_location(const std::string &bracket, const std::vector<string> &start, t_server_config &config)
-{
-	std::stringstream 	data(bracket);
-	t_location location;
-	std::string line;
-
-	cout << "Location bracket: " << data.str() <<endl;
-
-	set_default(location, config);
-	location.route = start.at(1);
-	while(std::getline(data, line) && (line.find("}") == std::string::npos))
-	{
-		if (line.at(0) == Configuration::s_comment_char)
-			continue;
-	}
-	cout << "Root: " << location.root << endl;
-	cout << "Route: " << location.route << endl;
-	config.locations.push_back(location);
-}
-
 void Configuration::parse_bracket(const std::string &server)
 {
-	t_server_config		config;
+	Data::Server		config;
 	std::stringstream 	data(server);
 	string				line;
 	size_t 				position = 0;
 
 	this->set_default(config);
-	this->set_default(config.errors);
 	cout << "====New Bracket====\n";
 	while(std::getline(data, line) )
 	{
@@ -444,23 +280,23 @@ void Configuration::parse_bracket(const std::string &server)
 		const std::vector<string>	tokens = parse_line(line, Keywords());
 		const string 				&key = tokens.at(0);
 
+		this->save_to_server(key, line, tokens, config);
+
 		if (key == "location")
 		{
 			stringstream tmp;
 			tmp << data.seekp(position).rdbuf();
-			this->parse_location(tmp.str(), tokens, config);
 		}
-		this->save_to_server(key, line, tokens, config);
 		position += line.size();
 	}
 	cout << BOLDGREEN << "====INFO====\n" << NC;
 	Configuration::printConfig(config);
-	Configuration::validateFiles(config);
-	this->configuration.push_back(config);
+//	this->configuration.push_back(config);
 	cout << BOLDGREEN << "====END====\n" << NC;
 
 
 }
+
 
 bool Configuration::getConfiguration(std::string conf_file)
 {
@@ -501,7 +337,7 @@ bool Configuration::getConfiguration(std::string conf_file)
 		std::string tmp_server = file.substr(open_key + 2, (get_end_key(file, open_key + 1) - open_key) - 2);
 //		std::cout << "\n---------\n" << tmp_server << "\n---------\n";
 		servers.push_back(tmp_server);
-		get_location_path(tmp_server);
+
 		parse_bracket(tmp_server);
 		file.erase(0,  get_end_key(file, open_key + 1) + 1);
 

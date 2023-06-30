@@ -38,7 +38,7 @@ void Parser::Keys::ServerName::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, struct s_server_config &config)
+void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, Data::Server &config)
 {
 	config.names = tokens;
 }
@@ -76,7 +76,7 @@ void Parser::Keys::Ip::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, struct s_server_config &config)
+void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, Data::Server &config)
 {
 	config.ip = tokens.at(1);
 }
@@ -115,7 +115,7 @@ void Parser::Keys::Ports::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Ports::m_save(const std::vector<std::string> &tokens, struct s_server_config &config)
+void Parser::Keys::Ports::m_save(const std::vector<std::string> &tokens, Data::Server &config)
 {
 	for (std::vector<string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 		config.ports.push_back(std::atoi(it->c_str()));
@@ -153,7 +153,7 @@ void Parser::Keys::Root::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, struct s_server_config &config)
+void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, Data::Server &config)
 {
 	config.root = tokens.at(1);
 }
@@ -162,7 +162,7 @@ void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, struct s
  * MAX BODY DIRECTIVE
  */
 
-Parser::Keys::MaxBody::MaxBody(): Directive("max_body", 1)
+Parser::Keys::MaxBody::MaxBody(): Directive("max_body", 1), m_max_bytes(0)
 {
 	cout << "Directive root constructed\n";
 }
@@ -212,7 +212,7 @@ void Parser::Keys::MaxBody::m_validate_token(const std::string &token)
 
 }
 
-void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, struct s_server_config &config)
+void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, Data::Server &config)
 {
 	(void)tokens;
 	config.max_body_size = this->m_max_bytes;

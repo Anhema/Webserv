@@ -21,7 +21,7 @@ void Parser::Directive::m_iterate_through(const std::vector <std::string> &token
 	}
 }
 
-void Parser::Directive::handler(const std::vector <std::string> &tokens, struct s_server_config &dst)
+void Parser::Directive::handler(const std::vector <std::string> &tokens, Data::Server &dst)
 {
 	this->m_format_checker(tokens);
 	this->m_iterate_through(tokens);

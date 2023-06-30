@@ -12,7 +12,7 @@ Message::~Message() {}
 
 string &Message::getConnectionType() { return this->m_request.connection; }
 
-void Message::setConfig(t_server_config &config)
+void Message::setConfig(Data::Server &config)
 {
 	this->m_configuration = config;
 }

@@ -1,8 +1,8 @@
 #include "ServerHandler.hpp"
 
-ServerHandler::ServerHandler(std::vector<t_server_config> configurations)
+ServerHandler::ServerHandler(std::vector<Data::Server> configurations)
 {
-	for (std::vector<t_server_config>::iterator conf_it = configurations.begin(); conf_it != configurations.end(); conf_it++)
+	for (std::vector<Data::Server>::iterator conf_it = configurations.begin(); conf_it != configurations.end(); conf_it++)
 	{
 		for (std::vector<int>::iterator port_it = conf_it->ports.begin(); port_it != conf_it->ports.end(); port_it++)
 		{

@@ -1,6 +1,7 @@
 #include "Logger.hpp"
 #include "ServerHandler.hpp"
 #include "Config.hpp"
+#include "ConfParser.hpp"
 
 int main(int argc, char** argv)
 {
@@ -15,10 +16,22 @@ int main(int argc, char** argv)
 		return (0);
 	}
 
-	Configuration config;
+	WebServ::ConfParser parser(argv[1]);
+
+	Parser::Reader::Rules parsing_rules;
+
+	parsing_rules.comment = '#';
+	parsing_rules.ender = '}';
+	parsing_rules.opener = '{';
+	parsing_rules.useSemicolon = false;
+	parsing_rules.key_end = "";
+	parsing_rules.extension = ".conf";
+
 	try
 	{
-		config.getConfiguration(argv[1]);
+		parser.init();
+		parser.start();
+		//parser.setRules(parsing_rules);
 		return (0);
 	}
 	catch (Parser::Exception &e)
