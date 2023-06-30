@@ -7,7 +7,7 @@
 # include "BlockHandler.hpp"
 
 #ifndef __WEBSERV_UNDEFINED_MAX_TOKENS
-# define UNDEFINED -1
+# define UNDEFINED (-1)
 #endif
 
 

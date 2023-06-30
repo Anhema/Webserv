@@ -1,6 +1,7 @@
 #include "BlockHandler.hpp"
 #include "Keys.hpp"
 #include "Config.hpp"
+
 Parser::BlockHandler::BlockHandler(const std::string &id, const unsigned short max_deepness,
 								   const unsigned short min_deepness):
 								   m_identifier(id), m_max_deepness(max_deepness), m_min_deepness(min_deepness) {
@@ -29,7 +30,7 @@ WebServ::ServerBlockParser::~ServerBlockParser()
 }
 
 
-void WebServ::ServerBlockParser::validate_header(Data::Line &header)
+void WebServ::ServerBlockParser::validate_header(Data::Line const &header)
 {
 	if (header.tokens.size() != 1)
 		throw (std::invalid_argument("invalid header"));
@@ -43,7 +44,6 @@ void WebServ::ServerBlockParser::initHandlers()
 	this->AddKeywordHandler("ports", Parser::Directive::KeyFactory<Parser::Keys::Ports>());
 	this->AddKeywordHandler("root", Parser::Directive::KeyFactory<Parser::Keys::Root>());
 	this->AddKeywordHandler("max_body", Parser::Directive::KeyFactory<Parser::Keys::MaxBody>());
-
 }
 
 void WebServ::ServerBlockParser::process(Data::Line const &line, Data::Conf *dst)

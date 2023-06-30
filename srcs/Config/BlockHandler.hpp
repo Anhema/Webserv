@@ -15,7 +15,7 @@ namespace Parser
 		BlockHandler(std::string const &id, const unsigned short max_deepness, const unsigned short min_deepness);
 		virtual ~BlockHandler();
 
-		virtual void validate_header(Data::Line &header) = 0;
+		virtual void validate_header(Data::Line const &header) = 0;
 
 		virtual void process(Data::Line const &line, Data::Conf *dst) = 0;
 		virtual void initHandlers() = 0;
@@ -45,7 +45,7 @@ namespace WebServ
 
 	private:
 		void initHandlers();
-		void validate_header(Data::Line &header);
+		void validate_header(Data::Line const &header);
 		void process(Data::Line const &line, Data::Conf *dst);
 	};
 

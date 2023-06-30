@@ -101,10 +101,10 @@ void Parser::Reader::m_find_bracket()
 		if (line.empty())
 			continue;
 
-		if (pre_line.empty() && line.find(this->m_rules.bracket_opener) != std::string::npos)
-			throw (std::invalid_argument("JUAN"));
-		else
+		if (!pre_line.empty() && (line.find(this->m_rules.bracket_opener) != std::string::npos))
 			this->m_read_bracket(strline(pre_line));
+		else if (!pre_line.empty())
+			throw (std::invalid_argument("JUAN"));
 //		if (line.find(this->m_rules.bracket_opener) != 0)
 //			this->m_read_bracket(strline(pre_line));
 		pre_line = line;
@@ -125,6 +125,8 @@ void Parser::Reader::m_read_bracket(Data::Line const &header)
 		 handler = this->m_processor[header.key];
 	else
 		throw (std::invalid_argument("VAYA PERRO EH, QUE PONES UN BLOQUE QUE NO DEBIAS EH!"));
+
+	handler->validate_header(header);
 	for (std::string line; std::getline(this->m_filestream, line);)
 	{
 		cout << "Parsing 2 -> " << line << endl;
