@@ -84,8 +84,8 @@ void Parser::Reader::init()
 	this->m_rules.key_end = "";
 	this->m_rules.useSemicolon = false;
 	this->m_rules.comment = "#";
-	this->m_rules.opener = '{';
-	this->m_rules.ender = '}';
+	this->m_rules.bracket_opener = '{';
+	this->m_rules.bracket_closer = '}';
 	this->m_rules.extension = "conf";
 	this->m_checkFile();
 
@@ -93,32 +93,67 @@ void Parser::Reader::init()
 
 void Parser::Reader::m_find_bracket()
 {
-	static std::string pre_line;
+	std::string pre_line;
 	for (std::string line; std::getline(this->m_filestream, line);)
 	{
 		this->m_current_line++;
+		cout << "Parsing 1 -> " << line << endl;
 		if (line.empty())
 			continue;
 
-
-		if (line.find(this->m_rules.opener) != std::string::npos && pre_line == "server")
-		{
-		}
-
+		if (pre_line.empty() && line.find(this->m_rules.bracket_opener) != std::string::npos)
+			throw (std::invalid_argument("JUAN"));
+		else
+			this->m_read_bracket(strline(pre_line));
+//		if (line.find(this->m_rules.bracket_opener) != 0)
+//			this->m_read_bracket(strline(pre_line));
 		pre_line = line;
 	}
 
 
 }
 
-std::vector<string> Parser::Reader::m_tokenize(const string &raw) {
-	std::stringstream	line(raw);
-	std::vector<string>	tokens;
-	string 				tmp;
+void Parser::Reader::m_read_bracket(Data::Line const &header)
+{
+	BlockHandler *handler;
+	Data::Conf * dst = new Data::Server;
 
+	cout << "key-> " << header.key << endl;
+	cout << "raw-> " << header.raw << endl;
+
+	if (this->m_processor.find(header.key) != this->m_processor.end())
+		 handler = this->m_processor[header.key];
+	else
+		throw (std::invalid_argument("VAYA PERRO EH, QUE PONES UN BLOQUE QUE NO DEBIAS EH!"));
+	for (std::string line; std::getline(this->m_filestream, line);)
+	{
+		cout << "Parsing 2 -> " << line << endl;
+		if (line.empty())
+			continue;
+//		cout << "Line: " << line << " | find: " << line.find(this->m_rules.bracket_closer, 0) << endl;
+		if (line.find(this->m_rules.bracket_closer, 0) == 0)
+			return;
+
+		handler->process(strline(line), dst);
+	}
+
+
+	throw (std::invalid_argument("Cierra las llaves jaja"));
+}
+
+Data::Line Parser::Reader::strline(const std::string &raw) {
+	std::stringstream	line(raw);
+	string 				tmp;
+	Data::Line			ret;
+
+	ret.raw = raw;
 	while (line >> tmp)
-		tokens.push_back(tmp);
-	return tokens;
+	{
+		if (ret.tokens.empty())
+			ret.key = tmp;
+		ret.tokens.push_back(tmp);
+	}
+	return ret;
 }
 
 void Parser::Reader::m_checkFile() const

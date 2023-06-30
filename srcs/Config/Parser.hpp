@@ -4,6 +4,7 @@
 # include "DataContainers.hpp"
 # include <fstream>
 # include "Config.hpp"
+# include "BlockHandler.hpp"
 
 #ifndef __WEBSERV_UNDEFINED_MAX_TOKENS
 # define UNDEFINED -1
@@ -91,8 +92,8 @@ namespace Parser
 		struct Rules
 		{
 			bool		useSemicolon;
-			char 		opener;
-			char 		ender;
+			char 		bracket_opener;
+			char 		bracket_closer;
 			std::string extension;
 			std::string comment;
 			std::string key_end;
@@ -109,11 +110,13 @@ namespace Parser
 		virtual void				start() = 0;
 
 	protected:
-		Rules						m_rules;
-		std::ifstream				m_filestream;
+		Rules												m_rules;
+		std::ifstream										m_filestream;
+		std::map<const std::string, Parser::BlockHandler *>	m_processor;
 
 		void						m_checkFile() const;
 		void						m_find_bracket();
+		void						m_read_bracket(Data::Line const &header);
 
 
 
@@ -121,7 +124,7 @@ namespace Parser
 		std::string 				m_filename;
 		std::vector<std::string>	m_lines;
 		size_t 						m_current_line;
-		static std::vector<string> 	m_tokenize(const string &raw);
+		Data::Line 					strline(const string &raw);
 	};
 }
 

@@ -8,6 +8,10 @@ namespace Data
 {
 	struct Server;
 
+	struct  Conf
+	{
+		virtual ~Conf();
+	};
 	struct	ErrorPages
 	{
 		ErrorPages();
@@ -35,7 +39,7 @@ namespace Data
 		std::string							redirection;
 	};
 
-	struct Server
+	struct Server: Conf
 	{
 		Server();
 		Server(const Data::Server &rhs);
@@ -51,6 +55,19 @@ namespace Data
 		size_t 								max_body_size;
 		ErrorPages							errors;
 		std::vector<Data::Location>			locations;
+	};
+
+	struct Line
+	{
+		Line();
+		Line(Line const &rhs);
+		Line &operator=(Line const &rhs);
+		~Line();
+
+		std::string					key;
+		std::string					raw;
+		std::vector<std::string>	tokens;
+		size_t 						n;
 	};
 }
 

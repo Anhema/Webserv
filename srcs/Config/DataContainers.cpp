@@ -21,6 +21,10 @@ errors(rhs.errors),
 locations(rhs.locations)
 {}
 
+Data::Conf::~Conf() {
+
+}
+
 Data::Server::~Server() {}
 
 Data::Location::Location() { throw (std::invalid_argument("can't construct location without server context")); }
@@ -37,3 +41,20 @@ Data::Location::Location(Location const &rhs):
 
 Data::Location::~Location() {}
 
+Data::Line::Line(Line const &rhs): key(rhs.key), raw(rhs.raw), tokens(rhs.tokens), n(rhs.n) {}
+
+Data::Line::Line() {
+
+}
+
+Data::Line::~Line() {
+
+}
+
+Data::Line &Data::Line::operator=(const Data::Line &rhs) {
+	this->n = rhs.n;
+	this->tokens = rhs.tokens;
+	this->raw = rhs.raw;
+	this->key = rhs.key;
+	return *this;
+}

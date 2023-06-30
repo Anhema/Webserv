@@ -21,8 +21,8 @@ int main(int argc, char** argv)
 	Parser::Reader::Rules parsing_rules;
 
 	parsing_rules.comment = '#';
-	parsing_rules.ender = '}';
-	parsing_rules.opener = '{';
+	parsing_rules.bracket_closer = '}';
+	parsing_rules.bracket_opener = '{';
 	parsing_rules.useSemicolon = false;
 	parsing_rules.key_end = "";
 	parsing_rules.extension = ".conf";
