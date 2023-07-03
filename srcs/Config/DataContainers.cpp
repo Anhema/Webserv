@@ -27,12 +27,27 @@ locations(rhs.locations)
 {
 }
 
+void Data::Server::clear()
+{
+	Data::Server def;
+
+	this->accepted_methods = def.accepted_methods;
+	this->index = def.index;
+	this->root = def.root;
+	this->ports = def.ports;
+	this->ip = def.ip;
+	this->locations = def.locations;
+	this->errors = def.errors;
+	this->max_body_size = def.max_body_size;
+	this->names = def.names;
+}
+
 Data::Conf::~Conf() {
-    std::cout << "Parent Data destructed\n";
+//    std::cout << "Parent Data destructed\n";
 }
 
 Data::Server::~Server() {
-    std::cout << "Destroying server data\n";
+    //std::cout << "Destroying server data\n";
 }
 
 Data::Location::Location():
@@ -50,11 +65,27 @@ Data::Location::Location(Location const &rhs):
 		directory_listing(rhs.directory_listing), accepted_methods(rhs.accepted_methods), redirection(rhs.redirection)
 {}
 
-Data::Location::~Location() { std::cout << "Destroying Location\n"; }
+Data::Location::~Location() { //std::cout << "Destroying Location\n";
+}
 
 Data::Line::Line(Line const &rhs): key(rhs.key), raw(rhs.raw), pre(rhs.pre), tokens(rhs.tokens), n(rhs.n) {}
 
 Data::Line::Line() {
+
+}
+
+void Data::Location::clear()
+{
+	Data::Location def;
+
+	this->root = def.root;
+	this->index = def.index;
+	this->accepted_methods = def.accepted_methods;
+	this->directory_file = def.directory_file;
+	this->directory_listing = def.directory_listing;
+	this->redirection = def.redirection;
+	this->cgi = def.cgi;
+	this->upload_path = def.upload_path;
 
 }
 

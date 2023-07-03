@@ -10,6 +10,7 @@ namespace Data
 
 	struct  Conf
 	{
+		virtual void clear() = 0;
 		virtual ~Conf();
 	};
 	struct	ErrorPages
@@ -29,6 +30,7 @@ namespace Data
 		Location(Data::Server const &context);
 		Location(Location const &rhs);
 		~Location();
+		void clear();
 
 		std::string							route;
 		std::string 						root;
@@ -46,6 +48,7 @@ namespace Data
 		Server();
 		Server(const Data::Server &rhs);
 		~Server();
+		void clear();
 
 		std::vector<int>					ports;
 		std::vector<std::string>			names;

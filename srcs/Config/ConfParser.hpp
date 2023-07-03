@@ -16,10 +16,10 @@ namespace WebServ
         void    save(Data::Conf *data);
         void    print() const;
 
-        std::vector<Data::Server> getBrackets() const;
+        std::vector<Data::Server>	getBrackets() const;
     private:
-        std::vector<Data::Server> m_serverBrackets;
-        int                         m_serverBracket_count;
+        std::vector<Data::Server>	m_serverBrackets;
+        int                       	m_serverBracket_count;
 	};
 }
 #endif

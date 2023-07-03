@@ -8,10 +8,10 @@ Parser::BlockHandler::BlockHandler(const std::string &id, const unsigned short m
                                    {}
 
 Parser::BlockHandler::~BlockHandler() {
-    for (std::map<string, Parser::Directive *>::iterator it = this->keyword_handler.begin(); it != this->keyword_handler.end(); it++)
+    for (std::map<const string, Parser::Directive *>::iterator it = this->keyword_handler.begin(); it != this->keyword_handler.end(); it++)
         delete it->second;
     this->keyword_handler.clear();
-    cout << "BlockHandler Parent destructed\n";
+    // cout << "BlockHandler Parent destructed\n";
 }
 
 void Parser::BlockHandler::AddKeywordHandler(const string &key, Parser::Directive *handler)
@@ -31,7 +31,7 @@ WebServ::ServerBlockParser::ServerBlockParser(): Parser::BlockHandler("server", 
 WebServ::ServerBlockParser::~ServerBlockParser()
 {
     delete this->dst;
-    cout << this->m_identifier << " *************************Block Handler destructed\n";
+    //cout << this->m_identifier << " *************************Block Handler destructed\n";
 }
 
 
@@ -99,7 +99,7 @@ WebServ::LocationBlockParser::LocationBlockParser(): Parser::BlockHandler("locat
 WebServ::LocationBlockParser::~LocationBlockParser()
 {
     delete this->dst;
-    cout << this->m_identifier << " *************************Block Handler destructed\n";
+    //cout << this->m_identifier << " *************************Block Handler destructed\n";
 }
 
 
@@ -117,7 +117,6 @@ void WebServ::LocationBlockParser::initHandlers()
     if (this->keyword_handler.empty())
     {
         this->AddKeywordHandler("root", Parser::Directive::KeyFactory<Parser::Keys::Root>());
-        this->AddKeywordHandler("ip", Parser::Directive::KeyFactory<Parser::Keys::Ip>());
     }
 }
 

@@ -7,12 +7,12 @@
 
 Parser::Keys::ServerName::ServerName(): Directive("server_name", PARSER_UNDEFINED_MAX_TOKENS)
 {
-	cout << "Directive Server name constructed\n";
+	//cout << "Directive Server name constructed\n";
 }
 
 Parser::Keys::ServerName::~ServerName()
 {
-	cout << "Directive Server name destructed\n";
+	//cout << "Directive Server name destructed\n";
 
 }
 
@@ -55,12 +55,12 @@ void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, Da
 
 Parser::Keys::Ip::Ip(): Directive("ip", 1)
 {
-	cout << "Directive ip constructed\n";
+	//cout << "Directive ip constructed\n";
 }
 
 Parser::Keys::Ip::~Ip()
 {
-	cout << "Directive ip destructed\n";
+	//cout << "Directive ip destructed\n";
 
 }
 
@@ -100,12 +100,12 @@ void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, Data::Conf
 
 Parser::Keys::Ports::Ports(): Directive("ports", PARSER_UNDEFINED_MAX_TOKENS)
 {
-	cout << "Directive ports constructed\n";
+	//cout << "Directive ports constructed\n";
 }
 
 Parser::Keys::Ports::~Ports()
 {
-	cout << "Directive ports destructed\n";
+	//cout << "Directive ports destructed\n";
 
 }
 
@@ -144,12 +144,12 @@ void Parser::Keys::Ports::m_save(const std::vector<std::string> &tokens, Data::C
 
 Parser::Keys::Root::Root(): Directive("root", 1)
 {
-	cout << "Directive root constructed\n";
+	//cout << "Directive root constructed\n";
 }
 
 Parser::Keys::Root::~Root()
 {
-	cout << "Directive Root destructed\n";
+	//cout << "Directive Root destructed\n";
 
 }
 
@@ -202,12 +202,12 @@ void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, Data::Co
 
 Parser::Keys::MaxBody::MaxBody(): Directive("max_body", 1), m_max_bytes(0)
 {
-	cout << "Directive root constructed\n";
+	//cout << "Directive root constructed\n";
 }
 
 Parser::Keys::MaxBody::~MaxBody()
 {
-	cout << "Directive Root destructed\n";
+	//cout << "Directive Root destructed\n";
 
 }
 

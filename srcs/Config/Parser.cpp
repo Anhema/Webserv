@@ -78,7 +78,7 @@ Parser::UBT::MethodsNode::MethodsNode(): Node(METHODS), data() {}
 Parser::Reader::Reader() {}
 
 Parser::Reader::~Reader() {
-    for (std::map<string, Parser::BlockHandler *>::iterator it = this->m_BlockHandlers.begin(); it != this->m_BlockHandlers.end(); it++)
+    for (std::map<const string, Parser::BlockHandler *>::iterator it = this->m_BlockHandlers.begin(); it != this->m_BlockHandlers.end(); it++)
         delete it->second;
     cout << "Reader destructed\n";
 }
@@ -114,7 +114,7 @@ bool Parser::Reader::lineIsOpener(const Data::Line &line)
 
 bool Parser::Reader::lineIsCloser(const Data::Line &line)
 {
-    return (*line.raw.begin() == this->m_rules.bracket_closer);
+    return (line.raw.at(line.raw.find_first_not_of(WHITESPACE)) == this->m_rules.bracket_closer);
 }
 
 void Parser::Reader::m_getBracketData(std::stringstream &dst)
@@ -127,6 +127,7 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
 
         this->m_current_line++;
         line.update(raw);
+		cout << "Parsing 3 -> " << raw << endl;
         if (lineIsCloser(line) || lineIsOpener(line))
         {
             this->m_filestream.seekg(this->m_filestream.tellg() - static_cast<std::streampos>(raw.size()));
@@ -134,7 +135,7 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
         }
         dst << raw << endl;
     }
-    cout << "Bracket data:\n" << dst.str();
+//    cout << "Bracket data:\n" << dst.str();
 }
 
 void Parser::Reader::m_find_bracket()
@@ -157,10 +158,8 @@ void Parser::Reader::m_find_bracket()
             std::stringstream new_bracket;
 
             this->m_getBracketData(new_bracket);
-
-//            new_bracket << this->m_getBracketData().str();
+//			cout << "Bracket filled:\n" << new_bracket.str();
             this->m_read_bracket(new_bracket, line);
-            cout << "Bracket filled:\n" << new_bracket.str();
         }
 	}
 }
@@ -169,8 +168,6 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 {
 	BlockHandler *handler;
 
-	cout << "key-> " << header.key << endl;
-	cout << "raw-> " << header.raw << endl;
 
 	if (this->m_BlockHandlers.find(header.key) != this->m_BlockHandlers.end())
     {
@@ -181,6 +178,9 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 		throw (std::invalid_argument("VAYA PERRO EH, QUE PONES UN BLOQUE QUE NO DEBIAS EH!"));
 
 	handler->validate_header(header);
+
+	cout << "Parsing bracket:\n" << bracket.str() << endl;
+
     Data::Line line("", "", header.n);
 
 	for (std::string raw; std::getline(bracket, raw);)
@@ -195,7 +195,6 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
         if (lineIsOpener(line) || lineIsCloser(line))
         {
             this->save(handler->getDestination());
-//            handler->clear();
             return;
         }
 		if (raw.empty())
@@ -203,7 +202,6 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 		handler->process(strline(raw), handler->getDestination());
 	}
     this->save(handler->getDestination());
-//    handler->clear();
 }
 
 Data::Line Parser::Reader::strline(const std::string &raw)

@@ -104,7 +104,10 @@ void WebServ::ConfParser::save(Data::Conf *data)
         this->m_serverBrackets.at(this->m_serverBracket_count).locations.push_back(*location);
     }
     else
-        throw (std::runtime_error("casting in confParser save"));
+	{
+		throw (std::runtime_error("casting in confParser save"));
+	}
+	data->clear();
 }
 
 void WebServ::ConfParser::start()
