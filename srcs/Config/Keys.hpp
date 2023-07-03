@@ -6,6 +6,12 @@
 # include "Directive.hpp"
 # include "DataContainers.hpp"
 
+
+#ifndef PARSER_UNDEFINED_MAX_TOKENS
+# define PARSER_UNDEFINED_MAX_TOKENS (-1)
+#endif
+
+
 namespace Parser
 {
 	namespace Keys
@@ -19,7 +25,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 		};
 
 		class Ip: public Parser::Directive
@@ -31,7 +37,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 		};
 
 		class Ports: public Parser::Directive
@@ -43,7 +49,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 		};
 
 		class Root: public Parser::Directive
@@ -55,7 +61,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 		};
 
 		class MaxBody: public Parser::Directive
@@ -67,7 +73,7 @@ namespace Parser
 		private:
 			void	m_validate_token(const std::string &token);
 			void	m_format_checker(const std::vector<std::string> &tokens);
-			void	m_save(const std::vector<std::string> &tokens, Data::Server &config);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 
 		private:
 			size_t	m_max_bytes;

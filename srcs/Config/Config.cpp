@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "stdlib.h"
 Parser::KeysNotClosed::KeysNotClosed(): std::invalid_argument("Keys are not closed correctly") {}
 
 Parser::SyntaxError::SyntaxError(): std::invalid_argument("Syntax Error") {}
@@ -55,32 +56,6 @@ void Parser::InvalidValue::print()
 
 
 
-void Configuration::save_to_server(const std::string &key, const std::string &line,  const std::vector<string> &tokens, Data::Server &config)
-{
-	static std::map<string, Parser::Directive *> directives;
-
-//	(void)config;
-//	std::vector<std::string>tokens2;
-//	for (std::vector<std::string>::const_iterator it = tokens.begin() + 1; it != tokens.end(); it++)
-//		tokens2.push_back(*it);
-	if (directives.empty())
-	{
-		directives["server_name"] = Parser::Directive::KeyFactory<Parser::Keys::ServerName>();
-		directives["ip"] = Parser::Directive::KeyFactory<Parser::Keys::Ip>();
-		directives["ports"] = Parser::Directive::KeyFactory<Parser::Keys::Ports>();
-		directives["root"] = Parser::Directive::KeyFactory<Parser::Keys::Root>();
-		directives["max_body"] = Parser::Directive::KeyFactory<Parser::Keys::MaxBody>();
-	}
-	if (directives.find(key) != directives.end())
-	{
-		directives[key]->handler(tokens, config);
-		directives[key]->Throw(line);
-	}
-	else
-	{
-		throw (Parser::InvalidToken(line, key, 10));
-	}
-}
 
 const std::vector<string> &Configuration::Keywords() {
 	static std::vector<string>	keywords;
@@ -183,11 +158,12 @@ std::vector<string> Configuration::parse_line(const std::string &raw, const std:
 	cout << "line -> " << raw << endl;
 	std::vector<string> tokens = tokenize(raw);
 	const string key = tokens.at(0);
+    (void)keywords;
 
-	if (std::find(keywords.begin(), keywords.end(), key) == keywords.end())
-		throw (Parser::InvalidToken(raw, key, 0));
-	if (tokens.size() < 2)
-		throw (Parser::InvalidValue(raw, key, 0));
+//	if (std::find(keywords.begin(), keywords.end(), key) == keywords.end())
+//		throw (Parser::InvalidToken(raw, key, 0));
+//	if (tokens.size() < 2)
+//		throw (Parser::InvalidValue(raw, key, 0));
 	return tokens;
 }
 
@@ -195,32 +171,20 @@ void Configuration::printConfig(Data::Server &config)
 {
 	cout << "Ip -> " << config.ip << endl;
 	cout << "Ports -> ";
-	print_vector(config.ports);
+	Utils::print_vector(config.ports);
 
 	cout << "Server Names -> ";
-	print_vector(config.names);
+	Utils::print_vector(config.names);
 
 	cout << "Root -> " << config.root << endl;
 	cout << "Index -> " << config.index << endl;
 	cout << "Accepted methods -> ";
-	print_vector(config.accepted_methods);
+	Utils::print_vector(config.accepted_methods);
 	cout << "Max Body -> " << config.max_body_size << endl;
 
 	cout << "Error Pages\n";
 	cout << "404 -> " << config.errors.error_404 << endl;
 	cout << "502 -> " << config.errors.error_502 << endl;
-
-	if (config.locations.empty())
-		cout << "No locations found\n";
-	else
-	{
-		for (std::vector<Data::Location>::iterator it = config.locations.begin(); it != config.locations.end(); it++)
-		{
-			cout << "====Location====\n";
-			cout << "\tRoute-> " << (*it).route << "\n";
-			cout << "\tRoot-> " << (*it).root << "\n";
-		}
-	}
 
 }
 
@@ -280,7 +244,6 @@ void Configuration::parse_bracket(const std::string &server)
 		const std::vector<string>	tokens = parse_line(line, Keywords());
 		const string 				&key = tokens.at(0);
 
-		this->save_to_server(key, line, tokens, config);
 
 		if (key == "location")
 		{

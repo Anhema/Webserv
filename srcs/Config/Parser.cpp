@@ -45,16 +45,20 @@ Parser::UBT::NodeAttributes::NodeAttributes(Parser::UBT::TYPES type)
 	{
 		case LOCATION:
 			this->canNest = false;
-			this->max_concurrencies = UNDEFINED;
+			this->max_concurrencies = PARSER_UNDEFINED_MAX_TOKENS;
+            break;
 		case SERVER:
 			this->canNest = false;
 			this->max_concurrencies = 1;
+            break;
 		case ERRORS:
 			this->canNest = false;
 			this->max_concurrencies = 1;
+            break;
 		case METHODS:
 			this->canNest = false;
 			this->max_concurrencies = 1;
+            break;
 		default:
 			throw (std::invalid_argument("node attributes"));
 	}
@@ -73,9 +77,13 @@ Parser::UBT::MethodsNode::MethodsNode(): Node(METHODS), data() {}
 
 Parser::Reader::Reader() {}
 
-Parser::Reader::~Reader() {}
+Parser::Reader::~Reader() {
+    for (std::map<string, Parser::BlockHandler *>::iterator it = this->m_BlockHandlers.begin(); it != this->m_BlockHandlers.end(); it++)
+        delete it->second;
+    cout << "Reader destructed\n";
+}
 
-Parser::Reader::Reader(const std::string &file): m_filestream(file), m_filename(file), m_current_line(0) {
+Parser::Reader::Reader(const std::string &file): m_filestream(file.c_str()), m_filename(file), m_current_line(0) {
 
 }
 
@@ -91,59 +99,115 @@ void Parser::Reader::init()
 
 }
 
-void Parser::Reader::m_find_bracket()
+bool Parser::Reader::lineIsOpener(const Data::Line &line)
 {
-	std::string pre_line;
-	for (std::string line; std::getline(this->m_filestream, line);)
-	{
-		this->m_current_line++;
-		cout << "Parsing 1 -> " << line << endl;
-		if (line.empty())
-			continue;
-
-		if (!pre_line.empty() && (line.find(this->m_rules.bracket_opener) != std::string::npos))
-			this->m_read_bracket(strline(pre_line));
-		else if (!pre_line.empty())
-			throw (std::invalid_argument("JUAN"));
-//		if (line.find(this->m_rules.bracket_opener) != 0)
-//			this->m_read_bracket(strline(pre_line));
-		pre_line = line;
-	}
+    // Case ->
+    // server
+    // {
+//    cout << "checking: " << *(line.raw.end() -1) << endl;
+    return *(line.raw.end() -1) == this->m_rules.bracket_opener;
+//    else if (pre_has_key && !current_is_key)
 
 
+//    return false;
 }
 
-void Parser::Reader::m_read_bracket(Data::Line const &header)
+bool Parser::Reader::lineIsCloser(const Data::Line &line)
+{
+    return (*line.raw.begin() == this->m_rules.bracket_closer);
+}
+
+void Parser::Reader::m_getBracketData(std::stringstream &dst)
+{
+    Data::Line line("", "", this->m_current_line);
+
+    for (std::string raw; std::getline(this->m_filestream, raw);)
+    {
+        raw.erase(0, raw.find_first_not_of(WHITESPACE) -1);
+
+        this->m_current_line++;
+        line.update(raw);
+        if (lineIsCloser(line) || lineIsOpener(line))
+        {
+            this->m_filestream.seekg(this->m_filestream.tellg() - static_cast<std::streampos>(raw.size()));
+            break;
+        }
+        dst << raw << endl;
+    }
+    cout << "Bracket data:\n" << dst.str();
+}
+
+void Parser::Reader::m_find_bracket()
+{
+    Data::Line line("", "", this->m_current_line);
+
+	for (std::string raw; std::getline(this->m_filestream, raw);)
+	{
+        raw.erase(raw.begin(), raw.begin() + raw.find_first_not_of(WHITESPACE));
+		this->m_current_line++;
+
+        line.update(raw);
+        line.tokenize();
+        if (raw.empty())
+            continue;
+        cout << "Parsing 1 -> " << line << endl;
+        if (this->lineIsOpener(line))
+        {
+            cout << "Is opener! " << line << endl;
+            std::stringstream new_bracket;
+
+            this->m_getBracketData(new_bracket);
+
+//            new_bracket << this->m_getBracketData().str();
+            this->m_read_bracket(new_bracket, line);
+            cout << "Bracket filled:\n" << new_bracket.str();
+        }
+	}
+}
+
+void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const &header)
 {
 	BlockHandler *handler;
-	Data::Conf * dst = new Data::Server;
 
 	cout << "key-> " << header.key << endl;
 	cout << "raw-> " << header.raw << endl;
 
-	if (this->m_processor.find(header.key) != this->m_processor.end())
-		 handler = this->m_processor[header.key];
+	if (this->m_BlockHandlers.find(header.key) != this->m_BlockHandlers.end())
+    {
+        handler = this->m_BlockHandlers[header.key];
+        handler->initHandlers();
+    }
 	else
 		throw (std::invalid_argument("VAYA PERRO EH, QUE PONES UN BLOQUE QUE NO DEBIAS EH!"));
 
 	handler->validate_header(header);
-	for (std::string line; std::getline(this->m_filestream, line);)
+    Data::Line line("", "", header.n);
+
+	for (std::string raw; std::getline(bracket, raw);)
 	{
+        raw.erase(raw.begin(), raw.begin() + raw.find_first_not_of(WHITESPACE));
+        this->m_current_line++;
+
+        line.update(raw);
+        line.tokenize();
+
 		cout << "Parsing 2 -> " << line << endl;
-		if (line.empty())
+        if (lineIsOpener(line) || lineIsCloser(line))
+        {
+            this->save(handler->getDestination());
+//            handler->clear();
+            return;
+        }
+		if (raw.empty())
 			continue;
-//		cout << "Line: " << line << " | find: " << line.find(this->m_rules.bracket_closer, 0) << endl;
-		if (line.find(this->m_rules.bracket_closer, 0) == 0)
-			return;
-
-		handler->process(strline(line), dst);
+		handler->process(strline(raw), handler->getDestination());
 	}
-
-
-	throw (std::invalid_argument("Cierra las llaves jaja"));
+    this->save(handler->getDestination());
+//    handler->clear();
 }
 
-Data::Line Parser::Reader::strline(const std::string &raw) {
+Data::Line Parser::Reader::strline(const std::string &raw)
+{
 	std::stringstream	line(raw);
 	string 				tmp;
 	Data::Line			ret;
@@ -151,9 +215,10 @@ Data::Line Parser::Reader::strline(const std::string &raw) {
 	ret.raw = raw;
 	while (line >> tmp)
 	{
-		if (ret.tokens.empty())
+		if (ret.tokens.empty() && ret.key.empty())
 			ret.key = tmp;
-		ret.tokens.push_back(tmp);
+        else
+            ret.tokens.push_back(tmp);
 	}
 	return ret;
 }

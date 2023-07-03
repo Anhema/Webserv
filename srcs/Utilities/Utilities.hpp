@@ -11,6 +11,10 @@
 # include <fstream>
 # include <sys/types.h>
 # include <dirent.h>
+# include "memory"
+# include <stdexcept>
+# include "stdlib.h"
+# include <climits>
 
 using std::string;
 using std::cout;
@@ -18,7 +22,6 @@ using std::cerr;
 using std::endl;
 using std::stringstream;
 using std::size_t;
-using std::unique_ptr;
 
 # define WHITESPACE " \f\r\t\v"
 # define GET_METHOD "get"
@@ -139,6 +142,13 @@ namespace HttpStatus {
 
 namespace Utils
 {
+    template<class T>
+    static void print_vector(T x) {
+        for (typename T::iterator it = x.begin(); it != x.end(); it++)
+            cout << *it << " ";
+        cout << "\n";
+    }
+
 	bool						isport(std::string const &s);
 	std::vector<std::string>	split(std::string str, std::string separator);
 	void						debug_log(std::string log);

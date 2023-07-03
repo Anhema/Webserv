@@ -23,7 +23,7 @@ namespace Data
 
 	};
 
-	struct	Location
+	struct	Location: Conf
 	{
 		Location();
 		Location(Data::Server const &context);
@@ -37,6 +37,8 @@ namespace Data
 		bool								directory_listing;
 		std::vector<std::string>			accepted_methods;
 		std::string							redirection;
+        std::string                         cgi;
+        std::string                         upload_path;
 	};
 
 	struct Server: Conf
@@ -54,21 +56,27 @@ namespace Data
 		std::string 						index;
 		size_t 								max_body_size;
 		ErrorPages							errors;
-		std::vector<Data::Location>			locations;
+		std::vector<Data::Location>		locations;
 	};
 
 	struct Line
 	{
 		Line();
 		Line(Line const &rhs);
+        Line(std::string const &raw, std::string const &pre, size_t n);
 		Line &operator=(Line const &rhs);
 		~Line();
 
+        void tokenize(void);
+        void update(std::string const &new_line);
+
 		std::string					key;
 		std::string					raw;
+        std::string					pre;
 		std::vector<std::string>	tokens;
 		size_t 						n;
 	};
 }
+std::ostream &operator<<(std::ostream &os, const Data::Line &line);
 
 #endif

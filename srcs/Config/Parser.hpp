@@ -6,8 +6,8 @@
 # include "Config.hpp"
 # include "BlockHandler.hpp"
 
-#ifndef __WEBSERV_UNDEFINED_MAX_TOKENS
-# define UNDEFINED (-1)
+#ifndef PARSER_UNDEFINED_MAX_TOKENS
+# define PARSER_UNDEFINED_MAX_TOKENS (-1)
 #endif
 
 
@@ -94,6 +94,7 @@ namespace Parser
 			bool		useSemicolon;
 			char 		bracket_opener;
 			char 		bracket_closer;
+            char        line_delimiter;
 			std::string extension;
 			std::string comment;
 			std::string key_end;
@@ -108,15 +109,19 @@ namespace Parser
 
 		virtual void				init() = 0;
 		virtual void				start() = 0;
+        virtual void                save(Data::Conf *data) = 0;
 
 	protected:
 		Rules												m_rules;
 		std::ifstream										m_filestream;
-		std::map<const std::string, Parser::BlockHandler *>	m_processor;
+		std::map<const std::string, Parser::BlockHandler *>	m_BlockHandlers;
 
 		void						m_checkFile() const;
 		void						m_find_bracket();
-		void						m_read_bracket(Data::Line const &header);
+		void						m_read_bracket(std::stringstream &bracket, Data::Line const &header);
+        void                        m_getBracketData(std::stringstream &dst);
+        bool                        lineIsOpener(const Data::Line &line);
+        bool                        lineIsCloser(const Data::Line &line);
 
 
 

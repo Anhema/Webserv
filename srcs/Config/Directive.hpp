@@ -2,7 +2,6 @@
 # define DIRECTIVE_HPP
 
 #ifndef __WEBSERV_UNDEFINED_MAX_TOKENS
-# define UNDEFINED -1
 #endif
 
 # include "../Utilities/Utilities.hpp"
@@ -42,7 +41,7 @@ namespace Parser
 
 		Parser::Errors		Error() const;
 		void				Throw(const std::string &line);
-		void 				handler(const std::vector<std::string> &tokens, Data::Server &dst);
+		void 				handler(const std::vector<std::string> &tokens, Data::Conf *dst);
 
 	private:
 		void				m_iterate_through(const std::vector<std::string> &tokens);
@@ -50,7 +49,7 @@ namespace Parser
 	protected:
 		virtual void		m_validate_token(const std::string &token) = 0;
 		virtual void		m_format_checker(const std::vector<std::string> &tokens) = 0;
-		virtual void 		m_save(const std::vector<std::string> &tokens, Data::Server &dst) = 0;
+		virtual void 		m_save(const std::vector<std::string> &tokens, Data::Conf *dst) = 0;
 	};
 }
 

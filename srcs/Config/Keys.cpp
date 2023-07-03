@@ -5,7 +5,7 @@
  * SERVER NAMES DIRECTIVE
  */
 
-Parser::Keys::ServerName::ServerName(): Directive("server_name", UNDEFINED)
+Parser::Keys::ServerName::ServerName(): Directive("server_name", PARSER_UNDEFINED_MAX_TOKENS)
 {
 	cout << "Directive Server name constructed\n";
 }
@@ -19,7 +19,7 @@ Parser::Keys::ServerName::~ServerName()
 void Parser::Keys::ServerName::m_format_checker(const std::vector <std::string> &tokens)
 {
 
-	if (this->m_max_tokens != UNDEFINED && static_cast<short>(tokens.size()) > this->m_max_tokens)
+	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
 	{
 		this->m_errno = TOO_MANY_ARGUMENTS;
 	}
@@ -38,9 +38,15 @@ void Parser::Keys::ServerName::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, Data::Server &config)
+void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
-	config.names = tokens;
+    Data::Server *dst;
+
+    dst = dynamic_cast<Data::Server *>(config);
+    if (dst)
+        dst->names = tokens;
+    else
+        throw (std::runtime_error("casting in ports directive"));
 }
 
 /*
@@ -61,7 +67,7 @@ Parser::Keys::Ip::~Ip()
 void Parser::Keys::Ip::m_format_checker(const std::vector <std::string> &tokens)
 {
 
-	if (this->m_max_tokens != UNDEFINED && static_cast<short>(tokens.size()) > this->m_max_tokens)
+	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
 	{
 		this->m_errno = TOO_MANY_ARGUMENTS;
 	}
@@ -76,9 +82,15 @@ void Parser::Keys::Ip::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, Data::Server &config)
+void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
-	config.ip = tokens.at(1);
+    Data::Server *dst;
+
+    dst = dynamic_cast<Data::Server *>(config);
+    if (dst)
+        dst->ip = tokens.at(0);
+    else
+        throw (std::runtime_error("casting in ports directive"));
 }
 
 /*
@@ -86,7 +98,7 @@ void Parser::Keys::Ip::m_save(const std::vector<std::string> &tokens, Data::Serv
  */
 
 
-Parser::Keys::Ports::Ports(): Directive("ports", UNDEFINED)
+Parser::Keys::Ports::Ports(): Directive("ports", PARSER_UNDEFINED_MAX_TOKENS)
 {
 	cout << "Directive ports constructed\n";
 }
@@ -100,7 +112,7 @@ Parser::Keys::Ports::~Ports()
 void Parser::Keys::Ports::m_format_checker(const std::vector <std::string> &tokens)
 {
 
-	if (this->m_max_tokens != UNDEFINED && static_cast<short>(tokens.size()) > this->m_max_tokens)
+	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
 	{
 		this->m_errno = TOO_MANY_ARGUMENTS;
 	}
@@ -115,10 +127,16 @@ void Parser::Keys::Ports::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Ports::m_save(const std::vector<std::string> &tokens, Data::Server &config)
+void Parser::Keys::Ports::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
-	for (std::vector<string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
-		config.ports.push_back(std::atoi(it->c_str()));
+    Data::Server *dst;
+
+    dst = dynamic_cast<Data::Server *>(config);
+    if (dst)
+        for (std::vector<string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
+            dst->ports.push_back(std::atoi(it->c_str()));
+    else
+        throw (std::runtime_error("casting in ports directive"));
 }
 /*
  * ROOT DIRECTIVE
@@ -138,7 +156,7 @@ Parser::Keys::Root::~Root()
 void Parser::Keys::Root::m_format_checker(const std::vector <std::string> &tokens)
 {
 
-	if (this->m_max_tokens != UNDEFINED && static_cast<short>(tokens.size()) > this->m_max_tokens)
+	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
 	{
 		this->m_errno = TOO_MANY_ARGUMENTS;
 	}
@@ -153,9 +171,29 @@ void Parser::Keys::Root::m_validate_token(const std::string &token)
 	}
 }
 
-void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, Data::Server &config)
+void Parser::Keys::Root::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
-	config.root = tokens.at(1);
+    {
+        Data::Server *dst;
+
+        dst = dynamic_cast<Data::Server *>(config);
+        if (dst)
+        {
+            dst->root = tokens.at(0);
+            return;
+        }
+    }
+    {
+        Data::Location *dst;
+
+        dst = dynamic_cast<Data::Location *>(config);
+        if (dst)
+        {
+            dst->root = tokens.at(0);
+            return;
+        }
+    }
+    throw (std::runtime_error("casting root directive"));
 }
 
 /*
@@ -176,7 +214,7 @@ Parser::Keys::MaxBody::~MaxBody()
 void Parser::Keys::MaxBody::m_format_checker(const std::vector <std::string> &tokens)
 {
 
-	if (this->m_max_tokens != UNDEFINED && static_cast<short>(tokens.size()) > this->m_max_tokens)
+	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
 	{
 		this->m_errno = TOO_MANY_ARGUMENTS;
 	}
@@ -212,8 +250,14 @@ void Parser::Keys::MaxBody::m_validate_token(const std::string &token)
 
 }
 
-void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, Data::Server &config)
+void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
 	(void)tokens;
-	config.max_body_size = this->m_max_bytes;
+    Data::Server *dst;
+
+    dst = dynamic_cast<Data::Server *>(config);
+    if (dst)
+        dst->max_body_size = this->m_max_bytes;
+    else
+        std::runtime_error("casting in max_body directive");
 }

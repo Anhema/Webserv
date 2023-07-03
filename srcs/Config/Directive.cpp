@@ -13,7 +13,7 @@ Parser::Directive::~Directive()
 
 void Parser::Directive::m_iterate_through(const std::vector <std::string> &tokens)
 {
-	for (std::vector<std::string>::const_iterator it = tokens.begin() + 1; it != tokens.end(); it++)
+	for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 	{
 		this->m_validate_token(*it);
 		if (this->m_errno)
@@ -21,7 +21,7 @@ void Parser::Directive::m_iterate_through(const std::vector <std::string> &token
 	}
 }
 
-void Parser::Directive::handler(const std::vector <std::string> &tokens, Data::Server &dst)
+void Parser::Directive::handler(const std::vector <std::string> &tokens, Data::Conf *dst)
 {
 	this->m_format_checker(tokens);
 	this->m_iterate_through(tokens);

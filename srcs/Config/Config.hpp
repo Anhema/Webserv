@@ -92,16 +92,6 @@ private:
 	static const char				s_comment_char = '#';
 
 
-private:
-	static void save_to_server(string const &key, std::string const &line, const std::vector<string> &tokens, Data::Server &config);
-
-
-	template<class T>
-	static void print_vector(T x) {
-		for (typename T::iterator it = x.begin(); it != x.end(); it++)
-			cout << *it << " ";
-		cout << "\n";
-	}
 
 	private:
 	void								parse_bracket(string const &server);

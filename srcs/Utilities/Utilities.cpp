@@ -53,7 +53,7 @@ bool Utils::isport(const std::string &s)
 
 bool Utils::can_open_file(const string &file)
 {
-	std::ifstream infile(file);
+	std::ifstream infile(file.c_str());
 
 	if (infile.is_open())
 	{

@@ -1,5 +1,4 @@
 #include "Logger.hpp"
-#include "ServerHandler.hpp"
 #include "Config.hpp"
 #include "ConfParser.hpp"
 
@@ -32,6 +31,9 @@ int main(int argc, char** argv)
 		parser.init();
 		parser.start();
 		//parser.setRules(parsing_rules);
+        cout << "Llega\n";
+        parser.print();
+
 		return (0);
 	}
 	catch (Parser::Exception &e)
