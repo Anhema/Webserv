@@ -67,19 +67,24 @@ void WebServ::ConfParser::init()
 
 void WebServ::ConfParser::save(Data::Conf *data)
 {
+    static int last_server_idx;
+    static int last_location_idx;
+
     if (Data::Server *server = dynamic_cast<Data::Server *>(data))
     {
         this->m_serverBrackets.push_back(*server);
+        last_server_idx = this->total_pos;
         this->m_serverBracket_count++;
     }
     else if (Data::Location *location = dynamic_cast<Data::Location *>(data))
     {
-        this->m_serverBrackets.at(this->m_serverBracket_count).locations.push_back(*location);
+        this->m_serverBrackets.at(last_server_idx).locations.push_back(*location);
 		this->m_locationBracket_count++;
     }
 	else if (Data::Accept *accept = dynamic_cast<Data::Accept *>(data))
 	{
-		this->m_serverBrackets.at(0).locations.at(0).accepted_methods.methods = accept->methods;
+		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
+        last_location_idx = total_pos;
 	}
     else
 	{

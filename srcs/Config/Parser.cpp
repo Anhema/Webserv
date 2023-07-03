@@ -75,7 +75,7 @@ Parser::UBT::ErrorsNode::ErrorsNode(): Node(ERRORS), data() {}
 Parser::UBT::MethodsNode::MethodsNode(): Node(METHODS), data() {}
 
 
-Parser::Reader::BracketPosition::BracketPosition(const Parser::Reader::BracketPosition &rhs): type(rhs.type), pos(rhs.pos), depth(rhs.depth), next_level(rhs.next_level) {
+Parser::Reader::BracketPosition::BracketPosition(const Parser::Reader::BracketPosition &rhs): type(rhs.type), pos(rhs.pos), depth(rhs.depth) {
 
 }
 
@@ -89,6 +89,7 @@ Parser::Reader::~Reader() {
 
 Parser::Reader::Reader(const std::string &file): m_filestream(file.c_str()), m_filename(file), m_current_line(0) {
 	this->total_depth = 0;
+    this->total_pos = -1;
 
 }
 
@@ -106,13 +107,19 @@ void Parser::Reader::init()
 
 bool Parser::Reader::lineIsOpener(const Data::Line &line)
 {
-	static int bracket_id;
+    static int last_depth = total_depth;
     if (*(line.raw.end() -1) == this->m_rules.bracket_opener)
 	{
 		if (!line.key.empty())
 		{
-			this->m_bracket_positions.push_back(BracketPosition(0, total_depth, line.key, bracket_id));
-			bracket_id++;
+            for (std::list<Parser::Reader::BracketPosition>::iterator it = m_bracket_positions.begin(); it != m_bracket_positions.end(); it++)
+                if (it->depth == total_depth)
+                    total_pos = it->pos;
+            if (last_depth < total_depth)
+                total_pos = -1;
+            total_pos++;
+            this->m_bracket_positions.push_back(Parser::Reader::BracketPosition(total_pos, total_depth, line.key));
+            last_depth = total_depth;
 		}
 		return true;
 	}
@@ -128,11 +135,23 @@ bool Parser::Reader::lineIsCloser(const Data::Line &line)
 	return false;
 }
 
-Parser::Reader::BracketPosition::BracketPosition(int pos, int depth, std::string const &type, int id): id(id), type(type), pos(pos), depth(depth) {
+Parser::Reader::BracketPosition::BracketPosition(
+        int pos, int depth, std::string const &type): type(type), pos(pos), depth(depth) {
 
 }
 
 Parser::Reader::BracketPosition::~BracketPosition() {
+
+}
+
+Parser::Reader::BracketPosition &Parser::Reader::getPostion(int x, int y)
+{
+    for (std::list<BracketPosition>::iterator it = m_bracket_positions.begin(); it != m_bracket_positions.end(); it++)
+    {
+        if (it->pos == x && it->depth == y)
+            return *it;
+    }
+    throw (std::invalid_argument("can't find bracket"));
 
 }
 

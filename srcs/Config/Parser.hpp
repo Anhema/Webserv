@@ -100,6 +100,18 @@ namespace Parser
 			std::string comment;
 			std::string key_end;
 		};
+
+    private:
+		struct BracketPosition
+		{
+			BracketPosition(int pos, int depth, std::string const &type);
+			BracketPosition(struct BracketPosition const &rhs);
+			~BracketPosition();
+			const std::string 					                    type;
+			int 								                    pos;
+			int 								                    depth;
+		};
+
 	public:
 		Reader();
 		Reader(std::string const &file);
@@ -124,26 +136,19 @@ namespace Parser
         bool                        lineIsOpener(const Data::Line &line);
         bool                        lineIsCloser(const Data::Line &line);
 		int 						total_depth;
+		int 						total_pos;
+        BracketPosition             &getPostion(int x, int y);
 
 	private:
-		struct BracketPosition
-		{
-			BracketPosition(int pos, int depth, std::string const &type, int id);
-			BracketPosition(struct BracketPosition const &rhs);
-			~BracketPosition();
-			int 								id;
-			const std::string 					type;
-			int 								pos;
-			int 								depth;
-			std::vector<struct BracketPosition> next_level;
-		};
+        typedef std::list<struct BracketPosition>::iterator BracketPositionIterator;
+
 		std::string 										m_filename;
 		std::vector<std::string>							m_lines;
 		size_t 												m_current_line;
 		std::list<BracketPosition>							m_bracket_positions;
 		Data::Line 					strline(const string &raw);
 	public:
-		void						print_brackets(std::list<BracketPosition> &brackets, int depth);
+		void						print_brackets(std::list<struct BracketPosition> &brackets, int depth);
 	};
 }
 

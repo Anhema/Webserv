@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		parser.init();
 		parser.start();
 		//parser.setRules(parsing_rules);
-//        parser.print();
+        parser.print();
 
 		return (0);
 	}
