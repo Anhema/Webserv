@@ -27,15 +27,7 @@ void Parser::Keys::ServerName::m_format_checker(const std::vector <std::string> 
 
 void Parser::Keys::ServerName::m_validate_token(const std::string &token)
 {
-	for (std::string::const_iterator it = token.begin(); it != token.end(); it++)
-	{
-		if (!isascii(*it))
-		{
-			this->m_err_token = token;
-			this->m_errno = INVALID_VALUE;
-			return;
-		}
-	}
+	this->asciiCheck(token);
 }
 
 void Parser::Keys::ServerName::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
@@ -66,11 +58,7 @@ Parser::Keys::Ip::~Ip()
 
 void Parser::Keys::Ip::m_format_checker(const std::vector <std::string> &tokens)
 {
-
-	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
-	{
-		this->m_errno = TOO_MANY_ARGUMENTS;
-	}
+	this->std_max_tokens_check(tokens);
 }
 
 void Parser::Keys::Ip::m_validate_token(const std::string &token)
@@ -111,11 +99,7 @@ Parser::Keys::Ports::~Ports()
 
 void Parser::Keys::Ports::m_format_checker(const std::vector <std::string> &tokens)
 {
-
-	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
-	{
-		this->m_errno = TOO_MANY_ARGUMENTS;
-	}
+	this->std_max_tokens_check(tokens);
 }
 
 void Parser::Keys::Ports::m_validate_token(const std::string &token)
@@ -155,11 +139,7 @@ Parser::Keys::Root::~Root()
 
 void Parser::Keys::Root::m_format_checker(const std::vector <std::string> &tokens)
 {
-
-	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
-	{
-		this->m_errno = TOO_MANY_ARGUMENTS;
-	}
+	this->std_max_tokens_check(tokens);
 }
 
 void Parser::Keys::Root::m_validate_token(const std::string &token)
@@ -213,11 +193,7 @@ Parser::Keys::MaxBody::~MaxBody()
 
 void Parser::Keys::MaxBody::m_format_checker(const std::vector <std::string> &tokens)
 {
-
-	if (this->m_max_tokens != PARSER_UNDEFINED_MAX_TOKENS && static_cast<short>(tokens.size()) > this->m_max_tokens)
-	{
-		this->m_errno = TOO_MANY_ARGUMENTS;
-	}
+	this->std_max_tokens_check(tokens);
 }
 
 void Parser::Keys::MaxBody::m_validate_token(const std::string &token)
@@ -260,4 +236,104 @@ void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, Data:
         dst->max_body_size = this->m_max_bytes;
     else
         std::runtime_error("casting in max_body directive");
+}
+
+Parser::Keys::LocationPath::LocationPath(): Parser::Directive("path", 1) {
+
+}
+
+Parser::Keys::LocationPath::~LocationPath() {
+
+}
+
+void Parser::Keys::LocationPath::m_format_checker(const std::vector<std::string> &tokens)
+{
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Keys::LocationPath::m_validate_token(const string &token) {
+	this->asciiCheck(token);
+}
+
+void Parser::Keys::LocationPath::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
+	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
+		dst->route = tokens.at(0);
+	else
+		std::runtime_error("casting in LocationPath directive");
+}
+
+Parser::Keys::Index::Index(): Parser::Directive("index", 1) {
+
+}
+
+Parser::Keys::Index::~Index() {
+
+}
+
+void Parser::Keys::Index::m_validate_token(const string &token) {
+	this->asciiCheck(token);
+	if (Utils::get_extension(token) != "html")
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = token;
+		return;
+	}
+}
+
+void Parser::Keys::Index::m_format_checker(const std::vector<std::string> &tokens) {
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Keys::Index::m_save(const std::vector<std::string> &tokens, Data::Conf *config) {
+
+	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
+		dst->index = tokens.at(0);
+	else
+		std::runtime_error("casting in index directive");
+}
+
+const std::vector<std::string> &Parser::Keys::AcceptMethod::get_valid_methods() {
+	static std::vector<std::string> valid_methods;
+
+	if (valid_methods.empty())
+	{
+		valid_methods.push_back(GET_METHOD);
+		valid_methods.push_back(POST_METHOD);
+		valid_methods.push_back(DELETE_METHOD);
+	}
+	return valid_methods;
+}
+
+bool Parser::Keys::AcceptMethod::is_in_methods(string const &method) {
+	return (std::find(this->get_valid_methods().begin(), this->get_valid_methods().end(), method) != this->get_valid_methods().end());
+}
+
+Parser::Keys::AcceptMethod::AcceptMethod(): Parser::Directive("method", 1) {
+
+}
+
+Parser::Keys::AcceptMethod::~AcceptMethod() {
+
+}
+
+void Parser::Keys::AcceptMethod::m_format_checker(const std::vector<std::string> &tokens) {
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Keys::AcceptMethod::m_validate_token(const string &token) {
+	if (!is_in_methods(token))
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = token;
+		return;
+	}
+}
+
+void Parser::Keys::AcceptMethod::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
+	if (Data::Accept *dst = dynamic_cast<Data::Accept *>(config))
+		dst->methods.push_back(tokens.at(0));
+	else
+		std::runtime_error("casting in index directive");
 }

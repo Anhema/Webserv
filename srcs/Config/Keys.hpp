@@ -78,6 +78,44 @@ namespace Parser
 		private:
 			size_t	m_max_bytes;
 		};
+
+		class LocationPath: public Parser::Directive
+		{
+		public:
+			LocationPath();
+			~LocationPath();
+
+		private:
+			void	m_validate_token(const std::string &token);
+			void	m_format_checker(const std::vector<std::string> &tokens);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
+		};
+
+		class Index: public Parser::Directive
+		{
+		public:
+			Index();
+			~Index();
+
+		private:
+			void	m_validate_token(const std::string &token);
+			void	m_format_checker(const std::vector<std::string> &tokens);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
+		};
+
+		class AcceptMethod: public Parser::Directive
+		{
+		public:
+			AcceptMethod();
+			~AcceptMethod();
+
+		private:
+			void	m_validate_token(const std::string &token);
+			void	m_format_checker(const std::vector<std::string> &tokens);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
+			const 	std::vector<std::string> &get_valid_methods();
+			bool 	is_in_methods(const std::string &method);
+		};
 	}
 
 }

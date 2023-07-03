@@ -12,7 +12,7 @@ Data::ErrorPages::~ErrorPages() {}
 
 Data::Server::Server(): ports(), names(), ip(), accepted_methods(), root("www/"), index("index.html"), max_body_size(1000), errors(), locations()
 {
-    this->accepted_methods.push_back("get");
+	this->accepted_methods.methods.push_back("get");
 }
 
 Data::Server::Server(const Data::Server &rhs): ports(rhs.ports),
@@ -78,6 +78,7 @@ void Data::Location::clear()
 {
 	Data::Location def;
 
+	this->route = def.route;
 	this->root = def.root;
 	this->index = def.index;
 	this->accepted_methods = def.accepted_methods;
@@ -135,4 +136,19 @@ std::ostream &operator<<(std::ostream &os, const Data::Line &line)
     ss << "current -> " << line.raw << " " << "pre -> " << line.pre << " n: " << line.n;
     os << ss.str();
     return os;
+}
+
+Data::Accept::Accept() {
+
+}
+
+Data::Accept::~Accept() {
+	this->methods.clear();
+}
+
+Data::Accept::Accept(const Data::Accept &rhs): methods(rhs.methods) {
+}
+
+void Data::Accept::clear() {
+	this->methods.clear();
 }

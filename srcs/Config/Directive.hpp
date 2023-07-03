@@ -42,6 +42,8 @@ namespace Parser
 		Parser::Errors		Error() const;
 		void				Throw(const std::string &line);
 		void 				handler(const std::vector<std::string> &tokens, Data::Conf *dst);
+		bool 				asciiCheck(const std::string &token);
+		bool				std_max_tokens_check(const std::vector<std::string> &tokens);
 
 	private:
 		void				m_iterate_through(const std::vector<std::string> &tokens);

@@ -31,8 +31,7 @@ int main(int argc, char** argv)
 		parser.init();
 		parser.start();
 		//parser.setRules(parsing_rules);
-        cout << "Llega\n";
-        parser.print();
+//        parser.print();
 
 		return (0);
 	}

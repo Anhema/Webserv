@@ -75,6 +75,10 @@ Parser::UBT::ErrorsNode::ErrorsNode(): Node(ERRORS), data() {}
 Parser::UBT::MethodsNode::MethodsNode(): Node(METHODS), data() {}
 
 
+Parser::Reader::BracketPosition::BracketPosition(const Parser::Reader::BracketPosition &rhs): type(rhs.type), pos(rhs.pos), depth(rhs.depth), next_level(rhs.next_level) {
+
+}
+
 Parser::Reader::Reader() {}
 
 Parser::Reader::~Reader() {
@@ -84,6 +88,7 @@ Parser::Reader::~Reader() {
 }
 
 Parser::Reader::Reader(const std::string &file): m_filestream(file.c_str()), m_filename(file), m_current_line(0) {
+	this->total_depth = 0;
 
 }
 
@@ -101,20 +106,47 @@ void Parser::Reader::init()
 
 bool Parser::Reader::lineIsOpener(const Data::Line &line)
 {
-    // Case ->
-    // server
-    // {
-//    cout << "checking: " << *(line.raw.end() -1) << endl;
-    return *(line.raw.end() -1) == this->m_rules.bracket_opener;
-//    else if (pre_has_key && !current_is_key)
-
-
-//    return false;
+	static int bracket_id;
+    if (*(line.raw.end() -1) == this->m_rules.bracket_opener)
+	{
+		if (!line.key.empty())
+		{
+			this->m_bracket_positions.push_back(BracketPosition(0, total_depth, line.key, bracket_id));
+			bracket_id++;
+		}
+		return true;
+	}
+	return false;
 }
 
 bool Parser::Reader::lineIsCloser(const Data::Line &line)
 {
-    return (line.raw.at(line.raw.find_first_not_of(WHITESPACE)) == this->m_rules.bracket_closer);
+    if (line.raw.at(line.raw.find_first_not_of(WHITESPACE)) == this->m_rules.bracket_closer)
+	{
+		return true;
+	}
+	return false;
+}
+
+Parser::Reader::BracketPosition::BracketPosition(int pos, int depth, std::string const &type, int id): id(id), type(type), pos(pos), depth(depth) {
+
+}
+
+Parser::Reader::BracketPosition::~BracketPosition() {
+
+}
+
+void Parser::Reader::print_brackets(std::list<BracketPosition> &brackets, int depth) {
+
+	cout << "=============================\n";
+	(void)depth;
+	for (std::list<BracketPosition>::iterator it = brackets.begin(); it != brackets.end(); it++)
+	{
+		for (int i = 0; i < it->depth; i++)
+			cout << '\t';
+		cout << " type: " << it->type << " pos: " << it->pos << " depth: " << it->depth << endl;
+	}
+
 }
 
 void Parser::Reader::m_getBracketData(std::stringstream &dst)
@@ -127,7 +159,7 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
 
         this->m_current_line++;
         line.update(raw);
-		cout << "Parsing 3 -> " << raw << endl;
+//		cout << "Parsing 3 -> " << raw << endl;
         if (lineIsCloser(line) || lineIsOpener(line))
         {
             this->m_filestream.seekg(this->m_filestream.tellg() - static_cast<std::streampos>(raw.size()));
@@ -135,7 +167,6 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
         }
         dst << raw << endl;
     }
-//    cout << "Bracket data:\n" << dst.str();
 }
 
 void Parser::Reader::m_find_bracket()
@@ -154,14 +185,23 @@ void Parser::Reader::m_find_bracket()
         cout << "Parsing 1 -> " << line << endl;
         if (this->lineIsOpener(line))
         {
-            cout << "Is opener! " << line << endl;
+			cout << "Abre: " << line.raw << endl;
+			this->total_depth++;
+//            cout << "Is opener! " << line << endl;
             std::stringstream new_bracket;
 
             this->m_getBracketData(new_bracket);
 //			cout << "Bracket filled:\n" << new_bracket.str();
             this->m_read_bracket(new_bracket, line);
         }
+		else if (lineIsCloser(line))
+		{
+
+			cout << "Cierra: " << line.raw << endl;
+			this->total_depth--;
+		}
 	}
+	this->print_brackets(this->m_bracket_positions, 0);
 }
 
 void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const &header)
@@ -179,7 +219,7 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 
 	handler->validate_header(header);
 
-	cout << "Parsing bracket:\n" << bracket.str() << endl;
+//	cout << "Parsing bracket:\n" << bracket.str() << endl;
 
     Data::Line line("", "", header.n);
 
@@ -191,7 +231,7 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
         line.update(raw);
         line.tokenize();
 
-		cout << "Parsing 2 -> " << line << endl;
+//		cout << "Parsing 2 -> " << line << endl;
         if (lineIsOpener(line) || lineIsCloser(line))
         {
             this->save(handler->getDestination());

@@ -17,9 +17,8 @@ namespace Parser
 
 		virtual void validate_header(Data::Line const &header) = 0;
 
-		virtual void process(Data::Line const &line, Data::Conf *dst) = 0;
+		void process(Data::Line const &line, Data::Conf *dst);
 		virtual void initHandlers() = 0;
-        virtual void clear() = 0;
         virtual Data::Conf* getDestination() const = 0;
 
 		template<class T>
@@ -46,11 +45,9 @@ namespace WebServ
 		~ServerBlockParser();
         Data::Conf* getDestination() const;
         void initHandlers();
-        void clear();
 
 	private:
 		void validate_header(Data::Line const &header);
-		void process(Data::Line const &line, Data::Conf *dst);
         Data::Server  *dst;
 	};
 
@@ -61,18 +58,24 @@ namespace WebServ
         ~LocationBlockParser();
         Data::Conf* getDestination() const;
         void initHandlers();
-        void clear();
 
     private:
         void validate_header(Data::Line const &header);
-        void process(Data::Line const &line, Data::Conf *dst);
         Data::Location  *dst;
     };
 
-//	class LocationBlockParser: public Parser::BlockHandler
-//	{
-//
-//	};
+	class AcceptMethodBlockParser: public Parser::BlockHandler
+	{
+	public:
+		AcceptMethodBlockParser();
+		~AcceptMethodBlockParser();
+		Data::Conf* getDestination() const;
+		void initHandlers();
+
+	private:
+		void validate_header(Data::Line const &header);
+		Data::Accept  *dst;
+	};
 }
 
 #endif

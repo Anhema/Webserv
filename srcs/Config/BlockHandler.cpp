@@ -22,6 +22,19 @@ void Parser::BlockHandler::AddKeywordHandler(const string &key, Parser::Directiv
         delete handler;
 }
 
+void Parser::BlockHandler::process(const Data::Line &line, Data::Conf *dst)
+{
+	if (this->keyword_handler.find(line.key) != this->keyword_handler.end())
+	{
+		this->keyword_handler[line.key]->handler(line.tokens, dst);
+		this->keyword_handler[line.key]->Throw(line.raw);
+	}
+	else
+	{
+		throw (Parser::InvalidToken(line.raw, line.tokens.at(0), line.n));
+	}
+}
+
 WebServ::ServerBlockParser::ServerBlockParser(): Parser::BlockHandler("server", 0, 0), dst(NULL)
 {
     this->dst = new Data::Server;
@@ -37,10 +50,10 @@ WebServ::ServerBlockParser::~ServerBlockParser()
 
 void WebServ::ServerBlockParser::validate_header(Data::Line const &header)
 {
-    cout << "checking header: " << header << endl;
-    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
+//    cout << "checking header: " << header << endl;
+//    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
 
-    Utils::print_vector(header.tokens);
+//    Utils::print_vector(header.tokens);
 
     if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
@@ -63,28 +76,6 @@ Data::Conf *WebServ::ServerBlockParser::getDestination() const
     return dst;
 }
 
-void WebServ::ServerBlockParser::process(Data::Line const &line, Data::Conf *dst)
-{
-	if (this->keyword_handler.find(line.key) != this->keyword_handler.end())
-	{
-		this->keyword_handler[line.key]->handler(line.tokens, dst);
-		this->keyword_handler[line.key]->Throw(line.raw);
-	}
-	else
-	{
-		throw (Parser::InvalidToken(line.raw, line.tokens.at(0), line.n));
-	}
-}
-
-void WebServ::ServerBlockParser::clear()
-{
-    this->dst->locations.clear();
-    this->dst->root.clear();
-    this->dst->accepted_methods.clear();
-    this->dst->errors.error_404.clear();
-    this->dst->errors.error_502.clear();
-}
-
 /**
  * LOCATION BLOCK PARSER
  */
@@ -105,9 +96,9 @@ WebServ::LocationBlockParser::~LocationBlockParser()
 
 void WebServ::LocationBlockParser::validate_header(Data::Line const &header)
 {
-    cout << "checking header: " << header << endl;
-    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
-    Utils::print_vector(header.tokens);
+//    cout << "checking header: " << header << endl;
+//    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
+//    Utils::print_vector(header.tokens);
     if (header.tokens.size() != 2 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
 }
@@ -117,6 +108,8 @@ void WebServ::LocationBlockParser::initHandlers()
     if (this->keyword_handler.empty())
     {
         this->AddKeywordHandler("root", Parser::Directive::KeyFactory<Parser::Keys::Root>());
+		this->AddKeywordHandler("route", Parser::Directive::KeyFactory<Parser::Keys::LocationPath>());
+		this->AddKeywordHandler("index", Parser::Directive::KeyFactory<Parser::Keys::Index>());
     }
 }
 
@@ -125,19 +118,23 @@ Data::Conf *WebServ::LocationBlockParser::getDestination() const
     return dst;
 }
 
-void WebServ::LocationBlockParser::process(Data::Line const &line, Data::Conf *dst)
-{
-    if (this->keyword_handler.find(line.key) != this->keyword_handler.end())
-    {
-        this->keyword_handler[line.key]->handler(line.tokens, dst);
-        this->keyword_handler[line.key]->Throw(line.raw);
-    }
-    else
-    {
-        throw (Parser::InvalidToken(line.raw, line.tokens.at(0), line.n));
-    }
+WebServ::AcceptMethodBlockParser::AcceptMethodBlockParser(): Parser::BlockHandler("accept", 2, 2) {
+	this->dst = new Data::Accept;
 }
 
-void WebServ::LocationBlockParser::clear()
-{
+WebServ::AcceptMethodBlockParser::~AcceptMethodBlockParser() {
+
+}
+
+Data::Conf *WebServ::AcceptMethodBlockParser::getDestination() const {
+	return dst;
+}
+
+void WebServ::AcceptMethodBlockParser::initHandlers() {
+	this->AddKeywordHandler("method", Parser::Directive::KeyFactory<Parser::Keys::AcceptMethod>());
+}
+
+void WebServ::AcceptMethodBlockParser::validate_header(const Data::Line &header) {
+	if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
+		throw (std::invalid_argument("Invalid header"));
 }

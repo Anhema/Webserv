@@ -5,6 +5,7 @@
 # include <fstream>
 # include "Config.hpp"
 # include "BlockHandler.hpp"
+# include "list"
 
 #ifndef PARSER_UNDEFINED_MAX_TOKENS
 # define PARSER_UNDEFINED_MAX_TOKENS (-1)
@@ -122,14 +123,27 @@ namespace Parser
         void                        m_getBracketData(std::stringstream &dst);
         bool                        lineIsOpener(const Data::Line &line);
         bool                        lineIsCloser(const Data::Line &line);
-
-
+		int 						total_depth;
 
 	private:
-		std::string 				m_filename;
-		std::vector<std::string>	m_lines;
-		size_t 						m_current_line;
+		struct BracketPosition
+		{
+			BracketPosition(int pos, int depth, std::string const &type, int id);
+			BracketPosition(struct BracketPosition const &rhs);
+			~BracketPosition();
+			int 								id;
+			const std::string 					type;
+			int 								pos;
+			int 								depth;
+			std::vector<struct BracketPosition> next_level;
+		};
+		std::string 										m_filename;
+		std::vector<std::string>							m_lines;
+		size_t 												m_current_line;
+		std::list<BracketPosition>							m_bracket_positions;
 		Data::Line 					strline(const string &raw);
+	public:
+		void						print_brackets(std::list<BracketPosition> &brackets, int depth);
 	};
 }
 

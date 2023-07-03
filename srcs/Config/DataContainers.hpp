@@ -24,6 +24,16 @@ namespace Data
 
 	};
 
+	struct Accept: Conf
+	{
+		Accept();
+		Accept(Accept const &rhs);
+		~Accept();
+		void clear();
+
+		std::vector<std::string> methods;
+	};
+
 	struct	Location: Conf
 	{
 		Location();
@@ -37,7 +47,7 @@ namespace Data
 		std::string							directory_file;
 		std::string 						index;
 		bool								directory_listing;
-		std::vector<std::string>			accepted_methods;
+		Data::Accept						accepted_methods;
 		std::string							redirection;
         std::string                         cgi;
         std::string                         upload_path;
@@ -54,7 +64,8 @@ namespace Data
 		std::vector<std::string>			names;
 		std::string 						ip;
 		// All this attributes have a default values.
-		std::vector<std::string>			accepted_methods;
+
+		Data::Accept						accepted_methods;
 		std::string 						root;
 		std::string 						index;
 		size_t 								max_body_size;

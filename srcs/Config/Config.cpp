@@ -179,7 +179,6 @@ void Configuration::printConfig(Data::Server &config)
 	cout << "Root -> " << config.root << endl;
 	cout << "Index -> " << config.index << endl;
 	cout << "Accepted methods -> ";
-	Utils::print_vector(config.accepted_methods);
 	cout << "Max Body -> " << config.max_body_size << endl;
 
 	cout << "Error Pages\n";
@@ -200,7 +199,6 @@ int Configuration::strport(std::string const &s)
 
 void Configuration::set_default(Data::Server &data)
 {
-	data.accepted_methods.push_back(GET_METHOD);
 	data.root = DEFAULT_ROOT_DIR;
 	data.index = DEFAULT_INDEX_FILE;
 	data.max_body_size = DEFAULT_MAX_BODY;
