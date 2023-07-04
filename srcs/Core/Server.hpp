@@ -16,12 +16,12 @@
 # include <sys/time.h>
 # include <fcntl.h>
 # include "Message.hpp"
-# include "Config.hpp"
+# include "DataContainers.hpp"
 
 class Server {
 public:
 	Server();
-	Server(t_server_config options, int port);
+	Server(Data::Server options, int port);
 	Server(string ip, int port, string name);
 	Server(const Server &obj);
 	~Server();
@@ -39,7 +39,7 @@ private:
 	const	string			m_ip;
 	const	int 			m_port;
 	const	u_int32_t 		m_socketAddress_len;
-	const	t_server_config m_config;
+	const	Data::Server 	m_config;
 	struct	sockaddr_in		m_socketAddress;
 	struct	kevent			m_read_event;
 	struct	kevent			m_write_event;

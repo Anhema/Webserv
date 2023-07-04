@@ -12,7 +12,11 @@ PCH_SRC 	=	$(wildcard srcs/*/*.hpp)
 PCH_OUT 	=	$(addprefix $(PCHDIR), $(notdir $(PCH_SRC:.hpp=.gch)))
 OBJS	 	=	$(addprefix $(OBJDIR), $(notdir $(SRCS:.cpp=.o)))
 OBJS_SANI   = 	$(addprefix $(OBJDIR_SANI), $(SRCS:.cpp=_sani.o))
-
+#CONFIG_SRC	=	$(wildcard srcs/Config/*.cpp)
+#CONFIG_SRC  +=	$(wildcard srcs/Utilities/*.cpp)
+#CONFIG_SRC  +=	$(wildcard srcs/Logger/*.cpp)
+#CONFIG_SRC	+=	srcs/Core/main.cpp
+#CONFIG_OBJS	=	$(addprefix $(OBJDIR), $(notdir $(CONFIG_SRC:.cpp=.o)))
 
 INCFLAG		=	$(foreach header, $(PCH_OUT),-include $(header))
 INCDIRS		=	$(foreach dir, $(dir $(PCH_SRC)), -I $(dir))
@@ -24,6 +28,7 @@ ECHO		=	echo
 #.SILENT:
 
 .SECONDARY: $(PCH_OUT)
+
 
 all: $(NAME)
 
@@ -42,10 +47,10 @@ $(OBJDIR):
 	$(MKDIR) $(OBJDIR)
 
 sani: $(NAME_SANI)
-	./$(NAME_SANI)
+	./$(NAME_SANI) default.conf
 
 run: all
-	./$(NAME)
+	./$(NAME) default.conf
 
 re: fclean $(OBJDIR) all
 

@@ -2,7 +2,7 @@
 #include "../Logger/Logger.hpp"
 
 
-Server::Server(t_server_config options, int port):
+Server::Server(Data::Server options, int port):
 		m_ip(options.ip),
 		m_port(port),
 		m_socketAddress_len(sizeof(m_socketAddress)),
