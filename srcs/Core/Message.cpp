@@ -111,8 +111,12 @@ std::string Message::m_get()
 
 	std::ifstream ifs(path);
 
-	if (!ifs.is_open())
+	if (access(path.c_str(), R_OK) != 0)
+		message << this->error_page("www/Errors/", "403");
+	else if (access(path.c_str(), F_OK) != 0)
 		message << this->error_page("www/Errors/", "404");
+	else if (!ifs.is_open())
+		message << this->error_page("www/Errors/", "400");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -132,17 +136,48 @@ std::string Message::m_post()
 {
 	std::ostringstream message;
 	std::string path = "www";
-	if (this->m_request.uri == "/")
-		this->m_response.htmlFile = Utils::read_file(path.append("/index.html"));
-	else
-		path.append(this->m_request.uri);
+
+	//path.append(this->m_request.uri);
+	path.append("/test.py");
+
 	std::ifstream ifs(path, std::ios::binary);
-	if (!ifs.is_open())
-		message << this->error_page("www/Errors/", "404");
+
+	if (access(path.c_str(), X_OK) != 0)
+		message << this->error_page("www/Errors/", "403");
+	else if (!ifs.is_open())
+		message << this->error_page("www/Errors/", "400");
 	else
 	{
-		this->m_response.htmlFile = Utils::read_file(path);
-		this->m_response.extension = Utils::get_extension(path);
+		pid_t fd;
+		int pipefd[2];
+
+		string output = "";
+
+		fd = fork();
+		pipe(pipefd);
+		
+		if (fd == 0)
+		{
+			close(pipefd[0]);
+			
+			dup2(pipefd[1], 1);
+			dup2(pipefd[1], 2);
+
+			close(pipefd[1]);
+
+			execve(path.c_str(), NULL, NULL);
+		}
+		else
+		{
+			char buffer[1024];
+			close(pipefd[1]);
+			while (read(pipefd[0], buffer, sizeof(buffer)) != 0)
+			{
+				output.append(buffer);
+			}
+			cout << "CGI output: ---" << output << "---\n\n";
+		}
+		this->m_response.extension = "text/plain";
 		message << "HTTP/1.1 200 OK\nContent-Status: text/" << this->m_response.extension
 				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
 	}
@@ -158,8 +193,13 @@ std::string Message::m_delete()
 	else
 		path.append(this->m_request.uri);
 	std::ifstream ifs(path);
-	if (!ifs.is_open())
+
+	if (access(path.c_str(), R_OK) != 0)
+		message << this->error_page("www/Errors/", "403");
+	else if (access(path.c_str(), F_OK) != 0)
 		message << this->error_page("www/Errors/", "404");
+	else if (!ifs.is_open())
+		message << this->error_page("www/Errors/", "400");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -179,7 +219,6 @@ void print_headers(std::map<string, string> headers, t_request &request)
 	{
 		cout << "(" << it->first << ") -> (" << it->second << ")\n";
 	}
-
 }
 
 string Message::m_readHeader(const fd client)
@@ -202,7 +241,6 @@ string Message::m_readHeader(const fd client)
 		{
 			header.clear();
 			return header;
-
 		}
 	}
 	return header;
@@ -431,6 +469,4 @@ void Message::reset()
 	this->m_readStatus = Request::HEADER;
 	this->m_server_message.clear();
     this->finishedReading = false;
-
-
 }
