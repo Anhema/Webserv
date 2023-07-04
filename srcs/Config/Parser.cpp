@@ -97,7 +97,7 @@ void Parser::Reader::init()
 {
 	this->m_rules.key_end = "";
 	this->m_rules.useSemicolon = false;
-	this->m_rules.comment = "#";
+	this->m_rules.comment = '#';
 	this->m_rules.bracket_opener = '{';
 	this->m_rules.bracket_closer = '}';
 	this->m_rules.extension = "conf";
@@ -174,6 +174,10 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
 
     for (std::string raw; std::getline(this->m_filestream, raw);)
     {
+		if (raw.empty())
+			continue;
+		else if (raw.find_first_not_of(WHITESPACE) == '#')
+			continue;
         raw.erase(0, raw.find_first_not_of(WHITESPACE) -1);
 
         this->m_current_line++;
@@ -208,7 +212,6 @@ void Parser::Reader::m_find_bracket()
 			this->total_depth++;
 //            cout << "Is opener! " << line << endl;
             std::stringstream new_bracket;
-
             this->m_getBracketData(new_bracket);
 //			cout << "Bracket filled:\n" << new_bracket.str();
             this->m_read_bracket(new_bracket, line);
@@ -219,6 +222,8 @@ void Parser::Reader::m_find_bracket()
 			cout << "Cierra: " << line.raw << endl;
 			this->total_depth--;
 		}
+		else
+			throw (std::invalid_argument("Debes debes de terminar de declarar todo la informacion antes de abrir un bracket"));
 	}
 	this->print_brackets(this->m_bracket_positions, 0);
 }
@@ -226,7 +231,6 @@ void Parser::Reader::m_find_bracket()
 void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const &header)
 {
 	BlockHandler *handler;
-
 
 	if (this->m_BlockHandlers.find(header.key) != this->m_BlockHandlers.end())
     {
@@ -238,17 +242,23 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 
 	handler->validate_header(header);
 
-//	cout << "Parsing bracket:\n" << bracket.str() << endl;
+	if (handler->getMinDeepness() < this->total_depth || handler->getMaxDeepness() > this->total_depth)
+		throw (std::invalid_argument("Block at invalid depth"));
 
     Data::Line line("", "", header.n);
 
 	for (std::string raw; std::getline(bracket, raw);)
 	{
-        raw.erase(raw.begin(), raw.begin() + raw.find_first_not_of(WHITESPACE));
         this->m_current_line++;
 
+		if (raw.empty())
+			continue;
+//		else if (raw.find_first_not_of(WHITESPACE) == this->m_rules.comment)
+//			continue;
+		raw.erase(raw.begin(), raw.begin() + raw.find_first_not_of(WHITESPACE));
         line.update(raw);
         line.tokenize();
+
 
 //		cout << "Parsing 2 -> " << line << endl;
         if (lineIsOpener(line) || lineIsCloser(line))
@@ -256,8 +266,6 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
             this->save(handler->getDestination());
             return;
         }
-		if (raw.empty())
-			continue;
 		handler->process(strline(raw), handler->getDestination());
 	}
     this->save(handler->getDestination());

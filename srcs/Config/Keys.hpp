@@ -116,6 +116,20 @@ namespace Parser
 			const 	std::vector<std::string> &get_valid_methods();
 			bool 	is_in_methods(const std::string &method);
 		};
+
+		class ErrorPage: public Parser::Directive
+		{
+		public:
+			ErrorPage();
+			~ErrorPage();
+
+		private:
+			void	m_validate_token(const std::string &token);
+			void	m_format_checker(const std::vector<std::string> &tokens);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
+			const 	std::vector<std::string> &get_valid_pages();
+			bool 	is_valid_page(const string &method);
+		};
 	}
 
 }

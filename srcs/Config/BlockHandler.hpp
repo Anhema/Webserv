@@ -27,6 +27,10 @@ namespace Parser
 			return new T;
 		}
 
+		unsigned short getMinDeepness() const;
+
+		unsigned short getMaxDeepness() const;
+
 	protected:
 		std::map<const std::string, Parser::Directive *> keyword_handler;
 		const std::string		m_identifier;
@@ -75,6 +79,19 @@ namespace WebServ
 	private:
 		void validate_header(Data::Line const &header);
 		Data::Accept  *dst;
+	};
+
+	class ErrorPageBlockParser: public Parser::BlockHandler
+	{
+	public:
+		ErrorPageBlockParser();
+		~ErrorPageBlockParser();
+		Data::Conf* getDestination() const;
+		void initHandlers();
+
+	private:
+		void validate_header(Data::Line const &header);
+		Data::ErrorPages  *dst;
 	};
 }
 

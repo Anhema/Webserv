@@ -13,11 +13,14 @@ namespace Data
 		virtual void clear() = 0;
 		virtual ~Conf();
 	};
-	struct	ErrorPages
+	struct	ErrorPages: Conf
 	{
 		ErrorPages();
 		ErrorPages(ErrorPages const &rhs);
 		~ErrorPages();
+		void clear();
+		ErrorPages &operator=(ErrorPages const &rhs);
+
 
 		std::string	error_404;
 		std::string	error_502;

@@ -97,7 +97,7 @@ namespace Parser
 			char 		bracket_closer;
             char        line_delimiter;
 			std::string extension;
-			std::string comment;
+			char 		comment;
 			std::string key_end;
 		};
 

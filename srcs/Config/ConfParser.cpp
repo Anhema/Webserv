@@ -54,7 +54,7 @@ void WebServ::ConfParser::init()
 {
 	this->m_rules.key_end = "";
 	this->m_rules.useSemicolon = false;
-	this->m_rules.comment = "#";
+	this->m_rules.comment = '#';
 	this->m_rules.bracket_opener = '{';
 	this->m_rules.bracket_closer = '}';
 	this->m_rules.extension = "conf";
@@ -63,7 +63,21 @@ void WebServ::ConfParser::init()
 	this->m_BlockHandlers["server"] = Parser::BlockHandler::handlerFactory<WebServ::ServerBlockParser>();
     this->m_BlockHandlers["location"] = Parser::BlockHandler::handlerFactory<WebServ::LocationBlockParser>();
 	this->m_BlockHandlers["accept"] = Parser::BlockHandler::handlerFactory<WebServ::AcceptMethodBlockParser>();
+	this->m_BlockHandlers["errors"] = Parser::BlockHandler::handlerFactory<WebServ::ErrorPageBlockParser>();
+
 }
+
+void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &location)
+{
+	if (location.accepted_methods.methods.empty())
+		location.accepted_methods.methods = context.accepted_methods.methods;
+	if (location.index.empty())
+		location.index = context.index;
+	if (location.root.empty())
+		location.root = context.root;
+}
+
+
 
 void WebServ::ConfParser::save(Data::Conf *data)
 {
@@ -86,6 +100,10 @@ void WebServ::ConfParser::save(Data::Conf *data)
 		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
         last_location_idx = total_pos;
 	}
+	else if (Data::ErrorPages *error_page = dynamic_cast<Data::ErrorPages *>(data))
+	{
+		this->m_serverBrackets.at(last_server_idx).errors = *error_page;
+	}
     else
 	{
 		throw (std::runtime_error("casting in confParser save"));
@@ -98,10 +116,37 @@ void WebServ::ConfParser::start()
 	this->m_find_bracket();
 	if (this->total_depth != 0)
 		throw (std::invalid_argument("Las llaves no estan cerradas!"));
+
+	for (std::vector<Data::Server>::iterator iterator = this->m_serverBrackets.begin(); iterator != this->m_serverBrackets.end(); iterator++)
+	{
+		for (std::vector<Data::Location>::iterator it = iterator->locations.begin(); it != iterator->locations.end(); it++)
+			add_context(*iterator, *it);
+	}
 }
 
 
 std::vector<Data::Server> WebServ::ConfParser::getBrackets() const
 {
     return this->m_serverBrackets;
+}
+
+
+void WebServ::ConfParser::validate() {
+	for (std::vector<Data::Server>::iterator it = this->m_serverBrackets.begin(); it != this->m_serverBrackets.end(); it++)
+		validate_server(*it);
+}
+
+void WebServ::ConfParser::validate_server(Data::Server &bracket) {
+	if (bracket.ip.empty())
+		throw (std::invalid_argument("DEFINE LA IP DEL SERVER NO??"));
+	if (bracket.ports.empty())
+		throw (std::invalid_argument("UN PUERTO NI QUE SEA??"));
+
+	for (std::vector<Data::Location>::iterator it = bracket.locations.begin(); it != bracket.locations.end(); it++)
+		validate_location(*it);
+}
+
+void WebServ::ConfParser::validate_location(Data::Location &bracket) {
+	if (bracket.route.empty())
+		throw (std::invalid_argument("LOCATION PERO DE QUE RUTA EH?"));
 }

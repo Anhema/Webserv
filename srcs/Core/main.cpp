@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 		parser.start();
 		//parser.setRules(parsing_rules);
         parser.print();
+		parser.validate();
 
 		return (0);
 	}

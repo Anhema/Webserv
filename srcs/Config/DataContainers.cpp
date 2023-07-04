@@ -152,3 +152,14 @@ Data::Accept::Accept(const Data::Accept &rhs): methods(rhs.methods) {
 void Data::Accept::clear() {
 	this->methods.clear();
 }
+
+void Data::ErrorPages::clear() {
+	this->error_502 = "502.html";
+	this->error_404 = "404.html";
+}
+
+Data::ErrorPages &Data::ErrorPages::operator=(const Data::ErrorPages &rhs) {
+	this->error_404 = rhs.error_404;
+	this->error_502 =rhs.error_502;
+	return *this;
+}

@@ -263,6 +263,10 @@ void Parser::Keys::LocationPath::m_save(const std::vector<std::string> &tokens, 
 		std::runtime_error("casting in LocationPath directive");
 }
 
+/**
+ * Index Directive
+ */
+
 Parser::Keys::Index::Index(): Parser::Directive("index", 1) {
 
 }
@@ -293,6 +297,9 @@ void Parser::Keys::Index::m_save(const std::vector<std::string> &tokens, Data::C
 		std::runtime_error("casting in index directive");
 }
 
+/**
+ * Accept method directive
+ */
 const std::vector<std::string> &Parser::Keys::AcceptMethod::get_valid_methods() {
 	static std::vector<std::string> valid_methods;
 
@@ -336,4 +343,74 @@ void Parser::Keys::AcceptMethod::m_save(const std::vector<std::string> &tokens, 
 		dst->methods.push_back(tokens.at(0));
 	else
 		std::runtime_error("casting in index directive");
+}
+
+/**
+ * Error Page Directive
+ */
+
+Parser::Keys::ErrorPage::ErrorPage(): Parser::Directive("page", 2) {
+}
+
+void Parser::Keys::ErrorPage::m_format_checker(const std::vector<std::string> &tokens) {
+	if (!this->std_max_tokens_check(tokens))
+		return;
+
+
+	const std::string &page = tokens.at(0);
+	if (!is_valid_page(page))
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = page;
+		return;
+	}
+
+	const std::string &token =tokens.at(1);
+
+	if (Utils::get_extension(token) != "html")
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = token;
+		return;
+	}
+}
+
+const std::vector<std::string> &Parser::Keys::ErrorPage::get_valid_pages() {
+	static std::vector<std::string> valid_pages;
+
+	if (valid_pages.empty())
+	{
+		valid_pages.push_back("404");
+		valid_pages.push_back("502");
+	}
+	return valid_pages;
+}
+
+bool Parser::Keys::ErrorPage::is_valid_page(const string &method) {
+	return (std::find(this->get_valid_pages().begin(), this->get_valid_pages().end(), method) != this->get_valid_pages().end());
+}
+
+
+void Parser::Keys::ErrorPage::m_validate_token(const string &token) {
+	this->asciiCheck(token);
+}
+
+Parser::Keys::ErrorPage::~ErrorPage() {
+
+}
+
+void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Data::Conf *config) {
+	std::string const &page = tokens.at(0);
+	std::string const &file = tokens.at(1);
+
+
+	if (Data::ErrorPages *dst = dynamic_cast<Data::ErrorPages *>(config))
+	{
+		if (page == "404")
+			dst->error_404 = file;
+		else if (page == "502")
+			dst->error_502 = file;
+	}
+	else
+		std::runtime_error("casting in ErrorPage directive");
 }

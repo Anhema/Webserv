@@ -15,14 +15,17 @@ namespace WebServ
 		void	start();
         void    save(Data::Conf *data);
         void    print() const;
-		void	validate_bracekt(Data::Server &bracket);
-		void	validate_bracekt(Data::Location &bracket);
+		void	add_context(Data::Server &context, Data::Location &location);
+		void	validate();
 
         std::vector<Data::Server>	getBrackets() const;
     private:
         std::vector<Data::Server>	m_serverBrackets;
         int                       	m_serverBracket_count;
 		int                       	m_locationBracket_count;
+
+		void	validate_server(Data::Server &bracket);
+		void	validate_location(Data::Location &bracket);
 	};
 }
 #endif

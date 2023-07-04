@@ -35,7 +35,15 @@ void Parser::BlockHandler::process(const Data::Line &line, Data::Conf *dst)
 	}
 }
 
-WebServ::ServerBlockParser::ServerBlockParser(): Parser::BlockHandler("server", 0, 0), dst(NULL)
+unsigned short Parser::BlockHandler::getMaxDeepness() const {
+	return m_max_deepness;
+}
+
+unsigned short Parser::BlockHandler::getMinDeepness() const {
+	return m_min_deepness;
+}
+
+WebServ::ServerBlockParser::ServerBlockParser(): Parser::BlockHandler("server", 1, 1), dst(NULL)
 {
     this->dst = new Data::Server;
 }
@@ -44,17 +52,11 @@ WebServ::ServerBlockParser::ServerBlockParser(): Parser::BlockHandler("server", 
 WebServ::ServerBlockParser::~ServerBlockParser()
 {
     delete this->dst;
-    //cout << this->m_identifier << " *************************Block Handler destructed\n";
 }
 
 
 void WebServ::ServerBlockParser::validate_header(Data::Line const &header)
 {
-//    cout << "checking header: " << header << endl;
-//    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
-
-//    Utils::print_vector(header.tokens);
-
     if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
 }
@@ -80,7 +82,7 @@ Data::Conf *WebServ::ServerBlockParser::getDestination() const
  * LOCATION BLOCK PARSER
  */
 
-WebServ::LocationBlockParser::LocationBlockParser(): Parser::BlockHandler("location", 0, 0)
+WebServ::LocationBlockParser::LocationBlockParser(): Parser::BlockHandler("location", 2, 2)
 {
     //this->initHandlers();
     this->dst = new Data::Location;
@@ -99,7 +101,7 @@ void WebServ::LocationBlockParser::validate_header(Data::Line const &header)
 //    cout << "checking header: " << header << endl;
 //    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
 //    Utils::print_vector(header.tokens);
-    if (header.tokens.size() != 2 ||  header.key != this->m_identifier)
+    if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
 }
 
@@ -118,7 +120,7 @@ Data::Conf *WebServ::LocationBlockParser::getDestination() const
     return dst;
 }
 
-WebServ::AcceptMethodBlockParser::AcceptMethodBlockParser(): Parser::BlockHandler("accept", 2, 2) {
+WebServ::AcceptMethodBlockParser::AcceptMethodBlockParser(): Parser::BlockHandler("accept", 3, 3) {
 	this->dst = new Data::Accept;
 }
 
@@ -137,4 +139,30 @@ void WebServ::AcceptMethodBlockParser::initHandlers() {
 void WebServ::AcceptMethodBlockParser::validate_header(const Data::Line &header) {
 	if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
 		throw (std::invalid_argument("Invalid header"));
+}
+
+/**
+ * Error Pages Block Parser
+ */
+
+WebServ::ErrorPageBlockParser::ErrorPageBlockParser(): Parser::BlockHandler("errors", 2, 2)
+{
+	this->dst = new Data::ErrorPages;
+}
+
+WebServ::ErrorPageBlockParser::~ErrorPageBlockParser() {
+
+}
+
+Data::Conf *WebServ::ErrorPageBlockParser::getDestination() const {
+	return this->dst;
+}
+
+void WebServ::ErrorPageBlockParser::validate_header(const Data::Line &header) {
+	if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
+		throw (std::invalid_argument("Invalid header"));
+}
+
+void WebServ::ErrorPageBlockParser::initHandlers() {
+	this->AddKeywordHandler("page", Parser::Directive::KeyFactory<Parser::Keys::ErrorPage>());
 }
