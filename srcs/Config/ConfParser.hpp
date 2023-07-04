@@ -1,7 +1,7 @@
 #ifndef CONF_PARSER_HPP
 # define CONF_PARSER_HPP
 
-# include "Parser.hpp"
+# include "../Parser/Parser.hpp"
 
 namespace WebServ
 {
