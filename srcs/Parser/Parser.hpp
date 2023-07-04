@@ -3,7 +3,6 @@
 
 # include "DataContainers.hpp"
 # include <fstream>
-# include "Config.hpp"
 # include "BlockHandler.hpp"
 # include "list"
 
@@ -15,75 +14,72 @@
 
 namespace Parser
 {
-	class UBT
+	class KeysNotClosed: public std::invalid_argument
 	{
-		enum TYPES
-		{
-			LOCATION,
-			SERVER,
-			ERRORS,
-			METHODS
-		};
+	public:
+		KeysNotClosed();
+	};
+
+	class Exception: public std::exception
+	{
+	protected:
+		const string m_line;
+		const string m_token;
+		const int n;
+		const string message;
 
 	public:
-		struct NodeAttributes
-		{
-			NodeAttributes(TYPES type);
-			bool			canNest;
-			short			max_concurrencies;
-		};
+		Exception(const std::string& line, const std::string &token, int n);
 
-		struct Node
-		{
-			Node(TYPES type);
-			Parser::UBT::TYPES		type;
-			const NodeAttributes	attr;
-			Node 					*left;
-			Node 					*right;
-		};
+		virtual 		~Exception() throw() {}
+		virtual void	print() = 0;
 
-		struct ServerNode: Node
-		{
-			ServerNode();
-
-			Data::Server				data;
-		};
-
-		struct LocationNode: Node
-		{
-			LocationNode(Data::Server const &context);
-			LocationNode();
-
-			Data::Location 				data;
-		};
-
-		struct ErrorsNode: Node
-		{
-			ErrorsNode();
-
-			Data::ErrorPages			data;
-		};
-
-		struct MethodsNode: Node
-		{
-			MethodsNode();
-
-			std::vector<std::string>	data;
-		};
-
+		const char* 	what() const throw() {
+			return message.c_str();
+		}
+	};
+	class SyntaxError: public std::invalid_argument
+	{
 	public:
-		UBT();
-		explicit UBT(UBT const *rhs);
+		explicit SyntaxError(const string &line);
+		SyntaxError();
+	};
 
-		size_t					size() const;
-		bool					empty() const;
-		void					clear();
-		static Node 			*getNode(TYPES type);
+	class BadCheck
+	{
+	public:
+		BadCheck(std::string const &bad_token);
+		const std::string &token;
+	};
 
-	private:
-		std::vector<Node*>		m_root;
-//		Node					*m_current;
-		size_t 					m_size;
+	class TooManyArguments: public Exception
+	{
+	public:
+		TooManyArguments(const std::string &line, const int expected, const int have);
+		void print();
+		int m_expected;
+		int m_have;
+	};
+
+	class InvalidFile: public Exception
+	{
+	public:
+		InvalidFile(const std::string &line, const std::string &file, int n);
+		void print();
+	};
+
+	class InvalidToken: public Exception
+	{
+	public:
+		InvalidToken(const std::string &line, const std::string &token, int n);
+		void print();
+	};
+
+	class InvalidValue: public Exception
+	{
+	public:
+		InvalidValue(const std::string &line, const std::string &token, int n);
+		void print();
 	};
 
 	class Reader

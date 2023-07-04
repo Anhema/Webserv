@@ -1,5 +1,5 @@
 #include "Logger.hpp"
-#include "Config.hpp"
+#include "../Parser/Parser.hpp"
 #include "ConfParser.hpp"
 #include "ServerHandler.hpp"
 

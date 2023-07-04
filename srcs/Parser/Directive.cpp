@@ -1,5 +1,6 @@
 #include "Directive.hpp"
-#include "Config.hpp"
+#include "Parser.hpp"
+
 Parser::Directive::Directive(const std::string &keyword, const short max_tokens): m_keyword(keyword), m_max_tokens(max_tokens), m_errno(NO_ERROR)
 {
 	//cout << "Directive Constructed\n";

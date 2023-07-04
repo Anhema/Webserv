@@ -1,6 +1,6 @@
 #include "BlockHandler.hpp"
 #include "Keys.hpp"
-#include "Config.hpp"
+#include "../Parser/Parser.hpp"
 
 Parser::BlockHandler::BlockHandler(const std::string &id, const unsigned short max_deepness,
 								   const unsigned short min_deepness):

@@ -1,78 +1,58 @@
 #include "Parser.hpp"
 
-Parser::UBT::Node *Parser::UBT::getNode(TYPES type)
+Parser::KeysNotClosed::KeysNotClosed(): std::invalid_argument("Keys are not closed correctly") {}
+
+Parser::SyntaxError::SyntaxError(): std::invalid_argument("Syntax Error") {}
+
+Parser::SyntaxError::SyntaxError(const string &line): std::invalid_argument(("Error at line: " + line).c_str()) {}
+
+Parser::InvalidValue::InvalidValue(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
+
+Parser::BadCheck::BadCheck(const std::string &bad_token): token(bad_token) {}
+
+Parser::TooManyArguments::TooManyArguments(const std::string &line, const int expected, const int have): Exception(line, line, expected)
 {
-	switch (type)
-	{
-		case LOCATION:
-			return new LocationNode;
-		case SERVER:
-			return new ServerNode;
-		case ERRORS:
-			return new ErrorsNode;
-		case METHODS:
-			return new MethodsNode;
-		default:
-			return NULL;
-	}
+	this->m_expected = expected;
+	this->m_have = have;
 }
 
-Parser::UBT::UBT()
-{}
+Parser::InvalidFile::InvalidFile(const std::string &line, const std::string &file, int n): Exception(line, file, n) {}
 
-Parser::UBT::UBT(const Parser::UBT *rhs): m_root(rhs->m_root)
-{}
-
-size_t Parser::UBT::size() const
+void Parser::InvalidFile::print()
 {
-	return this->m_size;
-}
-
-bool Parser::UBT::empty() const {
-	return this->m_size <= 0;
-}
-
-void Parser::UBT::clear() {
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "can't open file " << RED "-> " << NC << this->m_token << endl;
 
 }
 
-Parser::UBT::Node::Node(TYPES type): type(type), attr(type), left(NULL), right(NULL)
-{}
-
-Parser::UBT::NodeAttributes::NodeAttributes(Parser::UBT::TYPES type)
+void Parser::TooManyArguments::print()
 {
-	switch (type)
-	{
-		case LOCATION:
-			this->canNest = false;
-			this->max_concurrencies = PARSER_UNDEFINED_MAX_TOKENS;
-            break;
-		case SERVER:
-			this->canNest = false;
-			this->max_concurrencies = 1;
-            break;
-		case ERRORS:
-			this->canNest = false;
-			this->max_concurrencies = 1;
-            break;
-		case METHODS:
-			this->canNest = false;
-			this->max_concurrencies = 1;
-            break;
-		default:
-			throw (std::invalid_argument("node attributes"));
-	}
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
+			<< "Too many arguments, expected " << this->m_expected << " have " << this->m_have << endl;
+
 }
 
-Parser::UBT::LocationNode::LocationNode(Data::Server const &context): Node(LOCATION), data(context) {}
+void Parser::InvalidToken::print()
+{
+	(void) this->n;
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
+			<< "Invalid token: \"" << BOLDRED << this->m_token << NC << "\"\n";
 
-Parser::UBT::LocationNode::LocationNode(): Node(LOCATION), data() {}
+}
 
-Parser::UBT::ServerNode::ServerNode(): Node(SERVER), data() {}
+Parser::Exception::Exception(const std::string &line, const std::string &token, int n):
+		m_line(line), m_token(token), n(n), message("parsing error") {}
 
-Parser::UBT::ErrorsNode::ErrorsNode(): Node(ERRORS), data() {}
+Parser::InvalidToken::InvalidToken(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
 
-Parser::UBT::MethodsNode::MethodsNode(): Node(METHODS), data() {}
+void Parser::InvalidValue::print()
+{
+	cout	<< BOLDRED << "[ERROR]" << NC << " "
+			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
+			<< "Invalid value: \"" << BOLDRED << this->m_token << NC << "\"\n";
+}
 
 
 Parser::Reader::BracketPosition::BracketPosition(const Parser::Reader::BracketPosition &rhs): type(rhs.type), pos(rhs.pos), depth(rhs.depth) {
