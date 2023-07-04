@@ -1,6 +1,7 @@
 #include "Logger.hpp"
 #include "Config.hpp"
 #include "ConfParser.hpp"
+#include "ServerHandler.hpp"
 
 int main(int argc, char** argv)
 {
@@ -33,8 +34,6 @@ int main(int argc, char** argv)
 		//parser.setRules(parsing_rules);
         parser.print();
 		parser.validate();
-
-		return (0);
 	}
 	catch (Parser::Exception &e)
 	{
@@ -45,6 +44,18 @@ int main(int argc, char** argv)
 	{
 		cout  << e.what() << endl;
 		return (0);
+	}
+	catch (std::exception &e)
+	{
+		Logger::log(e.what(), ERROR);
+		return (0);
+	}
+
+	try
+	{
+		ServerHandler servers(parser.getBrackets());
+		servers.mainLoop();
+
 	}
 	catch (std::exception &e)
 	{
