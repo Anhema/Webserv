@@ -45,6 +45,7 @@ typedef struct s_response
 {
 	std::string							htmlFile;
 	std::string							extension;
+	std::string							body;
 }	t_response;
 
 class Message

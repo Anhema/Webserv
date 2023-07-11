@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include "Utilities.hpp"
 #include <fcntl.h>
+#include <signal.h>
 
 Message::Message(): m_responseCode(HttpStatus::OK), m_readStatus(Request::HEADER), finishedReading(false)
 {
@@ -111,10 +112,10 @@ std::string Message::m_get()
 
 	std::ifstream ifs(path);
 
-	if (access(path.c_str(), R_OK) != 0)
-		message << this->error_page("www/Errors/", "403");
-	else if (access(path.c_str(), F_OK) != 0)
+	if (access(path.c_str(), F_OK) != 0)
 		message << this->error_page("www/Errors/", "404");
+	else if (access(path.c_str(), R_OK) != 0)
+		message << this->error_page("www/Errors/", "403");
 	else if (!ifs.is_open())
 		message << this->error_page("www/Errors/", "400");
 	else
@@ -127,7 +128,7 @@ std::string Message::m_get()
 		else
 			message << "text/";
 		message << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
 	}
 	return (message.str());
 }
@@ -142,44 +143,62 @@ std::string Message::m_post()
 
 	std::ifstream ifs(path, std::ios::binary);
 
-	if (access(path.c_str(), X_OK) != 0)
+	if (access(path.c_str(), F_OK) != 0)
+		message << this->error_page("www/Errors/", "404");
+	else if (access(path.c_str(), X_OK) != 0)
 		message << this->error_page("www/Errors/", "403");
 	else if (!ifs.is_open())
 		message << this->error_page("www/Errors/", "400");
 	else
 	{
-		pid_t fd;
 		int pipefd[2];
+		if (pipe(pipefd) == -1)
+		{
+			std::cout << "ERROR\n";
+			return ("");
+		}
 
-		string output = "";
+		std::string interpreter = "/usr/bin/python3";
+		std::string script = "www/test.py";
 
-		fd = fork();
-		pipe(pipefd);
+		char* args[] = {&interpreter[0], &script[0], nullptr};
+		char* env[] = {nullptr};
 		
-		if (fd == 0)
+		pid_t pid = fork();
+		if (pid == 0)
 		{
 			close(pipefd[0]);
-			
 			dup2(pipefd[1], 1);
 			dup2(pipefd[1], 2);
-
 			close(pipefd[1]);
-
-			execve(path.c_str(), NULL, NULL);
+			execve(args[0], args, env);
+			std::cerr << "Error al ejecutar el script CGI." << std::endl;
+			exit (1);
 		}
-		else
+		else if (pid > 0)
 		{
-			char buffer[1024];
 			close(pipefd[1]);
-			while (read(pipefd[0], buffer, sizeof(buffer)) != 0)
+			char buffer[1024];
+			ssize_t bytesRead;
+			string output = "";
+			while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) != 0)
 			{
+				buffer[bytesRead] = '\0';
 				output.append(buffer);
 			}
-			cout << "CGI output: ---" << output << "---\n\n";
+			string out = "<!DOCTYPE html>\n<html>\n<head>\n<title>Bean Emporium</title>\n<meta charset='UTF-8'>\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n</head>\n<body>\n";
+			out.append(output);
+			out.append("</body>\n</html>\n");
+			close(pipefd[0]);
+
+			std::cout << output << "<------\n";
+			this->m_response.body = out;
 		}
+		else
+			//CGI Error
 		this->m_response.extension = "text/plain";
-		message << "HTTP/1.1 200 OK\nContent-Status: text/" << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
+		message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
+				<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 	}
 	return (message.str());
 }
@@ -206,7 +225,7 @@ std::string Message::m_delete()
 		std::remove(path.c_str());
 		this->m_response.extension = Utils::get_extension(path);
 		message << "HTTP/1.1 200 OK\nContent-Status: text/" << this->m_response.extension
-				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\n\n" << this->m_response.htmlFile;
+				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
 	}
 	return (message.str());
 }
@@ -372,7 +391,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	{
 		case Request::HEADER:
 			this->m_parseHeader(this->m_readHeader(client));
-            print_headers(this->m_request.headers, this->m_request);
+            //print_headers(this->m_request.headers, this->m_request);
             break;
 		case Request::BODY_HEADER:
 			this->m_parseBody(this->m_readHeader(client));
@@ -384,7 +403,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
         case Request::FINISHED_BODY:
 			break;
 	}
-
+	std::cout << this->m_request.method << " " << this->m_request.uri << "\n";
 	if (this->m_readStatus == Request::FINISHED_BODY)
 		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 }
@@ -410,7 +429,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	else
 		this->m_server_message = this->error_page("www/Errors/", "501");
 
-	std::cout << "\n\n" << this->m_request.version << "\n\n";
+	//std::cout << "\n\n" << this->m_request.version << "\n\n";
 	if (this->m_request.version != "HTTP/1.1")
 		this->m_server_message = this->error_page("www/Errors/", "505");
 
