@@ -24,9 +24,10 @@ using std::stringstream;
 using std::size_t;
 
 # define WHITESPACE " \f\r\t\v"
-# define GET_METHOD "get"
-# define POST_METHOD "post"
-# define DELETE_METHOD "delete"
+# define GET_METHOD "GET"
+# define POST_METHOD "POST"
+# define DELETE_METHOD "DELETE"
+
 
 # define DEFAULT_ROOT_DIR "www/"
 # define DEFAULT_INDEX_FILE "index.html"

@@ -19,8 +19,14 @@ void WebServ::ConfParser::print() const
         cout << "Max Body -> " << (it)->max_body_size << endl;
 
         cout << "Error Pages\n";
+		cout << "400 -> " << (it)->errors.error_400 << endl;
+		cout << "403 -> " << (it)->errors.error_403 << endl;
         cout << "404 -> " << (it)->errors.error_404 << endl;
+		cout << "405 -> " << (it)->errors.error_405 << endl;
+		cout << "500 -> " << (it)->errors.error_500 << endl;
+		cout << "501 -> " << (it)->errors.error_501 << endl;
         cout << "502 -> " << (it)->errors.error_502 << endl;
+		cout << "505 -> " << (it)->errors.error_505 << endl;
 
         if ((it)->locations.empty())
             cout << "No locations found\n";

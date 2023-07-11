@@ -22,8 +22,16 @@ namespace Data
 		ErrorPages &operator=(ErrorPages const &rhs);
 
 
+		// 400
+		std::string	error_400;
+		std::string	error_403;
 		std::string	error_404;
+		std::string	error_405;
+		// 500
+		std::string	error_500;
+		std::string	error_501;
 		std::string	error_502;
+		std::string	error_505;
 
 	};
 
@@ -95,5 +103,6 @@ namespace Data
 	};
 }
 std::ostream &operator<<(std::ostream &os, const Data::Line &line);
+std::ostream &operator<<(std::ostream &os, const Data::Location &location);
 
 #endif

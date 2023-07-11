@@ -63,6 +63,7 @@ private:
 	HttpStatus::Code		m_responseCode;
 	Request::Status			m_readStatus;
 	std::string 			m_server_message;
+	Data::Location			*m_current_location;
 
 private:
 	std::string				m_get();
@@ -73,6 +74,9 @@ private:
 	void 					m_parseBody(const string &header);
 	void 					m_readBody(const fd client, const size_t fd_size);
 	void					m_createFile(const string &filename, const string &extension);
+	void					m_update_location(const std::string &path);
+	bool					m_valid_method(void);
+	void					m_send_message(const fd client);
 
 public:
 	void 					reset(void);
@@ -82,7 +86,7 @@ public:
 	void					handle_request(const fd client, size_t buffer_size);
 	string					&getConnectionType(void);
 
-	std::string				error_page(std::string path, std::string error);
+	std::string				error_page(std::string error);
 
 	bool					finishedReading;
 

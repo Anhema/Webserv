@@ -380,8 +380,13 @@ const std::vector<std::string> &Parser::Keys::ErrorPage::get_valid_pages() {
 
 	if (valid_pages.empty())
 	{
+		valid_pages.push_back("400");
+		valid_pages.push_back("403");
 		valid_pages.push_back("404");
+		valid_pages.push_back("405");
+		valid_pages.push_back("501");
 		valid_pages.push_back("502");
+		valid_pages.push_back("505");
 	}
 	return valid_pages;
 }
@@ -399,17 +404,30 @@ Parser::Keys::ErrorPage::~ErrorPage() {
 
 }
 
-void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Data::Conf *config) {
+void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
 	std::string const &page = tokens.at(0);
 	std::string const &file = tokens.at(1);
 
 
 	if (Data::ErrorPages *dst = dynamic_cast<Data::ErrorPages *>(config))
 	{
-		if (page == "404")
+		if (page == "400")
+			dst->error_400 = file;
+		else if (page == "403")
+			dst->error_403 = file;
+		else if (page == "404")
 			dst->error_404 = file;
+		else if (page == "405")
+			dst->error_405 = file;
+		else if (page == "500")
+			dst->error_500 = file;
+		else if (page == "501")
+			dst->error_501 = file;
 		else if (page == "502")
 			dst->error_502 = file;
+		else if (page == "505")
+			dst->error_505 = file;
 	}
 	else
 		std::runtime_error("casting in ErrorPage directive");

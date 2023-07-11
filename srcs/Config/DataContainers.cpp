@@ -1,12 +1,21 @@
 #include "DataContainers.hpp"
 #include <stdexcept>
 #include "sstream"
+#include "Utilities.hpp"
 #include <iostream>
 // USE THIs AS REFERENCE FOR DEFAULTS
 
-Data::ErrorPages::ErrorPages(): error_404("404.html"), error_502("502.html") {}
+Data::ErrorPages::ErrorPages():
+error_400("400.html"), error_403("403.html"),
+error_404("404.html"), error_405("405.html"),
+error_500("500.html"), error_501("501.html"),
+error_502("502.html"), error_505("505.html") {}
 
-Data::ErrorPages::ErrorPages(const Data::ErrorPages &rhs): error_404(rhs.error_404), error_502(rhs.error_502) {}
+Data::ErrorPages::ErrorPages(const Data::ErrorPages &rhs):
+		error_400(rhs.error_400), error_403(rhs.error_403),
+		error_404(rhs.error_404), error_405(rhs.error_405),
+		error_500(rhs.error_500), error_501(rhs.error_501),
+		error_502(rhs.error_502), error_505(rhs.error_505) {}
 
 Data::ErrorPages::~ErrorPages() {}
 
@@ -112,6 +121,18 @@ Data::Line &Data::Line::operator=(const Data::Line &rhs) {
 	return *this;
 }
 
+std::ostream &operator<<(std::ostream &os, const Data::Location &location)
+{
+	os << "====Location====\n";
+	os << "\tRoute-> " << (location).route << "\n";
+	os << "\tRoot-> " << (location).root << "\n";
+	os << "\tIndex-> " << (location).index << "\n";
+	os << "\tAccept -> ";
+	Utils::print_vector(location.accepted_methods.methods);
+	os << endl;
+	return os;
+}
+
 void Data::Line::tokenize()
 {
     std::stringstream	line(raw);
@@ -154,12 +175,19 @@ void Data::Accept::clear() {
 }
 
 void Data::ErrorPages::clear() {
+	this->error_400 = "400.html";
 	this->error_502 = "502.html";
 	this->error_404 = "404.html";
 }
 
 Data::ErrorPages &Data::ErrorPages::operator=(const Data::ErrorPages &rhs) {
+	this->error_400 = rhs.error_400;
+	this->error_403 = rhs.error_403;
 	this->error_404 = rhs.error_404;
+	this->error_405 = rhs.error_405;
+	this->error_500 = rhs.error_500;
+	this->error_501 = rhs.error_501;
 	this->error_502 =rhs.error_502;
+	this->error_505 = rhs.error_505;
 	return *this;
 }

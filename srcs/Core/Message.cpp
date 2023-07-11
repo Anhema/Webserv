@@ -65,38 +65,84 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 		outfile.write(&*it, 1);
 }
 
-std::string Message::error_page(std::string path, std::string error)
+std::string Message::error_page(std::string error)
 {
 	std::ostringstream	message;
 	std::string			error_name;
+	std::string 		path;
 
 	if (error == "400")
+	{
+		path = this->m_configuration.errors.error_400;
 		error_name = "Bad Request";
+	}
 	else if (error == "403")
+	{
+
+		path = this->m_configuration.errors.error_403;
 		error_name = "Forbidden";
+	}
 	else if (error == "404")
+	{
 		error_name = "Not Found";
+		path = this->m_configuration.errors.error_404;
+
+	}
 	else if (error == "405")
+	{
+		path = this->m_configuration.errors.error_405;
 		error_name = "Method Not Allowed";
+	}
 	else if (error == "500")
+	{
+		path = this->m_configuration.errors.error_500;
 		error_name = "Internal Server Error";
+	}
 	else if (error == "501")
+	{
+		path = this->m_configuration.errors.error_501;
 		error_name = "Not Implemened";
+	}
 	else if (error == "502")
+	{
+		path = this->m_configuration.errors.error_502;
 		error_name = "Bad Gateway";
+	}
 	else if (error == "505")
+	{
+		path = this->m_configuration.errors.error_505;
 		error_name = "Not Implemented";
-	if (path[path.size() - 1] == '/')
-		this->m_response.htmlFile = Utils::read_file(path.append(error).append(".html"));
-	else
-		this->m_response.htmlFile = Utils::read_file(path.append("/").append(error).append(".html"));
+	}
+
+	cout << "Manda la pagina de error de: " << this->m_configuration.root + path << endl;
+	this->m_response.htmlFile = Utils::read_file(this->m_configuration.root + path);
 
 	this->m_response.extension = "html";
 	message << "HTTP/1.1 "<< error << " " << error_name << "\r\nContent-Status: text/" << this->m_response.extension
 			<< "\r\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
+	this->m_server_message = message.str();
 
 	return (message.str());
 
+}
+
+void Message::m_update_location(const string &path)
+{
+
+
+	static Data::Location default_location;
+
+
+	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
+	{
+		if (it->route == path)
+		{
+			this->m_current_location = &(*it);
+			return;
+		}
+	}
+	default_location.route = path;
+	this->m_current_location = &default_location;
 }
 
 std::string Message::m_get()
@@ -112,11 +158,11 @@ std::string Message::m_get()
 	std::ifstream ifs(path);
 
 	if (access(path.c_str(), F_OK) != 0)
-		message << this->error_page("www/Errors/", "404");
+		message << this->error_page("404");
 	else if (access(path.c_str(), R_OK) != 0)
-		message << this->error_page("www/Errors/", "403");
+		message << this->error_page("403");
 	else if (!ifs.is_open())
-		message << this->error_page("www/Errors/", "400");
+		message << this->error_page("400");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -143,11 +189,11 @@ std::string Message::m_post()
 	std::ifstream ifs(path, std::ios::binary);
 
 	if (access(path.c_str(), F_OK) != 0)
-		message << this->error_page("www/Errors/", "404");
+		message << this->error_page("404");
 	else if (access(path.c_str(), X_OK) != 0)
-		message << this->error_page("www/Errors/", "403");
+		message << this->error_page("403");
 	else if (!ifs.is_open())
-		message << this->error_page("www/Errors/", "400");
+		message << this->error_page("400");
 	else
 	{
 		int pipefd[2];
@@ -160,8 +206,8 @@ std::string Message::m_post()
 		std::string interpreter = "/usr/bin/python3";
 		std::string script = "www/test.py";
 
-		char* args[] = {&interpreter[0], &script[0], nullptr};
-		char* env[] = {nullptr};
+		char* args[] = {&interpreter[0], &script[0], NULL};
+		char* env[] = {NULL};
 
 		pid_t pid = fork();
 		if (pid == 0)
@@ -213,11 +259,11 @@ std::string Message::m_delete()
 	std::ifstream ifs(path);
 
 	if (access(path.c_str(), R_OK) != 0)
-		message << this->error_page("www/Errors/", "403");
+		message << this->error_page("403");
 	else if (access(path.c_str(), F_OK) != 0)
-		message << this->error_page("www/Errors/", "404");
+		message << this->error_page("404");
 	else if (!ifs.is_open())
-		message << this->error_page("www/Errors/", "400");
+		message << this->error_page("400");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
@@ -392,7 +438,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	{
 		case Request::HEADER:
 			this->m_parseHeader(this->m_readHeader(client));
-			print_headers(this->m_request.headers, this->m_request);
+//			print_headers(this->m_request.headers, this->m_request);
 			break;
 		case Request::BODY_HEADER:
 			this->m_parseBody(this->m_readHeader(client));
@@ -409,22 +455,16 @@ void Message::handle_request(const fd client, size_t buffer_size)
 		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 }
 
-void Message::make_response(const fd client, size_t __unused buffer_size)
+bool Message::m_valid_method()
 {
-	stringstream  ss;
+	for (std::vector<std::string>::iterator it = this->m_current_location->accepted_methods.methods.begin(); it != this->m_current_location->accepted_methods.methods.end(); it++)
+		if (*it == this->m_request.method)
+			return true;
+	return false;
+}
 
-	ss << "Responding fd: " << client;
-	Logger::log(ss.str(), INFO);
-	cout << "****Writing****" << endl;
-
-	std::ostringstream message;
-	if (this->m_request.method == "GET")
-		this->m_server_message = m_get();
-	else if (this->m_request.method == "DELETE")
-		this->m_server_message = this->m_delete();
-	else
-		this->m_server_message = this->m_post();
-
+void Message::m_send_message(const fd client)
+{
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
 	size_t err_count = 0;
@@ -458,6 +498,35 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	}
 
 	this->m_request.headers.clear();
+}
+
+void Message::make_response(const fd client, size_t __unused buffer_size)
+{
+	stringstream  ss;
+
+	ss << "Responding fd: " << client;
+	Logger::log(ss.str(), INFO);
+	cout << "****Writing****" << endl;
+	this->m_update_location(this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/') + 1));
+
+	cout << "Using location:\n" << *this->m_current_location << endl;
+
+	if (!this->m_valid_method())
+	{
+		this->error_page("405");
+		this->m_send_message(client);
+		return;
+	}
+
+	std::ostringstream message;
+	if (this->m_request.method == "GET")
+		this->m_server_message = m_get();
+	else if (this->m_request.method == "DELETE")
+		this->m_server_message = this->m_delete();
+	else
+		this->m_server_message = this->m_post();
+
+	this->m_send_message(client);
 }
 
 void Message::reset()
