@@ -3,7 +3,6 @@
 #include <sys/socket.h>
 #include "Utilities.hpp"
 #include <fcntl.h>
-#include <signal.h>
 
 Message::Message(): m_responseCode(HttpStatus::OK), m_readStatus(Request::HEADER), finishedReading(false)
 {
@@ -21,6 +20,49 @@ void Message::setConfig(Data::Server &config)
 void Message::buildHeader()
 {
 
+}
+
+void Message::m_createFile(const std::string &filename, const std::string &extension)
+{
+	char			time_str[100];
+	time_t 			t;
+	struct tm		*time_ptr;
+
+	t = time(NULL);
+	time_ptr = localtime(&t);
+	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
+
+	string composition_name;
+
+	composition_name.append("uploads/");
+	composition_name.append(filename);
+	composition_name.append(time_str);
+	composition_name.append(".");
+	composition_name.append(extension);
+
+	std::ofstream outfile(composition_name, std::ios::out | std::ios::binary);
+	if (outfile.fail())
+		throw (std::runtime_error("can't create outfile for POST"));
+
+	string			needle;
+
+	needle.append("\r\n");
+	needle.append(this->m_body.boundary);
+
+	std::vector<char>::iterator data_end = this->m_body.data.end() - 1;
+	size_t i = 0;
+
+	while (data_end != this->m_body.data.begin())
+	{
+		if (i == needle.size())
+			break;
+		if (*data_end == needle.at(needle.size() - 1 - i))
+			i++;
+		data_end--;
+	}
+
+	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != data_end; it++)
+		outfile.write(&*it, 1);
 }
 
 std::string Message::error_page(std::string path, std::string error)
@@ -55,49 +97,6 @@ std::string Message::error_page(std::string path, std::string error)
 
 	return (message.str());
 
-}
-
-void Message::m_createFile(const std::string &filename, const std::string &extension)
-{
-	char			time_str[100];
-	time_t 			t;
-	struct tm		*time_ptr;
-
-	t = time(NULL);
-	time_ptr = localtime(&t);
-	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
-
-	string composition_name;
-
-	composition_name.append("uploads/");
-	composition_name.append(filename);
-	composition_name.append(time_str);
-    composition_name.append(".");
-	composition_name.append(extension);
-
-	std::ofstream outfile(composition_name, std::ios::out | std::ios::binary);
-	if (outfile.fail())
-		throw (std::runtime_error("can't create outfile for POST"));
-
-	string			needle;
-
-	needle.append("\r\n");
-	needle.append(this->m_body.boundary);
-
-	std::vector<char>::iterator data_end = this->m_body.data.end() - 1;
-	size_t i = 0;
-
-	while (data_end != this->m_body.data.begin())
-	{
-		if (i == needle.size())
-			break;
-		if (*data_end == needle.at(needle.size() - 1 - i))
-			i++;
-		data_end--;
-	}
-
-	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != data_end; it++)
-		outfile.write(&*it, 1);
 }
 
 std::string Message::m_get()
@@ -163,7 +162,7 @@ std::string Message::m_post()
 
 		char* args[] = {&interpreter[0], &script[0], nullptr};
 		char* env[] = {nullptr};
-		
+
 		pid_t pid = fork();
 		if (pid == 0)
 		{
@@ -196,7 +195,7 @@ std::string Message::m_post()
 		}
 		else
 			//CGI Error
-		this->m_response.extension = "text/plain";
+			this->m_response.extension = "text/plain";
 		message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
 				<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 	}
@@ -238,6 +237,7 @@ void print_headers(std::map<string, string> headers, t_request &request)
 	{
 		cout << "(" << it->first << ") -> (" << it->second << ")\n";
 	}
+
 }
 
 string Message::m_readHeader(const fd client)
@@ -260,6 +260,7 @@ string Message::m_readHeader(const fd client)
 		{
 			header.clear();
 			return header;
+
 		}
 	}
 	return header;
@@ -267,10 +268,10 @@ string Message::m_readHeader(const fd client)
 
 void Message::m_parseHeader(const std::string &header)
 {
-    if (header.empty())
-        throw (std::runtime_error("bad header parsing"));
+	if (header.empty())
+		throw (std::runtime_error("bad header parsing"));
 
-	std::vector<std::string> request = Utils::split(header, "\r\n");
+	std::vector<std::string> request = Utils::split(header, "\n");
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
 
@@ -284,7 +285,7 @@ void Message::m_parseHeader(const std::string &header)
 
 		const string key(tmp_key);
 
-		char *tmp_value = std::strtok(NULL, "\r\n");
+		char *tmp_value = std::strtok(NULL, "\n\r");
 		if (!tmp_value)
 			break;
 
@@ -313,25 +314,25 @@ void Message::m_parseHeader(const std::string &header)
 
 void Message::m_parseBody(const std::string &header)
 {
-    if (header.empty())
-        throw (std::runtime_error("bad header parsing"));
+	if (header.empty())
+		throw (std::runtime_error("bad header parsing"));
 
 
-    string  filename;
-    char    *tmp;
+	string  filename;
+	char    *tmp;
 
 	this->m_body.boundary = header.substr(0, header.find("\r\n"));
 
-    strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
+	strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
 	tmp = strtok(NULL, ".");
 
-    if (tmp)
-        this->m_body.file_name = &tmp[1];
+	if (tmp)
+		this->m_body.file_name = &tmp[1];
 
-    tmp = strtok(NULL, "\"");
+	tmp = strtok(NULL, "\"");
 
-    this->m_body.file_extension = tmp;
-    this->m_request.content_length -= header.size();
+	this->m_body.file_extension = tmp;
+	this->m_request.content_length -= header.size();
 }
 
 void Message::m_readBody(const fd client, const size_t fd_size)
@@ -340,7 +341,7 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	size_t 			read_errors = 0;
 	size_t 			loopRead = 0;
 	ssize_t 		read_bytes;
-    const size_t 	buffer_size = 30720;
+	const size_t 	buffer_size = 30720;
 	char		    buffer[buffer_size];
 
 	while (loopRead < fd_size && totalRead < this->m_request.content_length)
@@ -391,19 +392,19 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	{
 		case Request::HEADER:
 			this->m_parseHeader(this->m_readHeader(client));
-            //print_headers(this->m_request.headers, this->m_request);
-            break;
+			print_headers(this->m_request.headers, this->m_request);
+			break;
 		case Request::BODY_HEADER:
 			this->m_parseBody(this->m_readHeader(client));
-            this->m_readStatus = Request::BODY;
-            break;
-        case Request::BODY:
-            this->m_readBody(client, buffer_size);
-            break;
-        case Request::FINISHED_BODY:
+			this->m_readStatus = Request::BODY;
+			break;
+		case Request::BODY:
+			this->m_readBody(client, buffer_size);
+			break;
+		case Request::FINISHED_BODY:
 			break;
 	}
-	std::cout << this->m_request.method << " " << this->m_request.uri << "\n";
+
 	if (this->m_readStatus == Request::FINISHED_BODY)
 		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 }
@@ -417,21 +418,12 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	cout << "****Writing****" << endl;
 
 	std::ostringstream message;
-	if (this->m_request.method != "GET" && this->m_request.method != "DELETE" && this->m_request.method != "POST" && this->m_request.method != "CONNECT"
-		&& this->m_request.method != "HEAD" && this->m_request.method != "OPTIONS" && this->m_request.method != "PATCH" && this->m_request.method != "PUT" && this->m_request.method != "TRACE")
-		this->m_server_message = this->error_page("www/Errors/", "400");
-	else if (this->m_request.method == "GET")
+	if (this->m_request.method == "GET")
 		this->m_server_message = m_get();
 	else if (this->m_request.method == "DELETE")
 		this->m_server_message = this->m_delete();
-	else if (this->m_request.method == "POST")
-		this->m_server_message = this->m_post();
 	else
-		this->m_server_message = this->error_page("www/Errors/", "501");
-
-	//std::cout << "\n\n" << this->m_request.version << "\n\n";
-	if (this->m_request.version != "HTTP/1.1")
-		this->m_server_message = this->error_page("www/Errors/", "505");
+		this->m_server_message = this->m_post();
 
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
@@ -470,7 +462,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 void Message::reset()
 {
-    Logger::log("Resetting message class", INFO);
+	Logger::log("Resetting message class", INFO);
 	this->m_body.data.clear();
 	this->m_request.method.clear();
 	this->m_request.target.clear();
@@ -487,5 +479,7 @@ void Message::reset()
 	this->m_responseCode = HttpStatus::OK;
 	this->m_readStatus = Request::HEADER;
 	this->m_server_message.clear();
-    this->finishedReading = false;
+	this->finishedReading = false;
+
+
 }
