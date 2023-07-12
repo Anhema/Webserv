@@ -476,12 +476,14 @@ Parser::Keys::Autoindex::~Autoindex()
 
 }
 
-void Parser::Keys::Autoindex::m_validate_token(const string &token)
-{
-	if (token != "on" || token != "off")
-	{
+void Parser::Keys::Autoindex::m_validate_token(const string &token) {
+	cout << "AUtoindex token: " << token << endl;
+	if (token == "on" || token == "off") {
+		;;
+	} else {
 		this->m_errno = INVALID_VALUE;
 		this->m_err_token = token;
+
 	}
 }
 

@@ -29,6 +29,7 @@ using std::size_t;
 # define DELETE_METHOD "DELETE"
 
 
+# define DEFAULT_AUTOINDEX true
 # define DEFAULT_ROOT_DIR "www/"
 # define DEFAULT_INDEX_FILE "index.html"
 # define DEFAULT_MAX_BODY 424242424242

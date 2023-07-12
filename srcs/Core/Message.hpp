@@ -78,6 +78,7 @@ private:
 	bool					m_valid_method(void);
 	void					m_send_message(const fd client);
 	void					m_make_redir(void);
+	void					m_dir_listing(void);
 
 public:
 	void 					reset(void);

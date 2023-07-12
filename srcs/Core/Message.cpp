@@ -314,7 +314,6 @@ string Message::m_readHeader(const fd client)
 		{
 			header.clear();
 			return header;
-
 		}
 	}
 	return header;

@@ -61,7 +61,7 @@ Data::Server::~Server() {
 
 Data::Location::Location():
 		route(), root(), directory_file(), index(),
-		autoindex(false), accepted_methods(), redirection()
+		autoindex(DEFAULT_AUTOINDEX), accepted_methods(), redirection()
 {}
 
 Data::Location::Location(Data::Server const &context):
@@ -134,6 +134,13 @@ std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 		os << "empty\n";
 	else
 		os << location.redirection << endl;
+	os << "\tAutoindex -> ";
+	if (location.autoindex)
+		os << "true\n";
+	else
+		os << "false\n";
+
+
 	os << endl;
 	return os;
 }
