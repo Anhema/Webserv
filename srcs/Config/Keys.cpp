@@ -235,7 +235,7 @@ void Parser::Keys::MaxBody::m_save(const std::vector<std::string> &tokens, Data:
     if (dst)
         dst->max_body_size = this->m_max_bytes;
     else
-        std::runtime_error("casting in max_body directive");
+        throw (std::runtime_error("casting in max_body directive"));
 }
 
 Parser::Keys::LocationPath::LocationPath(): Parser::Directive("path", 1) {
@@ -260,7 +260,7 @@ void Parser::Keys::LocationPath::m_save(const std::vector<std::string> &tokens, 
 	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
 		dst->route = tokens.at(0);
 	else
-		std::runtime_error("casting in LocationPath directive");
+		throw (std::runtime_error("casting in LocationPath directive"));
 }
 
 /**
@@ -294,7 +294,7 @@ void Parser::Keys::Index::m_save(const std::vector<std::string> &tokens, Data::C
 	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
 		dst->index = tokens.at(0);
 	else
-		std::runtime_error("casting in index directive");
+		throw (std::runtime_error("casting in index directive"));
 }
 
 /**
@@ -342,7 +342,7 @@ void Parser::Keys::AcceptMethod::m_save(const std::vector<std::string> &tokens, 
 	if (Data::Accept *dst = dynamic_cast<Data::Accept *>(config))
 		dst->methods.push_back(tokens.at(0));
 	else
-		std::runtime_error("casting in index directive");
+		throw (std::runtime_error("casting in index directive"));
 }
 
 /**
@@ -430,7 +430,7 @@ void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Dat
 			dst->error_505 = file;
 	}
 	else
-		std::runtime_error("casting in ErrorPage directive");
+		throw (std::runtime_error("casting in ErrorPage directive"));
 }
 
 /**
@@ -463,6 +463,41 @@ void Parser::Keys::Redirection::m_save(const std::vector<std::string> &tokens, D
 		dst->redirection = tokens.at(0);
 	}
 	else
-		std::runtime_error("casting in Redirection directive");
+		throw (std::runtime_error("casting in Redirection directive"));
 }
 
+Parser::Autoindex::Autoindex(): Parser::Directive("autoindex", 1)
+{
+
+}
+
+Parser::Autoindex::~Autoindex()
+{
+
+}
+
+void Parser::Autoindex::m_validate_token(const string &token)
+{
+	if (token != "on" || token != "off")
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = token;
+	}
+}
+
+void Parser::Autoindex::m_format_checker(const std::vector<std::string> &tokens)
+{
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Autoindex::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
+	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
+	{
+		if (tokens.at(0) == "on")
+			dst->autoindex = true;
+		else if (tokens.at(0) == "off")
+			dst->autoindex = false;
+	}
+	else
+		throw (std::runtime_error("casting in autoindex directive"));

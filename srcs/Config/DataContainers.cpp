@@ -60,18 +60,18 @@ Data::Server::~Server() {
 }
 
 Data::Location::Location():
-        route(), root(), directory_file(), index(),
-        directory_listing(false), accepted_methods(), redirection()
+		route(), root(), directory_file(), index(),
+		autoindex(false), accepted_methods(), redirection()
 {}
 
 Data::Location::Location(Data::Server const &context):
 		route(), root(context.root), directory_file(), index(context.index),
-		directory_listing(false), accepted_methods(context.accepted_methods), redirection()
+		autoindex(false), accepted_methods(context.accepted_methods), redirection()
 {}
 
 Data::Location::Location(Location const &rhs):
 		route(rhs.route), root(rhs.root), directory_file(rhs.directory_file), index(rhs.index),
-		directory_listing(rhs.directory_listing), accepted_methods(rhs.accepted_methods), redirection(rhs.redirection)
+		autoindex(rhs.autoindex), accepted_methods(rhs.accepted_methods), redirection(rhs.redirection)
 {}
 
 Data::Location::~Location() { //std::cout << "Destroying Location\n";
@@ -92,7 +92,7 @@ void Data::Location::clear()
 	this->index = def.index;
 	this->accepted_methods = def.accepted_methods;
 	this->directory_file = def.directory_file;
-	this->directory_listing = def.directory_listing;
+	this->autoindex = def.autoindex;
 	this->redirection = def.redirection;
 	this->cgi = def.cgi;
 	this->upload_path = def.upload_path;

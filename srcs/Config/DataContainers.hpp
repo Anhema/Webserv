@@ -57,7 +57,7 @@ namespace Data
 		std::string 						root;
 		std::string							directory_file;
 		std::string 						index;
-		bool								directory_listing;
+		bool								autoindex;
 		Data::Accept						accepted_methods;
 		std::string							redirection;
         std::string                         cgi;
