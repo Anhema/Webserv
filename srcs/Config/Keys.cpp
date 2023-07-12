@@ -432,3 +432,37 @@ void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Dat
 	else
 		std::runtime_error("casting in ErrorPage directive");
 }
+
+/**
+ * Redirection Directive
+ */
+
+Parser::Keys::Redirection::Redirection(): Parser::Directive("redirection", 1)
+{
+
+}
+
+Parser::Keys::Redirection::~Redirection() {
+
+}
+
+void Parser::Keys::Redirection::m_validate_token(const string &token)
+{
+	this->asciiCheck(token);
+}
+
+void Parser::Keys::Redirection::m_format_checker(const std::vector<std::string> &tokens)
+{
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Keys::Redirection::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
+	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
+	{
+		dst->redirection = tokens.at(0);
+	}
+	else
+		std::runtime_error("casting in Redirection directive");
+}
+

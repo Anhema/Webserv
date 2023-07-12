@@ -21,7 +21,7 @@ Data::ErrorPages::~ErrorPages() {}
 
 Data::Server::Server(): ports(), names(), ip(), accepted_methods(), root("www/"), index("index.html"), max_body_size(1000), errors(), locations()
 {
-	this->accepted_methods.methods.push_back("get");
+	this->accepted_methods.methods.push_back(GET_METHOD);
 }
 
 Data::Server::Server(const Data::Server &rhs): ports(rhs.ports),
@@ -129,6 +129,11 @@ std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 	os << "\tIndex-> " << (location).index << "\n";
 	os << "\tAccept -> ";
 	Utils::print_vector(location.accepted_methods.methods);
+	os << "\tRedirection -> ";
+	if (location.redirection.empty())
+		os << "empty\n";
+	else
+		os << location.redirection << endl;
 	os << endl;
 	return os;
 }

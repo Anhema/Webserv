@@ -34,13 +34,7 @@ void WebServ::ConfParser::print() const
         {
             for (std::vector<Data::Location>::const_iterator location_it = it->locations.begin(); location_it != (it)->locations.end(); location_it++)
             {
-                cout << "====Location====\n";
-                cout << "\tRoute-> " << (location_it)->route << "\n";
-                cout << "\tRoot-> " << (location_it)->root << "\n";
-				cout << "\tIndex-> " << (location_it)->index << "\n";
-				cout << "\tAccept -> ";
-				Utils::print_vector(location_it->accepted_methods.methods);
-				cout << endl;
+ 				cout << *location_it;
             }
         }
     }

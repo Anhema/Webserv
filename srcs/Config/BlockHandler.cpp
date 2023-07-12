@@ -112,6 +112,7 @@ void WebServ::LocationBlockParser::initHandlers()
         this->AddKeywordHandler("root", Parser::Directive::KeyFactory<Parser::Keys::Root>());
 		this->AddKeywordHandler("route", Parser::Directive::KeyFactory<Parser::Keys::LocationPath>());
 		this->AddKeywordHandler("index", Parser::Directive::KeyFactory<Parser::Keys::Index>());
+		this->AddKeywordHandler("redirection", Parser::Directive::KeyFactory<Parser::Keys::Redirection>());
     }
 }
 

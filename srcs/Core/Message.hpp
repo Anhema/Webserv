@@ -19,7 +19,7 @@ namespace Request
 	};
 }
 
-
+#define HTTP_1_1 "HTTP/1.1";
 
 typedef struct s_body
 {
@@ -77,6 +77,7 @@ private:
 	void					m_update_location(const std::string &path);
 	bool					m_valid_method(void);
 	void					m_send_message(const fd client);
+	void					m_make_redir(void);
 
 public:
 	void 					reset(void);

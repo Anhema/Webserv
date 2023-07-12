@@ -500,6 +500,21 @@ void Message::m_send_message(const fd client)
 	this->m_request.headers.clear();
 }
 
+void Message::m_make_redir(void)
+{
+	std::stringstream message;
+	const std::string EOL("\r\n");
+
+	cout << "***MAKING REDIR TO -> " << this->m_current_location->redirection << endl;
+
+	message << "HTTP/1.1" << " " << "301" << " " << "Moved Permanently" << EOL
+	<< "Location: " << this->m_current_location->redirection << EOL
+	<< "Connection: close" << EOL
+	<< "Content-Length: 0" << EOL
+	<< EOL;
+	this->m_server_message = message.str();
+}
+
 void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
@@ -517,7 +532,12 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-
+	if (!this->m_current_location->redirection.empty())
+	{
+		this->m_make_redir();
+		this->m_send_message(client);
+		return;
+	}
 	std::ostringstream message;
 	if (this->m_request.method == "GET")
 		this->m_server_message = m_get();
