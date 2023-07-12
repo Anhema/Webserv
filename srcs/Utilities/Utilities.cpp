@@ -1,5 +1,28 @@
 #include "Utilities.hpp"
 
+std::string Utils::read_dir(const string &path)
+{
+	DIR					*dir;
+	struct dirent		*entry;
+	std::stringstream 	dir_as_text;
+
+	dir = opendir(path.c_str());
+
+	if (!dir)
+		return "";
+
+	while ((entry = readdir(dir)) != NULL)
+	{
+		const std::string entryName = entry->d_name;
+
+		dir_as_text << entryName;
+		std::cout << entryName << std::endl;
+	}
+
+	closedir(dir);
+	return dir_as_text.str();
+}
+
 std::string Utils::read_file(std::string file_name)
 {
 	std::ifstream   file;
