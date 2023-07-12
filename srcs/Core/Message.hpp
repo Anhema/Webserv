@@ -78,7 +78,8 @@ private:
 	bool					m_valid_method(void);
 	void					m_send_message(const fd client);
 	void					m_make_redir(void);
-	void					m_dir_listing(void);
+	void					m_make_autoindex(void);
+	std::string				m_make_html_link(std::string const &link);
 
 public:
 	void 					reset(void);

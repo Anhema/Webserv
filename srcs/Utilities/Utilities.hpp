@@ -156,7 +156,7 @@ namespace Utils
 	void						debug_log(std::string log);
 	std::string					read_file(std::string file_name);
 	std::string					get_extension(std::string const file_name);
-	std::string 				read_dir(std::string const &path);
+	std::vector<std::string> 	read_dir(std::string const &path);
 	void						capitalize(string &s, string sep);
 	char						*capitalize(char *s, string sep);
 	bool						isSet(char c, string set);

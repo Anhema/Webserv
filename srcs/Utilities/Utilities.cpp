@@ -1,26 +1,39 @@
 #include "Utilities.hpp"
 
-std::string Utils::read_dir(const string &path)
+std::vector<std::string> Utils::read_dir(const string &path)
 {
-	DIR					*dir;
-	struct dirent		*entry;
-	std::stringstream 	dir_as_text;
+	DIR							*dir;
+	struct dirent				*entry;
+	std::vector<std::string> 	entries;
 
 	dir = opendir(path.c_str());
 
 	if (!dir)
-		return "";
+		return entries;
 
 	while ((entry = readdir(dir)) != NULL)
 	{
-		const std::string entryName = entry->d_name;
+		std::string entryName = entry->d_name;
 
-		dir_as_text << entryName;
-		std::cout << entryName << std::endl;
+		switch (entry->d_type) {
+			case DT_REG:
+//				entryType = "Regular File";
+				break;
+			case DT_DIR:
+				entryName.push_back('/');
+				break;
+//			case DT_LNK:
+//				entryType = "Symbolic Link";
+//				break;
+//				// Add more cases for other types as needed
+			default:
+				break;
+		}
+		entries.push_back(entryName);
 	}
 
 	closedir(dir);
-	return dir_as_text.str();
+	return entries;
 }
 
 std::string Utils::read_file(std::string file_name)

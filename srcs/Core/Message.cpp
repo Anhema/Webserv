@@ -522,6 +522,52 @@ void Message::m_make_redir(void)
 	this->m_server_message = message.str();
 }
 
+std::string Message::m_make_html_link(const string &link)
+{
+	std::string result;
+
+	result.append("<li>");
+	result.append("<a href=\"");
+	result.append(link);
+	result.append("\">");
+	result.append(link);
+	result.append("</a>");
+	result.append("</li>");
+	return result;
+}
+
+void Message::m_make_autoindex(void)
+{
+	const std::string path(this->m_current_location->root.substr(0, this->m_current_location->root.size() -1) + this->m_request.uri);
+	const std::string EOL("\r\n");
+	std::stringstream message;
+	std::stringstream html;
+
+	cout << "autoindex path: " << path << endl;
+
+	html	<< "<html>\n<head>\n\t<title>Directory Links</title>\n</head>\n<body>\n\t"
+			<< "<h1>Directory Links</h1>\n\t<ul>\n";
+
+	std::vector<std::string> dir_entries = Utils::read_dir(path);
+
+	for (std::vector<std::string>::iterator it = dir_entries.begin(); it != dir_entries.end(); it++)
+	{
+		html << "\t\t" << this->m_make_html_link(*it) << endl;
+	}
+	html << "\t</ul>\n"
+			<< "</body>\n</html>"
+			<< "\n";
+			cout << "html:\n" << html.str() << endl;
+
+	message << "HTTP/1.1 200 OK" << EOL
+			<< "Content-Type: text/html" << EOL
+			<< "Content-Length: " << html.str().size() << EOL
+			<< "Connection: close" << EOL
+			<< EOL
+			<< html.str();
+	this->m_server_message = message.str();
+}
+
 void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
@@ -545,6 +591,13 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
+	if (*(this->m_request.uri.end() -1) == '/' && this->m_current_location->autoindex && this->m_current_location->index.empty())
+	{
+		this->m_make_autoindex();
+		this->m_send_message(client);
+		return;
+	}
+
 	std::ostringstream message;
 	if (this->m_request.method == "GET")
 		this->m_server_message = m_get();

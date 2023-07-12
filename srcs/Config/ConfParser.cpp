@@ -71,8 +71,6 @@ void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &loc
 {
 	if (location.accepted_methods.methods.empty())
 		location.accepted_methods.methods = context.accepted_methods.methods;
-	if (location.index.empty())
-		location.index = context.index;
 	if (location.root.empty())
 		location.root = context.root;
 }
