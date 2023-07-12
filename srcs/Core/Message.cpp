@@ -117,11 +117,19 @@ std::string Message::error_page(std::string error)
 	cout << "Manda la pagina de error de: " << this->m_configuration.root + path << endl;
 	this->m_response.htmlFile = Utils::read_file(this->m_configuration.root + path);
 
-	this->m_response.extension = "html";
-	message << "HTTP/1.1 "<< error << " " << error_name << "\r\nContent-Status: text/" << this->m_response.extension
-			<< "\r\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
-	this->m_server_message = message.str();
+	if (this->m_response.htmlFile.empty())
+	{
+		cout << "llega aqui\n";
+		message << "HTTP/1.1 200 OK\r\n Content-Type: text/plain\r\nContent-Length: 3\r\n\r\n" << "404";
+	}
+	else
+	{
+		this->m_response.extension = "html";
+		message << "HTTP/1.1 "<< error << " " << error_name << "\r\nContent-Status: text/" << this->m_response.extension
+				<< "\r\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
+	}
 
+	this->m_server_message = message.str();
 	return (message.str());
 
 }

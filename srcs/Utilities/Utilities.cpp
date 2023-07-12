@@ -12,6 +12,8 @@ std::string Utils::read_file(std::string file_name)
 	if (file.fail())
 	{
 		std::cout << "Error opening file\n";
+		file.close();
+		return ("");
 	}
 
 
