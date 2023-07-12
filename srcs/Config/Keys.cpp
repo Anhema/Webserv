@@ -466,17 +466,17 @@ void Parser::Keys::Redirection::m_save(const std::vector<std::string> &tokens, D
 		throw (std::runtime_error("casting in Redirection directive"));
 }
 
-Parser::Autoindex::Autoindex(): Parser::Directive("autoindex", 1)
+Parser::Keys::Autoindex::Autoindex(): Parser::Directive("autoindex", 1)
 {
 
 }
 
-Parser::Autoindex::~Autoindex()
+Parser::Keys::Autoindex::~Autoindex()
 {
 
 }
 
-void Parser::Autoindex::m_validate_token(const string &token)
+void Parser::Keys::Autoindex::m_validate_token(const string &token)
 {
 	if (token != "on" || token != "off")
 	{
@@ -485,19 +485,17 @@ void Parser::Autoindex::m_validate_token(const string &token)
 	}
 }
 
-void Parser::Autoindex::m_format_checker(const std::vector<std::string> &tokens)
+void Parser::Keys::Autoindex::m_format_checker(const std::vector<std::string> &tokens)
 {
 	this->std_max_tokens_check(tokens);
 }
 
-void Parser::Autoindex::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
-{
-	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
-	{
+void Parser::Keys::Autoindex::m_save(const std::vector<std::string> &tokens, Data::Conf *config) {
+	if (Data::Location *dst = dynamic_cast<Data::Location *>(config)) {
 		if (tokens.at(0) == "on")
 			dst->autoindex = true;
 		else if (tokens.at(0) == "off")
 			dst->autoindex = false;
-	}
-	else
+	} else
 		throw (std::runtime_error("casting in autoindex directive"));
+}
