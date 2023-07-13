@@ -558,7 +558,6 @@ void Message::m_make_autoindex(void)
 	html << "\t</ul>\n"
 			<< "</body>\n</html>"
 			<< "\n";
-			cout << "html:\n" << html.str() << endl;
 
 	message << "HTTP/1.1 200 OK" << EOL
 			<< "Content-Type: text/html" << EOL
@@ -578,11 +577,18 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	cout << "****Writing****" << endl;
 	this->m_update_location(this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/') + 1));
 
+	print_headers(this->m_request.headers, this->m_request);
 	cout << "Using location:\n" << *this->m_current_location << endl;
 
 	if (!this->m_valid_method())
 	{
 		this->error_page("405");
+		this->m_send_message(client);
+		return;
+	}
+	if (!this->m_valid_server_name())
+	{
+		this->error_page("403");
 		this->m_send_message(client);
 		return;
 	}
@@ -615,6 +621,19 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->error_page("405");
 
 	this->m_send_message(client);
+}
+
+bool Message::m_valid_server_name(void)
+{
+	const std::string &host = this->m_request.headers.find("Host")->second;
+
+	if (host.empty())
+		return false;
+
+	for (std::vector<std::string>::iterator it = this->m_configuration.names.begin(); it != this->m_configuration.names.end(); it++)
+		if (*it == host)
+			return true;
+	return false;
 }
 
 void Message::reset()
