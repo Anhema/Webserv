@@ -79,6 +79,7 @@ private:
 	void					m_send_message(const fd client);
 	void					m_make_redir(void);
 	void					m_make_autoindex(void);
+	bool					m_valid_server_name(void);
 	std::string				m_make_html_link(std::string const &link);
 	std::string 			m_expand_file();
 
