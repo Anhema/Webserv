@@ -4,6 +4,7 @@
 # include "../Utilities/Utilities.hpp"
 # include <unistd.h>
 # include "DataContainers.hpp"
+# include "CGI.hpp"
 
 # define HEADER_END "\r\n\r\n"
 

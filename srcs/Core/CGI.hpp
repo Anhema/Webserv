@@ -1,5 +1,5 @@
-#ifndef MESSAGE_HPP
-# define MESSAGE_HPP
+#ifndef CGI_HPP
+# define CGI_HPP
 
 # include "../Utilities/Utilities.hpp"
 # include <unistd.h>
@@ -11,7 +11,7 @@ class CGI
         CGI();
         ~CGI();
 
-        string exec_cgi(string file_path, string root);
+        string exec_cgi(string file_path);
     private:
 };
 

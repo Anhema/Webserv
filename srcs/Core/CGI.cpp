@@ -3,7 +3,7 @@
 CGI::CGI(){}
 CGI::~CGI(){}
 
-string CGI::exec_cgi(string file_path, string root)
+string CGI::exec_cgi(string file_path)
 {
     int pipefd[2];
     if (pipe(pipefd) == -1)
@@ -12,7 +12,6 @@ string CGI::exec_cgi(string file_path, string root)
         return ("");
     }
 
-    std::string script = root + "/" + file_path;
     std::string interpreter = "";
     if (Utils::get_extension(file_path) == "py")
         interpreter = "/usr/bin/python3";
@@ -21,7 +20,7 @@ string CGI::exec_cgi(string file_path, string root)
     else
         return ("");
 
-    char* args[] = {&interpreter[0], &script[0], NULL};
+    char* args[] = {&interpreter[0], &file_path[0], NULL};
     char* env[] = {NULL};
 
     pid_t pid = fork();
