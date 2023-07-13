@@ -155,11 +155,13 @@ void Message::m_update_location(const string &path)
 
 std::string Message::m_get()
 {
-	std::ostringstream message;
-	std::string path = "www";
+	std::ostringstream	message;
+	std::string 		path;
 
-	if (this->m_request.uri == "/")
-		this->m_response.htmlFile = Utils::read_file(path.append("/index.html"));
+	path.append(this->m_current_location->root);
+
+	if (*(this->m_request.uri.end() - 1) == '/' && !this->m_current_location->index.empty())
+		path.append(this->m_current_location->index);
 	else
 		path.append(this->m_request.uri);
 
@@ -551,9 +553,8 @@ void Message::m_make_autoindex(void)
 	std::vector<std::string> dir_entries = Utils::read_dir(path);
 
 	for (std::vector<std::string>::iterator it = dir_entries.begin(); it != dir_entries.end(); it++)
-	{
 		html << "\t\t" << this->m_make_html_link(*it) << endl;
-	}
+
 	html << "\t</ul>\n"
 			<< "</body>\n</html>"
 			<< "\n";
@@ -597,14 +598,21 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
+	else if (*(this->m_request.uri.end() -1) == '/' && !this->m_current_location->autoindex && this->m_current_location->index.empty())
+	{
+		this->error_page("404");
+		this->m_send_message(client);
+	}
 
 	std::ostringstream message;
-	if (this->m_request.method == "GET")
+	if (this->m_request.method == GET_METHOD)
 		this->m_server_message = m_get();
-	else if (this->m_request.method == "DELETE")
+	else if (this->m_request.method == DELETE_METHOD)
 		this->m_server_message = this->m_delete();
-	else
+	else if (this->m_request.method == POST_METHOD)
 		this->m_server_message = this->m_post();
+	else
+		this->error_page("405");
 
 	this->m_send_message(client);
 }

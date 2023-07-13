@@ -80,6 +80,7 @@ private:
 	void					m_make_redir(void);
 	void					m_make_autoindex(void);
 	std::string				m_make_html_link(std::string const &link);
+	std::string 			m_expand_file();
 
 public:
 	void 					reset(void);

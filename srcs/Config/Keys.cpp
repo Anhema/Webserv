@@ -501,3 +501,19 @@ void Parser::Keys::Autoindex::m_save(const std::vector<std::string> &tokens, Dat
 	} else
 		throw (std::runtime_error("casting in autoindex directive"));
 }
+
+//Parser::Keys::UploadPath::UploadPath(): Parser::Directive("upload", 1) {
+//
+//}
+//
+//Parser::Keys::UploadPath::~UploadPath() {
+//
+//}
+//
+//void Parser::Keys::UploadPath::m_validate_token(const string &token)
+//{
+//	if (!this->asciiCheck(token))
+//		return;
+//
+//
+//}
