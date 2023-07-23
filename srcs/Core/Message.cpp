@@ -175,22 +175,29 @@ std::string Message::m_get()
 		message << this->error_page("403");
 	else if (!ifs.is_open())
 		message << this->error_page("400");
-	else
+	
+	CGI cgi;
+	this->m_response.body = cgi.exec_cgi(path);
+	if (this->m_response.body.size() > 0)
 	{
-		this->m_response.htmlFile = Utils::read_file(path);
-		this->m_response.extension = Utils::get_extension(path);
-		message << "HTTP/1.1 "<< this->m_responseCode << " OK\ncontent-type:";
-		if (this->m_response.extension == "png" || this->m_response.extension == "jpg")
-			message << "image/" + this->m_response.extension;
-		else if (this->m_response.extension == "js")
-		{
-			message << "text/javascript";
-			x_type = "\r\nx-content-type-options: script";
-		}
-		else
-			message << "text/" + this->m_response.extension;
-		message << x_type << "\r\ncontent-length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
+		message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
+			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
+		return (message.str());
 	}
+
+	this->m_response.htmlFile = Utils::read_file(path);
+	this->m_response.extension = Utils::get_extension(path);
+	message << "HTTP/1.1 "<< this->m_responseCode << " OK\ncontent-type:";
+	if (this->m_response.extension == "png" || this->m_response.extension == "jpg")
+		message << "image/" + this->m_response.extension;
+	else if (this->m_response.extension == "js")
+	{
+		message << "text/javascript";
+		x_type = "\r\nx-content-type-options: script";
+	}
+	else
+		message << "text/" + this->m_response.extension;
+	message << x_type << "\r\ncontent-length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;
 	return (message.str());
 }
 
@@ -204,6 +211,11 @@ std::string Message::m_post()
 
 	std::ifstream ifs(path, std::ios::binary);
 
+	if (access(path.c_str(), F_OK) != 0)
+		return (this->error_page("404"));
+	else if (access(path.c_str(), X_OK) != 0)
+		return (this->error_page("403"));
+	
 	CGI cgi;
 	this->m_response.body = cgi.exec_cgi(path);
 	if (this->m_response.body == "" && this->m_body.data.size() > 0)
@@ -212,10 +224,7 @@ std::string Message::m_post()
 		this->m_response.body = "";
 	}
 	if (this->m_response.body == "" && this->m_body.data.size() <= 0)
-	{
-		message << this->error_page("400");
-		return (message.str());
-	}
+		return (this->error_page("405"));
 	this->m_response.extension = "text/plain";
 	message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
@@ -251,6 +260,7 @@ std::string Message::m_delete()
 
 void print_headers(std::map<string, string> headers, t_request &request)
 {
+	cout << "URI -> " << request.uri << endl;
 	cout << "Target -> " << request.target << endl;
 	cout << "Method -> " << request.method << endl;
 	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
@@ -262,7 +272,7 @@ void print_headers(std::map<string, string> headers, t_request &request)
 
 string Message::m_readHeader(const fd client)
 {
-	string 			header;
+	string 			header = "";
 	ssize_t			read_bytes = 0;
 	size_t			err_count = 0;
 	char			buffer;
@@ -270,6 +280,11 @@ string Message::m_readHeader(const fd client)
 	while (header.find(HEADER_END) == string::npos)
 	{
 		read_bytes = recv(client, &buffer, 1, 0);
+		if (read_bytes == 0 || buffer == '\0')
+		{
+			break;
+		}
+		cout << "WHILE -->" << header << "\n" << "READ BYTES: " << read_bytes << "\n";
 		header.push_back(buffer);
 		if (read_bytes == -1)
 		{
@@ -279,9 +294,10 @@ string Message::m_readHeader(const fd client)
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			header.clear();
-			return header;
+			break;
 		}
 	}
+	cout << "END\n";
 	return header;
 }
 
@@ -293,6 +309,10 @@ void Message::m_parseHeader(const std::string &header)
 	std::vector<std::string> request = Utils::split(header, "\n");
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
+
+	this->m_request.method = r_line[0];
+	this->m_request.uri = r_line[1];
+	this->m_request.version = r_line[2];
 
 	while (++line != request.end())
 	{
@@ -307,22 +327,20 @@ void Message::m_parseHeader(const std::string &header)
 		char *tmp_value = std::strtok(NULL, "\n\r");
 		if (!tmp_value)
 			break;
-
 		const string value(&tmp_value[1]);
 
 		this->m_request.headers.insert(std::make_pair(key, value));
 	}
 
-	this->m_request.method = r_line[0];
-	this->m_request.uri = r_line[1];
-	this->m_request.version = r_line[2];
 	this->m_request.connection = this->m_request.headers["Connection"];
-	this->m_request.content_length = std::atol(this->m_request.headers["Content-Length"].c_str());
-
+	this->m_request.content_length = (size_t)std::atoi(this->m_request.headers["Content-Length"].c_str());
+	if (this->m_request.headers["Host"].find(":"))
+		this->m_request.headers["Host"] = this->m_request.headers["Host"].substr(0, this->m_request.headers["Host"].find(":"));
 	if (this->m_request.content_length)
 	{
 		Logger::log("READ STATUS -> BODY HEADER", INFO);
-		this->m_readStatus = Request::BODY_HEADER;
+		this->m_parseBody(header);
+		this->m_readStatus = Request::BODY;
 	}
 	else
 	{
@@ -336,13 +354,13 @@ void Message::m_parseBody(const std::string &header)
 	if (header.empty())
 		throw (std::runtime_error("bad header parsing"));
 
-
 	string  filename;
 	char    *tmp;
 
 	this->m_body.boundary = header.substr(0, header.find("\r\n"));
 
-	strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
+	if (!header.find("filename="))
+		strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
 	tmp = strtok(NULL, ".");
 
 	if (tmp)
@@ -350,8 +368,8 @@ void Message::m_parseBody(const std::string &header)
 
 	tmp = strtok(NULL, "\"");
 
-	this->m_body.file_extension = tmp;
-	this->m_request.content_length -= header.size();
+	if (tmp)
+		this->m_body.file_extension = tmp;
 }
 
 void Message::m_readBody(const fd client, const size_t fd_size)
@@ -376,6 +394,10 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 		{
 			read_errors++;
 			continue;
+		}
+		if (read_bytes == 0)
+		{
+			break;
 		}
 		else
 			read_errors = 0;
@@ -411,10 +433,8 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	{
 		case Request::HEADER:
 			this->m_parseHeader(this->m_readHeader(client));
-//			print_headers(this->m_request.headers, this->m_request);
 			break;
 		case Request::BODY_HEADER:
-			this->m_parseBody(this->m_readHeader(client));
 			this->m_readStatus = Request::BODY;
 			break;
 		case Request::BODY:
@@ -424,8 +444,6 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			break;
 	}
 
-	if (this->m_readStatus == Request::FINISHED_BODY)
-		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 }
 
 bool Message::m_valid_method()
