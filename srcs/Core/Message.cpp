@@ -223,8 +223,6 @@ std::string Message::m_post()
 		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 		this->m_response.body = "";
 	}
-	if (this->m_response.body == "" && this->m_body.data.size() <= 0)
-		return (this->error_page("405"));
 	this->m_response.extension = "text/plain";
 	message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
@@ -280,32 +278,25 @@ string Message::m_readHeader(const fd client)
 	while (header.find(HEADER_END) == string::npos)
 	{
 		read_bytes = recv(client, &buffer, 1, 0);
-		if (read_bytes == 0 || buffer == '\0')
-		{
-			break;
-		}
-		cout << "WHILE -->" << header << "\n" << "READ BYTES: " << read_bytes << "\n";
 		header.push_back(buffer);
 		if (read_bytes == -1)
 		{
 			err_count++;
-			continue;
 		}
+		else
+			err_count = 0;
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			header.clear();
+			Logger::log("Bad Header", WARNING);
 			break;
 		}
 	}
-	cout << "END\n";
 	return header;
 }
 
 void Message::m_parseHeader(const std::string &header)
 {
-	if (header.empty())
-		throw (std::runtime_error("bad header parsing"));
-
 	std::vector<std::string> request = Utils::split(header, "\n");
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
@@ -351,9 +342,6 @@ void Message::m_parseHeader(const std::string &header)
 
 void Message::m_parseBody(const std::string &header)
 {
-	if (header.empty())
-		throw (std::runtime_error("bad header parsing"));
-
 	string  filename;
 	char    *tmp;
 
@@ -393,11 +381,6 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 		if (read_bytes == -1)
 		{
 			read_errors++;
-			continue;
-		}
-		if (read_bytes == 0)
-		{
-			break;
 		}
 		else
 			read_errors = 0;
@@ -407,8 +390,6 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 
 		totalRead += read_bytes;
 		loopRead += read_bytes;
-
-		cout << "Read: " << totalRead << "/" << this->m_request.content_length << endl;
 	}
 	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
 	{
