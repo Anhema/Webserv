@@ -136,13 +136,11 @@ std::string Message::error_page(std::string error)
 
 void Message::m_update_location(const string &path)
 {
-
-
 	static Data::Location default_location;
-
 
 	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 	{
+        cout << "checking: " << *it << endl;
 		if (it->route == path)
 		{
 			this->m_current_location = &(*it);
@@ -284,7 +282,7 @@ string Message::m_readHeader(const fd client)
 		{
 			break;
 		}
-		cout << "WHILE -->" << header << "\n" << "READ BYTES: " << read_bytes << "\n";
+//		cout << "WHILE -->" << header << "\n" << "READ BYTES: " << read_bytes << "\n";
 		header.push_back(buffer);
 		if (read_bytes == -1)
 		{
@@ -297,7 +295,7 @@ string Message::m_readHeader(const fd client)
 			break;
 		}
 	}
-	cout << "END\n";
+//	cout << "END\n";
 	return header;
 }
 
