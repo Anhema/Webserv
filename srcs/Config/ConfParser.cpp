@@ -69,6 +69,9 @@ void WebServ::ConfParser::init()
 
 void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &location)
 {
+    cout << "pre methods: " << endl;
+    Utils::print_vector(location.accepted_methods.methods);
+    cout << endl;
 	if (location.accepted_methods.methods.empty())
 		location.accepted_methods.methods = context.accepted_methods.methods;
 	if (location.root.empty())
@@ -79,23 +82,25 @@ void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &loc
 
 void WebServ::ConfParser::save(Data::Conf *data)
 {
-    static int last_server_idx;
-    static int last_location_idx;
+    static int last_server_idx = -1;
+    static int last_location_idx = -1;
 
     if (Data::Server *server = dynamic_cast<Data::Server *>(data))
     {
         this->m_serverBrackets.push_back(*server);
-        last_server_idx = this->total_pos;
+        last_server_idx++;
         this->m_serverBracket_count++;
     }
     else if (Data::Location *location = dynamic_cast<Data::Location *>(data))
     {
         this->m_serverBrackets.at(last_server_idx).locations.push_back(*location);
 		this->m_locationBracket_count++;
+        last_location_idx++;
     }
 	else if (Data::Accept *accept = dynamic_cast<Data::Accept *>(data))
 	{
 		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
+        cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << endl;
         last_location_idx = total_pos;
 	}
 	else if (Data::ErrorPages *error_page = dynamic_cast<Data::ErrorPages *>(data))

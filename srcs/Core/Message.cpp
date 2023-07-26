@@ -136,13 +136,11 @@ std::string Message::error_page(std::string error)
 
 void Message::m_update_location(const string &path)
 {
-
-
 	static Data::Location default_location;
-
 
 	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 	{
+        cout << "checking: " << *it << endl;
 		if (it->route == path)
 		{
 			this->m_current_location = &(*it);

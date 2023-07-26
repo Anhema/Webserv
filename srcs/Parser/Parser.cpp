@@ -185,10 +185,10 @@ void Parser::Reader::m_find_bracket()
         line.tokenize();
         if (raw.empty())
             continue;
-        cout << "Parsing 1 -> " << line << endl;
+//        cout << "Parsing 1 -> " << line << endl;
         if (this->lineIsOpener(line))
         {
-			cout << "Abre: " << line.raw << endl;
+//			cout << "Abre: " << line.raw << endl;
 			this->total_depth++;
 //            cout << "Is opener! " << line << endl;
             std::stringstream new_bracket;
@@ -199,7 +199,7 @@ void Parser::Reader::m_find_bracket()
 		else if (lineIsCloser(line))
 		{
 
-			cout << "Cierra: " << line.raw << endl;
+//			cout << "Cierra: " << line.raw << endl;
 			this->total_depth--;
 		}
 		else
