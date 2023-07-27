@@ -89,6 +89,8 @@ void WebServ::ConfParser::save(Data::Conf *data)
     {
         this->m_serverBrackets.push_back(*server);
         last_server_idx++;
+		last_location_idx = -1;
+		cout << "Saving at server: " << last_server_idx << endl;
         this->m_serverBracket_count++;
     }
     else if (Data::Location *location = dynamic_cast<Data::Location *>(data))
@@ -96,12 +98,12 @@ void WebServ::ConfParser::save(Data::Conf *data)
         this->m_serverBrackets.at(last_server_idx).locations.push_back(*location);
 		this->m_locationBracket_count++;
         last_location_idx++;
+		cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << endl;
     }
 	else if (Data::Accept *accept = dynamic_cast<Data::Accept *>(data))
 	{
 		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
         cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << endl;
-        last_location_idx = total_pos;
 	}
 	else if (Data::ErrorPages *error_page = dynamic_cast<Data::ErrorPages *>(data))
 	{
