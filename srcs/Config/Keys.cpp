@@ -258,7 +258,7 @@ void Parser::Keys::LocationPath::m_validate_token(const string &token) {
 void Parser::Keys::LocationPath::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
 {
 	if (Data::Location *dst = dynamic_cast<Data::Location *>(config))
-		dst->route = tokens.at(0);
+		dst->uri = tokens.at(0);
 	else
 		throw (std::runtime_error("casting in LocationPath directive"));
 }
@@ -477,7 +477,7 @@ Parser::Keys::Autoindex::~Autoindex()
 }
 
 void Parser::Keys::Autoindex::m_validate_token(const string &token) {
-	cout << "AUtoindex token: " << token << endl;
+	cout << "AUtoindex token: " << token << "\n";
 	if (token == "on" || token == "off") {
 		;;
 	} else {

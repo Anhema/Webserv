@@ -98,8 +98,8 @@ WebServ::LocationBlockParser::~LocationBlockParser()
 
 void WebServ::LocationBlockParser::validate_header(Data::Line const &header)
 {
-//    cout << "checking header: " << header << endl;
-//    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << endl;
+//    cout << "checking header: " << header << "\n";
+//    cout << "key: " << header.key << " size: " << header.tokens.size() << " || " << *header.tokens.begin() << "\n";
 //    Utils::print_vector(header.tokens);
     if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
@@ -110,7 +110,7 @@ void WebServ::LocationBlockParser::initHandlers()
     if (this->keyword_handler.empty())
     {
         this->AddKeywordHandler("root", Parser::Directive::KeyFactory<Parser::Keys::Root>());
-		this->AddKeywordHandler("route", Parser::Directive::KeyFactory<Parser::Keys::LocationPath>());
+		this->AddKeywordHandler("uri", Parser::Directive::KeyFactory<Parser::Keys::LocationPath>());
 		this->AddKeywordHandler("index", Parser::Directive::KeyFactory<Parser::Keys::Index>());
 		this->AddKeywordHandler("redirection", Parser::Directive::KeyFactory<Parser::Keys::Redirection>());
 		this->AddKeywordHandler("autoindex", Parser::Directive::KeyFactory<Parser::Keys::Autoindex>());

@@ -78,7 +78,6 @@ std::string Message::error_page(std::string error)
 	}
 	else if (error == "403")
 	{
-
 		path = this->m_configuration.errors.error_403;
 		error_name = "Forbidden";
 	}
@@ -114,7 +113,7 @@ std::string Message::error_page(std::string error)
 		error_name = "Not Implemented";
 	}
 
-	cout << "Manda la pagina de error de: " << this->m_configuration.root + path << endl;
+	cout << "Manda la pagina de error de: " << this->m_configuration.root + path << "\n";
 	this->m_response.htmlFile = Utils::read_file(this->m_configuration.root + path);
 
 	if (this->m_response.htmlFile.empty())
@@ -137,17 +136,17 @@ std::string Message::error_page(std::string error)
 void Message::m_update_location(const string &path)
 {
 	static Data::Location default_location;
+	// std::string new_path(path);
 
 	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 	{
-        cout << "checking: " << *it << endl;
-		if (it->route == path)
+		if (it->uri == path || it->uri == path + '/' || it->uri + '/' == path)
 		{
 			this->m_current_location = &(*it);
 			return;
 		}
 	}
-	default_location.route = path;
+	default_location.uri = path;
 	this->m_current_location = &default_location;
 }
 
@@ -256,9 +255,9 @@ std::string Message::m_delete()
 
 void print_headers(std::map<string, string> headers, t_request &request)
 {
-	cout << "URI -> " << request.uri << endl;
-	cout << "Target -> " << request.target << endl;
-	cout << "Method -> " << request.method << endl;
+	cout << "URI -> " << request.uri << "\n";
+	cout << "Target -> " << request.target << "\n";
+	cout << "Method -> " << request.method << "\n";
 	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
 	{
 		cout << "(" << it->first << ") -> (" << it->second << ")\n";
@@ -285,7 +284,7 @@ string Message::m_readHeader(const fd client)
 			err_count = 0;
 		if (err_count >= Message::s_maxRecvErrors)
 		{
-			header.clear();
+			//header.clear();
 			Logger::log("Bad Header", WARNING);
 			break;
 		}
@@ -406,7 +405,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 
 	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
-	cout << "****Reading****" << endl;
+	cout << "****Reading****" << "\n";
 
 	switch (this->m_readStatus)
 	{
@@ -438,6 +437,8 @@ void Message::m_send_message(const fd client)
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
 	size_t err_count = 0;
+	
+	//cout << "sending: " << this->m_server_message << "\n";
 
 	while (totalSent < (ssize_t)this->m_server_message.size())
 	{
@@ -450,7 +451,6 @@ void Message::m_send_message(const fd client)
 		if (send_bytes == -1)
 		{
 			err_count++;
-			continue;
 		}
 		else
 			err_count = 0;
@@ -464,7 +464,7 @@ void Message::m_send_message(const fd client)
 	else
 	{
 		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
-		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << endl;
+		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
 	}
 
 	this->m_request.headers.clear();
@@ -475,7 +475,7 @@ void Message::m_make_redir(void)
 	std::stringstream message;
 	const std::string EOL("\r\n");
 
-	cout << "***MAKING REDIR TO -> " << this->m_current_location->redirection << endl;
+	cout << "***MAKING REDIR TO -> " << this->m_current_location->redirection << "\n";
 
 	message << "HTTP/1.1" << " " << "301" << " " << "Moved Permanently" << EOL
 	<< "Location: " << this->m_current_location->redirection << EOL
@@ -501,12 +501,12 @@ std::string Message::m_make_html_link(const string &link)
 
 void Message::m_make_autoindex(void)
 {
-	const std::string path(this->m_current_location->root.substr(0, this->m_current_location->root.size() -1) + this->m_request.uri);
+	const std::string path(this->m_current_location->root);
 	const std::string EOL("\r\n");
 	std::stringstream message;
 	std::stringstream html;
 
-	cout << "autoindex path: " << path << endl;
+	cout << "autoindex path: " << path << "\n";
 
 	html	<< "<html>\n<head>\n\t<title>Directory Links</title>\n</head>\n<body>\n\t"
 			<< "<h1>Directory Links</h1>\n\t<ul>\n";
@@ -514,7 +514,7 @@ void Message::m_make_autoindex(void)
 	std::vector<std::string> dir_entries = Utils::read_dir(path);
 
 	for (std::vector<std::string>::iterator it = dir_entries.begin(); it != dir_entries.end(); it++)
-		html << "\t\t" << this->m_make_html_link(*it) << endl;
+		html << "\t\t" << this->m_make_html_link(*it) << "\n";
 
 	html << "\t</ul>\n"
 			<< "</body>\n</html>"
@@ -535,11 +535,16 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
-	cout << "****Writing****" << endl;
+	cout << "****Writing****\n";
+	
 	this->m_update_location(this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/') + 1));
 
+	if (this->m_current_location->autoindex && access((this->m_configuration.root + this->m_request.uri).c_str(), F_OK) == -1)
+		this->m_update_location(this->m_request.uri);
+
 	print_headers(this->m_request.headers, this->m_request);
-	cout << "Using location:\n" << *this->m_current_location << endl;
+
+	cout << "Using location:\n" << *this->m_current_location << "\n";
 
 	if (!this->m_valid_method())
 	{
@@ -559,7 +564,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-	if (*(this->m_request.uri.end() -1) == '/' && this->m_current_location->autoindex && this->m_current_location->index.empty())
+	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
 		this->m_make_autoindex();
 		this->m_send_message(client);
@@ -579,7 +584,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	else if (this->m_request.method == POST_METHOD)
 		this->m_server_message = this->m_post();
 	else
-		this->error_page("405");
+		this->error_page("400");
 
 	this->m_send_message(client);
 }

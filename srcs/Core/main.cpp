@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 	}
 	catch (Parser::SyntaxError &e)
 	{
-		cout  << e.what() << endl;
+		cout  << e.what() << "\n";
 		return (0);
 	}
 	catch (std::exception &e)

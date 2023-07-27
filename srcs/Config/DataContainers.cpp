@@ -60,17 +60,22 @@ Data::Server::~Server() {
 }
 
 Data::Location::Location():
-		route(), root(), directory_file(), index(),
+		uri(), root(), directory_file(), index(),
 		autoindex(DEFAULT_AUTOINDEX), accepted_methods(), redirection()
-{}
+{
+	this->accepted_methods.methods.push_back(GET_METHOD);
+	this->accepted_methods.methods.push_back(POST_METHOD);
+}
 
 Data::Location::Location(Data::Server const &context):
-		route(), root(context.root), directory_file(), index(context.index),
+		uri(), root(context.root), directory_file(), index(context.index),
 		autoindex(false), accepted_methods(context.accepted_methods), redirection()
-{}
+{
+
+}
 
 Data::Location::Location(Location const &rhs):
-		route(rhs.route), root(rhs.root), directory_file(rhs.directory_file), index(rhs.index),
+		uri(rhs.uri), root(rhs.root), directory_file(rhs.directory_file), index(rhs.index),
 		autoindex(rhs.autoindex), accepted_methods(rhs.accepted_methods), redirection(rhs.redirection)
 {}
 
@@ -87,7 +92,7 @@ void Data::Location::clear()
 {
 	Data::Location def;
 
-	this->route = def.route;
+	this->uri = def.uri;
 	this->root = def.root;
 	this->index = def.index;
 	this->accepted_methods = def.accepted_methods;
@@ -124,7 +129,7 @@ Data::Line &Data::Line::operator=(const Data::Line &rhs) {
 std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 {
 	os << "====Location====\n";
-	os << "\tRoute-> " << (location).route << "\n";
+	os << "\turi-> " << (location).uri << "\n";
 	os << "\tRoot-> " << (location).root << "\n";
 	os << "\tIndex-> " << (location).index << "\n";
 	os << "\tAccept -> ";
@@ -133,7 +138,7 @@ std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 	if (location.redirection.empty())
 		os << "empty\n";
 	else
-		os << location.redirection << endl;
+		os << location.redirection << "\n";
 	os << "\tAutoindex -> ";
 	if (location.autoindex)
 		os << "true\n";
@@ -141,7 +146,7 @@ std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 		os << "false\n";
 
 
-	os << endl;
+	os << "\n";
 	return os;
 }
 

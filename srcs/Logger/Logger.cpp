@@ -12,19 +12,19 @@ Logger::VerboseNoMatchException::VerboseNoMatchException(): std::invalid_argumen
 
 void Logger::log_error(string const &message)
 {
-    cout << BOLDRED << "[ERROR] " << NC << message << endl;
+    cout << BOLDRED << "[ERROR] " << NC << message << "\n";
 }
 
 void Logger::log_warning(string const &message)
 {
     if (VERBOSE <= WARNING)
-        cout << BOLDMAGENTA << "[WARNING] " << NC << message << endl;
+        cout << BOLDMAGENTA << "[WARNING] " << NC << message << "\n";
 }
 
 void Logger::log_info(string const &message)
 {
     if (VERBOSE <= INFO)
-        cout << BOLDGREEN << "[INFO] " << NC << message << endl;
+        cout << BOLDGREEN << "[INFO] " << NC << message << "\n";
 }
 
 void Logger::log(string const &message, levels level)

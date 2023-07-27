@@ -21,7 +21,7 @@ Parser::InvalidFile::InvalidFile(const std::string &line, const std::string &fil
 void Parser::InvalidFile::print()
 {
 	cout	<< BOLDRED << "[ERROR]" << NC << " "
-			<< "can't open file " << RED "-> " << NC << this->m_token << endl;
+			<< "can't open file " << RED "-> " << NC << this->m_token << "\n";
 
 }
 
@@ -29,7 +29,7 @@ void Parser::TooManyArguments::print()
 {
 	cout	<< BOLDRED << "[ERROR]" << NC << " "
 			<< "in line " << RED "-> " << NC << "(" << &this->m_line.at(this->m_line.find_first_not_of(' ')) << ") "
-			<< "Too many arguments, expected " << this->m_expected << " have " << this->m_have << endl;
+			<< "Too many arguments, expected " << this->m_expected << " have " << this->m_have << "\n";
 
 }
 
@@ -143,7 +143,7 @@ void Parser::Reader::print_brackets(std::list<BracketPosition> &brackets, int de
 	{
 		for (int i = 0; i < it->depth; i++)
 			cout << '\t';
-		cout << " type: " << it->type << " pos: " << it->pos << " depth: " << it->depth << endl;
+		cout << " type: " << it->type << " pos: " << it->pos << " depth: " << it->depth << "\n";
 	}
 
 }
@@ -162,13 +162,13 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
 
         this->m_current_line++;
         line.update(raw);
-//		cout << "Parsing 3 -> " << raw << endl;
+//		cout << "Parsing 3 -> " << raw << "\n";
         if (lineIsCloser(line) || lineIsOpener(line))
         {
             this->m_filestream.seekg(this->m_filestream.tellg() - static_cast<std::streampos>(raw.size()));
             break;
         }
-        dst << raw << endl;
+        dst << raw << "\n";
     }
 }
 
@@ -185,12 +185,12 @@ void Parser::Reader::m_find_bracket()
         line.tokenize();
         if (raw.empty())
             continue;
-//        cout << "Parsing 1 -> " << line << endl;
+//        cout << "Parsing 1 -> " << line << "\n";
         if (this->lineIsOpener(line))
         {
-//			cout << "Abre: " << line.raw << endl;
+//			cout << "Abre: " << line.raw << "\n";
 			this->total_depth++;
-//            cout << "Is opener! " << line << endl;
+//            cout << "Is opener! " << line << "\n";
             std::stringstream new_bracket;
             this->m_getBracketData(new_bracket);
 //			cout << "Bracket filled:\n" << new_bracket.str();
@@ -199,7 +199,7 @@ void Parser::Reader::m_find_bracket()
 		else if (lineIsCloser(line))
 		{
 
-//			cout << "Cierra: " << line.raw << endl;
+//			cout << "Cierra: " << line.raw << "\n";
 			this->total_depth--;
 		}
 		else
@@ -240,7 +240,7 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
         line.tokenize();
 
 
-//		cout << "Parsing 2 -> " << line << endl;
+//		cout << "Parsing 2 -> " << line << "\n";
         if (lineIsOpener(line) || lineIsCloser(line))
         {
             this->save(handler->getDestination());

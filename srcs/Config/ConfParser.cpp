@@ -5,28 +5,28 @@ void WebServ::ConfParser::print() const
     for (std::vector<Data::Server >::const_iterator it = this->m_serverBrackets.begin(); it != this->m_serverBrackets.end(); it++)
     {
         cout << "=====NEW BRACKET====\n";
-        cout << "Ip -> " << (it)->ip << endl;
+        cout << "Ip -> " << (it)->ip << "\n";
         cout << "Ports -> ";
         Utils::print_vector((it)->ports);
 
         cout << "Server Names -> ";
         Utils::print_vector((it)->names);
 
-        cout << "Root -> " << (it)->root << endl;
-        cout << "Index -> " << (it)->index << endl;
+        cout << "Root -> " << (it)->root << "\n";
+        cout << "Index -> " << (it)->index << "\n";
         cout << "Accepted methods -> ";
         Utils::print_vector(it->accepted_methods.methods);
-        cout << "Max Body -> " << (it)->max_body_size << endl;
+        cout << "Max Body -> " << (it)->max_body_size << "\n";
 
         cout << "Error Pages\n";
-		cout << "400 -> " << (it)->errors.error_400 << endl;
-		cout << "403 -> " << (it)->errors.error_403 << endl;
-        cout << "404 -> " << (it)->errors.error_404 << endl;
-		cout << "405 -> " << (it)->errors.error_405 << endl;
-		cout << "500 -> " << (it)->errors.error_500 << endl;
-		cout << "501 -> " << (it)->errors.error_501 << endl;
-        cout << "502 -> " << (it)->errors.error_502 << endl;
-		cout << "505 -> " << (it)->errors.error_505 << endl;
+		cout << "400 -> " << (it)->errors.error_400 << "\n";
+		cout << "403 -> " << (it)->errors.error_403 << "\n";
+        cout << "404 -> " << (it)->errors.error_404 << "\n";
+		cout << "405 -> " << (it)->errors.error_405 << "\n";
+		cout << "500 -> " << (it)->errors.error_500 << "\n";
+		cout << "501 -> " << (it)->errors.error_501 << "\n";
+        cout << "502 -> " << (it)->errors.error_502 << "\n";
+		cout << "505 -> " << (it)->errors.error_505 << "\n";
 
         if ((it)->locations.empty())
             cout << "No locations found\n";
@@ -69,9 +69,9 @@ void WebServ::ConfParser::init()
 
 void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &location)
 {
-    cout << "pre methods: " << endl;
+    cout << "pre methods: " << "\n";
     Utils::print_vector(location.accepted_methods.methods);
-    cout << endl;
+    cout << "\n";
 	if (location.accepted_methods.methods.empty())
 		location.accepted_methods.methods = context.accepted_methods.methods;
 	if (location.root.empty())
@@ -100,7 +100,7 @@ void WebServ::ConfParser::save(Data::Conf *data)
 	else if (Data::Accept *accept = dynamic_cast<Data::Accept *>(data))
 	{
 		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
-        cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << endl;
+        cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << "\n";
         last_location_idx = total_pos;
 	}
 	else if (Data::ErrorPages *error_page = dynamic_cast<Data::ErrorPages *>(data))
@@ -150,6 +150,6 @@ void WebServ::ConfParser::validate_server(Data::Server &bracket) {
 }
 
 void WebServ::ConfParser::validate_location(Data::Location &bracket) {
-	if (bracket.route.empty())
+	if (bracket.uri.empty())
 		throw (std::invalid_argument("LOCATION PERO DE QUE RUTA EH?"));
 }

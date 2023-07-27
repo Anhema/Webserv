@@ -53,7 +53,7 @@ namespace Data
 		~Location();
 		void clear();
 
-		std::string							route;
+		std::string							uri;
 		std::string 						root;
 		std::string							directory_file;
 		std::string 						index;
