@@ -48,5 +48,16 @@
 		<p>© 2023 Venta de Alubias</p>
 	</footer>
 	<script src="script.js"></script>
+	<script>
+		const currentUrl = window.location.href;
+		console.log("URL : " + currentUrl);
+		  fetch(currentUrl)
+			.then(response => {
+			  console.log('Código de estado:', response.status);
+			})
+			.catch(error => {
+			  console.error('Error:', error);
+			});
+	  </script>
 </body>
 </html>

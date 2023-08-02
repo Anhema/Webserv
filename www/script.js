@@ -15,7 +15,7 @@ const products = [
 		nombre: 'Alubias pintas',
 		descripcion: 'Alubias pintas de tamaño grande, cultivadas en La Rioja.',
 		precio: 2,
-		imagen: 'alubias-pintas.png'
+		imagen: 'alubias-pintas.jpg'
 	}
 ];
 

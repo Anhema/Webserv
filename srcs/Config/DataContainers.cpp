@@ -60,8 +60,8 @@ Data::Server::~Server() {
 }
 
 Data::Location::Location():
-		uri(), root(), directory_file(), index(),
-		autoindex(DEFAULT_AUTOINDEX), accepted_methods(), redirection()
+		uri(), root("www/"), directory_file(), index(),
+		autoindex(false), accepted_methods(), redirection()
 {
 	this->accepted_methods.methods.push_back(GET_METHOD);
 	this->accepted_methods.methods.push_back(POST_METHOD);

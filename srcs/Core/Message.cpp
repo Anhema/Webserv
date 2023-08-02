@@ -133,21 +133,29 @@ std::string Message::error_page(std::string error)
 
 }
 
-void Message::m_update_location(const string &path)
+string Message::m_update_location(const string &path)
 {
 	static Data::Location default_location;
-	// std::string new_path(path);
+	std::string new_path = "";
 
 	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 	{
+		if (path.substr(0, it->uri.size()) == it->uri || path.substr(0, it->uri.size()) + '/' == it->uri || path.substr(0, it->uri.size()) == it->uri + '/')
+		{
+			this->m_current_location = &(*it);
+			new_path = this->m_current_location->root + (path.substr(it->uri.size() - 1, path.size() - 1));
+			return (new_path);
+		}
 		if (it->uri == path || it->uri == path + '/' || it->uri + '/' == path)
 		{
 			this->m_current_location = &(*it);
-			return;
+			new_path = this->m_current_location->root + (path.substr(it->uri.size(), path.size()));
+			return (new_path);
 		}
 	}
 	default_location.uri = path;
 	this->m_current_location = &default_location;
+	return (this->m_current_location->root);
 }
 
 std::string Message::m_get()
@@ -166,6 +174,7 @@ std::string Message::m_get()
 
 	std::ifstream ifs(path);
 
+	cout << "\n\n" << "------>" << path << "<-----\n\n";
 	if (access(path.c_str(), F_OK) != 0)
 		message << this->error_page("404");
 	else if (access(path.c_str(), R_OK) != 0)
@@ -284,7 +293,6 @@ string Message::m_readHeader(const fd client)
 			err_count = 0;
 		if (err_count >= Message::s_maxRecvErrors)
 		{
-			//header.clear();
 			Logger::log("Bad Header", WARNING);
 			break;
 		}
@@ -460,6 +468,7 @@ void Message::m_send_message(const fd client)
 	if (totalSent == (long)this->m_server_message.size())
 	{
 		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
+		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
 	}
 	else
 	{
@@ -536,11 +545,10 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 	cout << "****Writing****\n";
-	
-	this->m_update_location(this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/') + 1));
 
-	if (this->m_current_location->autoindex && access((this->m_configuration.root + this->m_request.uri).c_str(), F_OK) == -1)
-		this->m_update_location(this->m_request.uri);
+	string tmp = this->m_update_location(this->m_request.uri);
+
+	cout << "\n\n**********" << tmp << "************\n\n";
 
 	print_headers(this->m_request.headers, this->m_request);
 
@@ -564,7 +572,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
+	if (this->m_current_location->autoindex && this->m_current_location->index.empty() && access(tmp.c_str(), F_OK) != -1)
 	{
 		this->m_make_autoindex();
 		this->m_send_message(client);

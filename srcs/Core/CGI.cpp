@@ -31,7 +31,7 @@ string CGI::exec_cgi(string file_path)
         dup2(pipefd[1], 2);
         close(pipefd[1]);
         execve(args[0], args, env);
-        std::cerr << "Error al ejecutar el script CGI." << "\n";
+        std::cerr << "Error";
         exit (1);
     }
     close(pipefd[1]);
