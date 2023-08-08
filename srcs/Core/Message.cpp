@@ -28,6 +28,11 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	time_t 			t;
 	struct tm		*time_ptr;
 
+	// if (this->m_configuration.max_body_size < this->m_request.content_length / 2048)
+	// {
+	// 	cout << "\n\n Toot large body: " << this->m_request.content_length / 2048 << " / " << this->m_configuration.max_body_size << "\n\n";
+	// 	return;
+	// }
 	t = time(NULL);
 	time_ptr = localtime(&t);
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
@@ -143,13 +148,7 @@ string Message::m_update_location(const string &path)
 		if (path.substr(0, it->uri.size()) == it->uri || path.substr(0, it->uri.size()) + '/' == it->uri || path.substr(0, it->uri.size()) == it->uri + '/')
 		{
 			this->m_current_location = &(*it);
-			new_path = this->m_current_location->root + (path.substr(it->uri.size() - 1, path.size() - 1));
-			return (new_path);
-		}
-		if (it->uri == path || it->uri == path + '/' || it->uri + '/' == path)
-		{
-			this->m_current_location = &(*it);
-			new_path = this->m_current_location->root + (path.substr(it->uri.size(), path.size()));
+			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
 			return (new_path);
 		}
 	}
@@ -217,17 +216,20 @@ std::string Message::m_post()
 
 	std::ifstream ifs(path, std::ios::binary);
 
-	if (access(path.c_str(), F_OK) != 0)
-		return (this->error_page("404"));
-	else if (access(path.c_str(), X_OK) != 0)
-		return (this->error_page("403"));
-	
-	CGI cgi;
-	this->m_response.body = cgi.exec_cgi(path);
-	if (this->m_response.body == "" && this->m_body.data.size() > 0)
+	if (this->m_request.content_length > 0)
 	{
 		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 		this->m_response.body = "";
+	}
+	else
+	{
+		if (access(path.c_str(), F_OK) != 0)
+			return (this->error_page("404"));
+		else if (access(path.c_str(), X_OK) != 0)
+			return (this->error_page("403"));
+		
+		CGI cgi;
+		this->m_response.body = cgi.exec_cgi(path);
 	}
 	this->m_response.extension = "text/plain";
 	message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
@@ -541,14 +543,16 @@ void Message::m_make_autoindex(void)
 void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
+	struct stat sb;
 
+	(void) sb;
 	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 	cout << "****Writing****\n";
 
 	string tmp = this->m_update_location(this->m_request.uri);
 
-	cout << "\n\n**********" << tmp << "************\n\n";
+	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
 
 	print_headers(this->m_request.headers, this->m_request);
 
@@ -572,7 +576,8 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-	if (this->m_current_location->autoindex && this->m_current_location->index.empty() && access(tmp.c_str(), F_OK) != -1)
+	if (this->m_current_location->autoindex && this->m_current_location->index.empty() &&
+		(access(tmp.c_str(), R_OK) != -1 && stat(tmp.c_str(), &sb) == 0))
 	{
 		this->m_make_autoindex();
 		this->m_send_message(client);

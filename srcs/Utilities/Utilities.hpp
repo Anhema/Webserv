@@ -15,6 +15,7 @@
 # include <stdexcept>
 # include "stdlib.h"
 # include <climits>
+# include <sys/stat.h>
 
 using std::string;
 using std::cout;
