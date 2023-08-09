@@ -145,3 +145,38 @@ void Utils::capitalize(string &s, string sep)
 		std::toupper(*it);
 	}
 }
+
+std::vector<std::string> Utils::split(std::string str, char separator)
+{
+	std::vector<std::string>	result;
+	std::stringstream 			sstream(str);
+	std::string 				segment;
+
+	while (std::getline(sstream, segment, separator))
+	{
+		cout << "Segment: " << segment << "\n";
+		if (!segment.empty())
+			result.push_back(segment);
+	}
+
+	return result;
+}
+
+std::string Utils::eraseAll(const std::string src, char c)
+{
+	std::string result;
+
+	result.reserve(src.size());
+
+	for (std::string::const_iterator it = src.begin(); it != src.end(); it++)
+	{
+		if (*it != c)
+			result += *it;
+	}
+	return result;
+}
+
+bool Utils::comparePaths(const string &lhs, const string &rhs)
+{
+	return eraseAll(lhs, '/') == eraseAll(rhs, '/');
+}

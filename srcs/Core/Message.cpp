@@ -138,17 +138,37 @@ std::string Message::error_page(std::string error)
 
 }
 
+std::string Message::getRoot(const string &dir) {
+
+	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
+	{
+		if (Utils::comparePaths(it->uri, dir))
+			return it->root;
+	}
+	return "";
+}
+
 string Message::m_update_location(const string &path)
 {
 	static Data::Location default_location;
 	std::string new_path = "";
+
+	std::vector<std::string> inputDirs = Utils::split(path, '/');
+
+	for (std::vector<std::string>::iterator it = inputDirs.begin(); it != inputDirs.end(); it++)
+	{
+		cout << "Root for: " << *it << " -> " << getRoot(*it) << "\n";
+		new_path.append(getRoot(*it));
+	}
+
+	cout << "New path after iteration: " << new_path << "\n";
 
 	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 	{
 		if (path.substr(0, it->uri.size()) == it->uri || path.substr(0, it->uri.size()) + '/' == it->uri || path.substr(0, it->uri.size()) == it->uri + '/')
 		{
 			this->m_current_location = &(*it);
-			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
+//			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
 			return (new_path);
 		}
 	}
@@ -553,7 +573,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
 
-	print_headers(this->m_request.headers, this->m_request);
+//	print_headers(this->m_request.headers, this->m_request);
 
 	cout << "Using location:\n" << *this->m_current_location << "\n";
 

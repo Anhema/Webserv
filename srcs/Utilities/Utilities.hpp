@@ -154,6 +154,7 @@ namespace Utils
 
 	bool						isport(std::string const &s);
 	std::vector<std::string>	split(std::string str, std::string separator);
+	std::vector<std::string>	split(std::string str, char separator);
 	void						debug_log(std::string log);
 	std::string					read_file(std::string file_name);
 	std::string					get_extension(std::string const file_name);
@@ -163,6 +164,8 @@ namespace Utils
 	bool						isSet(char c, string set);
 	bool						can_open_dir(std::string const &directory);
 	bool						can_open_file(std::string const &file);
+	bool						comparePaths(std::string const &lhs, std::string const &rhs);
+	std::string 				eraseAll(std::string const src, char c);
 }
 
 

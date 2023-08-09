@@ -83,6 +83,7 @@ private:
 	bool					m_valid_server_name(void);
 	std::string				m_make_html_link(std::string const &link);
 	std::string 			m_expand_file();
+	std::string 			getRoot(const string &dir);
 
 public:
 	void 					reset(void);
