@@ -216,21 +216,22 @@ std::string Message::m_post()
 
 	std::ifstream ifs(path, std::ios::binary);
 
-	if (this->m_request.content_length > 0)
-	{
-		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
-		this->m_response.body = "";
-	}
-	else
-	{
-		if (access(path.c_str(), F_OK) != 0)
-			return (this->error_page("404"));
-		else if (access(path.c_str(), X_OK) != 0)
-			return (this->error_page("403"));
-		
-		CGI cgi;
-		this->m_response.body = cgi.exec_cgi(path);
-	}
+	// if (this->m_request.content_length > 0)
+	// {
+	// 	cout << "\n\n*******BODY********" << this->m_body.file_extension << "\n";
+	// 	// for (size_t i = 0; i < this->m_body.data.size(); i++)
+	// 	// 	cout << "\n\n" << this->m_body.data[i];
+	// 	// cout << "\n\n";
+	// 	this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
+	// 	this->m_response.body = "";
+	// }
+	if (access(path.c_str(), F_OK) != 0)
+		return (this->error_page("404"));
+	else if (access(path.c_str(), X_OK) != 0)
+		return (this->error_page("403"));
+	
+	CGI cgi;
+	this->m_response.body = cgi.exec_cgi(path);
 	this->m_response.extension = "text/plain";
 	message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
@@ -288,17 +289,18 @@ string Message::m_readHeader(const fd client)
 		read_bytes = recv(client, &buffer, 1, 0);
 		header.push_back(buffer);
 		if (read_bytes == -1)
-		{
 			err_count++;
-		}
 		else
 			err_count = 0;
-		if (err_count >= Message::s_maxRecvErrors)
+		if (err_count != 0)
 		{
 			Logger::log("Bad Header", WARNING);
+			header.clear();
+			return header;
 			break;
 		}
 	}
+	header.pop_back();
 	return header;
 }
 
@@ -307,6 +309,9 @@ void Message::m_parseHeader(const std::string &header)
 	std::vector<std::string> request = Utils::split(header, "\n");
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
+
+	if (header.empty())
+		return;
 
 	this->m_request.method = r_line[0];
 	this->m_request.uri = r_line[1];
@@ -331,14 +336,13 @@ void Message::m_parseHeader(const std::string &header)
 	}
 
 	this->m_request.connection = this->m_request.headers["Connection"];
-	this->m_request.content_length = (size_t)std::atoi(this->m_request.headers["Content-Length"].c_str());
+	this->m_request.content_length = (size_t)std::atol(this->m_request.headers["Content-Length"].c_str());
 	if (this->m_request.headers["Host"].find(":"))
 		this->m_request.headers["Host"] = this->m_request.headers["Host"].substr(0, this->m_request.headers["Host"].find(":"));
 	if (this->m_request.content_length)
 	{
 		Logger::log("READ STATUS -> BODY HEADER", INFO);
-		this->m_parseBody(header);
-		this->m_readStatus = Request::BODY;
+		this->m_readStatus = Request::BODY_HEADER;
 	}
 	else
 	{
@@ -347,24 +351,44 @@ void Message::m_parseHeader(const std::string &header)
 	}
 }
 
-void Message::m_parseBody(const std::string &header)
+void Message::m_parseBody(std::string header)
 {
+	if (header.empty())
+		throw (std::runtime_error("bad header parsing"));
+
+	if (header.find("filename=") > header.size() || header.find("filename=") < 0)
+	{
+		this->m_body.file_name = "tmp";
+		this->m_body.file_extension = "out";
+		return;
+	}
+
 	string  filename;
 	char    *tmp;
 
 	this->m_body.boundary = header.substr(0, header.find("\r\n"));
 
-	if (!header.find("filename="))
+	if (header.find("filename=") <= header.size() && header.find("filename=") >= 0)
 		strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
 	tmp = strtok(NULL, ".");
 
 	if (tmp)
 		this->m_body.file_name = &tmp[1];
+	else
+		this->m_body.file_name = "tmp";	
 
 	tmp = strtok(NULL, "\"");
 
 	if (tmp)
 		this->m_body.file_extension = tmp;
+	else
+		this->m_body.file_extension = "out";
+
+	this->m_request.content_length -= header.size();
+	if (this->m_request.content_length > header.size())
+		this->m_request.content_length = 0;
+
+	cout << "\n\n------------\n" << header << "\n" << this->m_body.file_extension << "\n" << this->m_body.file_name << "\n" << this->m_request.content_length << "\n----------------\n\n";
 }
 
 void Message::m_readBody(const fd client, const size_t fd_size)
@@ -376,6 +400,9 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	const size_t 	buffer_size = 30720;
 	char		    buffer[buffer_size];
 
+	if (this->m_request.content_length == 0)
+		return;
+
 	while (loopRead < fd_size && totalRead < this->m_request.content_length)
 	{
 		read_bytes = recv(client, buffer, buffer_size, 0);
@@ -386,18 +413,17 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 			break;
 		}
 		if (read_bytes == -1)
-		{
 			read_errors++;
-		}
 		else
 			read_errors = 0;
 
 		for (ssize_t i = 0; i < read_bytes; i++)
 			this->m_body.data.push_back(buffer[i]);
-
+		
 		totalRead += read_bytes;
 		loopRead += read_bytes;
 	}
+
 	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
 	{
 		Logger::log("READ STATUS -> FINISHED BODY", INFO);
@@ -423,6 +449,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			this->m_parseHeader(this->m_readHeader(client));
 			break;
 		case Request::BODY_HEADER:
+			this->m_parseBody(this->m_readHeader(client));
 			this->m_readStatus = Request::BODY;
 			break;
 		case Request::BODY:
@@ -432,6 +459,8 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			break;
 	}
 
+	if (this->m_readStatus == Request::FINISHED_BODY)
+		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
 }
 
 bool Message::m_valid_method()
@@ -447,8 +476,6 @@ void Message::m_send_message(const fd client)
 	ssize_t totalSent = 0;
 	ssize_t send_bytes = 0;
 	size_t err_count = 0;
-	
-	//cout << "sending: " << this->m_server_message << "\n";
 
 	while (totalSent < (ssize_t)this->m_server_message.size())
 	{
@@ -459,9 +486,7 @@ void Message::m_send_message(const fd client)
 			break;
 		}
 		if (send_bytes == -1)
-		{
 			err_count++;
-		}
 		else
 			err_count = 0;
 		totalSent += send_bytes;

@@ -72,7 +72,7 @@ private:
 	std::string				m_delete();
 	string					m_readHeader(const fd client);
 	void					m_parseHeader(const string &header);
-	void 					m_parseBody(const string &header);
+	void 					m_parseBody(string header);
 	void 					m_readBody(const fd client, const size_t fd_size);
 	void					m_createFile(const string &filename, const string &extension);
 	string					m_update_location(const std::string &path);

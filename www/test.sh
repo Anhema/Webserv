@@ -1,3 +1,4 @@
-#!/bin/bash
+#get user and passwrod
+# send / compare to DB
 
-echo "holi :)"
+echo "Holi :)"
