@@ -218,7 +218,7 @@ std::string Message::m_post()
 
 	if (this->m_request.content_length > 0)
 	{
-		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
+		// Aqui se debeira llamar al cgi con el body
 		this->m_response.body = "";
 	}
 	else
@@ -431,7 +431,6 @@ void Message::handle_request(const fd client, size_t buffer_size)
 		case Request::FINISHED_BODY:
 			break;
 	}
-
 }
 
 bool Message::m_valid_method()
