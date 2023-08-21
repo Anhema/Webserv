@@ -46,6 +46,9 @@ $(PCHDIR):
 $(OBJDIR):
 	$(MKDIR) $(OBJDIR)
 
+test: $(NAME_SANI)
+	python3 tests/tester.py
+
 sani: $(NAME_SANI)
 	./$(NAME_SANI) default.conf
 
