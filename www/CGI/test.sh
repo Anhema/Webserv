@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "holi :)"
+echo $QUERY_STRING

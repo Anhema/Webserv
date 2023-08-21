@@ -181,6 +181,7 @@ std::string Message::m_get()
 {
 	std::ostringstream	message;
 	std::string 		path;
+	std::string 		args = "";
 	std::string 		type = "";
 	std::string 		x_type = "";
 
@@ -191,9 +192,13 @@ std::string Message::m_get()
 	else
 		path.append(this->m_request.uri);
 
+	args = Utils::split(path, "?")[1];
+	path = Utils::split(path, "?")[0];
+
 	std::ifstream ifs(path);
 
 	cout << "\n\n" << "------>" << path << "<-----\n\n";
+
 	if (access(path.c_str(), F_OK) != 0)
 		message << this->error_page("404");
 	else if (access(path.c_str(), R_OK) != 0)
@@ -202,17 +207,18 @@ std::string Message::m_get()
 		message << this->error_page("400");
 	
 	CGI cgi;
-	this->m_response.body = cgi.exec_cgi(path);
-	if (this->m_response.body.size() > 0)
+	
+	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "sh")
 	{
-		message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
+		this->m_response.body = cgi.exec_cgi(path, args);
+		message << "HTTP/1.1 200 OK\nContent-Type: text/html\r\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 		return (message.str());
 	}
 
 	this->m_response.htmlFile = Utils::read_file(path);
 	this->m_response.extension = Utils::get_extension(path);
-	message << "HTTP/1.1 "<< this->m_responseCode << " OK\ncontent-type:";
+	message << "HTTP/1.1 "<< this->m_responseCode << " OK\nContent-Type:";
 	if (this->m_response.extension == "png" || this->m_response.extension == "jpg")
 		message << "image/" + this->m_response.extension;
 	else if (this->m_response.extension == "js")
@@ -236,10 +242,18 @@ std::string Message::m_post()
 
 	std::ifstream ifs(path, std::ios::binary);
 
+	CGI cgi;
 	if (this->m_request.content_length > 0)
 	{
-		// Aqui se debeira llamar al cgi con el body
-		this->m_response.body = "";
+		if (access(path.c_str(), F_OK) != 0)
+			return (this->error_page("404"));
+		else if (access(path.c_str(), X_OK) != 0)
+			return (this->error_page("403"));
+		
+		string content;
+		for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
+			content += (*it);
+		this->m_response.body = cgi.exec_cgi(path, content);
 	}
 	else
 	{
@@ -248,11 +262,10 @@ std::string Message::m_post()
 		else if (access(path.c_str(), X_OK) != 0)
 			return (this->error_page("403"));
 		
-		CGI cgi;
-		this->m_response.body = cgi.exec_cgi(path);
+		this->m_response.body = cgi.exec_cgi(path, "");
 	}
-	this->m_response.extension = "text/plain";
-	message << "HTTP/1.1 200 OK\nContent-Status: text/html\n"
+	this->m_response.extension = "text/html";
+	message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 	return (message.str());
 }
