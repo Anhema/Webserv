@@ -23,6 +23,7 @@ void WebServ::ConfParser::print() const
 		cout << "403 -> " << (it)->errors.error_403 << "\n";
         cout << "404 -> " << (it)->errors.error_404 << "\n";
 		cout << "405 -> " << (it)->errors.error_405 << "\n";
+		cout << "413 -> " << (it)->errors.error_413 << "\n";
 		cout << "500 -> " << (it)->errors.error_500 << "\n";
 		cout << "501 -> " << (it)->errors.error_501 << "\n";
         cout << "502 -> " << (it)->errors.error_502 << "\n";

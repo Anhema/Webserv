@@ -27,6 +27,7 @@ namespace Data
 		std::string	error_403;
 		std::string	error_404;
 		std::string	error_405;
+		std::string	error_413;
 		// 500
 		std::string	error_500;
 		std::string	error_501;

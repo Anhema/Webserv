@@ -7,13 +7,14 @@
 
 Data::ErrorPages::ErrorPages():
 error_400("400.html"), error_403("403.html"),
-error_404("404.html"), error_405("405.html"),
+error_404("404.html"), error_405("405.html"), error_413("413.html"),
 error_500("500.html"), error_501("501.html"),
 error_502("502.html"), error_505("505.html") {}
 
 Data::ErrorPages::ErrorPages(const Data::ErrorPages &rhs):
 		error_400(rhs.error_400), error_403(rhs.error_403),
 		error_404(rhs.error_404), error_405(rhs.error_405),
+		error_413(rhs.error_413),
 		error_500(rhs.error_500), error_501(rhs.error_501),
 		error_502(rhs.error_502), error_505(rhs.error_505) {}
 
@@ -202,6 +203,7 @@ Data::ErrorPages &Data::ErrorPages::operator=(const Data::ErrorPages &rhs) {
 	this->error_403 = rhs.error_403;
 	this->error_404 = rhs.error_404;
 	this->error_405 = rhs.error_405;
+	this->error_413 = rhs.error_413;
 	this->error_500 = rhs.error_500;
 	this->error_501 = rhs.error_501;
 	this->error_502 =rhs.error_502;

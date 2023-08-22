@@ -40,7 +40,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
 	else
 		return ("");
 
-	char* args[] = {&interpreter[0], &file_path[0], (char *)body.c_str(), NULL};
+	char* args[] = {&interpreter[0], &file_path[0], NULL};
 	//char** env = this->crete_env(file_path, request, request.content_length, "text");
 	cout << "\n\n--" << body << "--\n\n";
 	std::vector<string> env_list;
@@ -54,7 +54,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
 	env_list.push_back("PATH_INFO=" + file_path);
 	env_list.push_back("PATH_TRANSLATED=" + file_path);
 	env_list.push_back("SCRIPT_NAME=" + file_path);
-	env_list.push_back("SCRIPT_FILENAME=file:///Users/aherrero/Desktop/Cursus/Webserv/" + file_path);
+	env_list.push_back("SCRIPT_FILENAME=" + file_path);
 	env_list.push_back("QUERY_STRING=" + body);
 	env_list.push_back("SERVER_SIGNATURE=");
 	env_list.push_back("HTTP_HOST=localhost");
@@ -75,7 +75,6 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		cout << "\n" << env[i] << "\n";
 	}
 	env[env_list.size()] = nullptr;
-
 	pid_t pid = fork();
 	if (pid == 0)
 	{
@@ -83,7 +82,6 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		dup2(pipefd[1], 1);
 		dup2(pipefd[1], 2);
 		close(pipefd[1]);
-
 		execve(args[0], args, env);
 		std::cerr << "Error";
 		exit (1);

@@ -28,11 +28,6 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	time_t 			t;
 	struct tm		*time_ptr;
 
-	// if (this->m_configuration.max_body_size < this->m_request.content_length / 2048)
-	// {
-	// 	cout << "\n\n Toot large body: " << this->m_request.content_length / 2048 << " / " << this->m_configuration.max_body_size << "\n\n";
-	// 	return;
-	// }
 	t = time(NULL);
 	time_ptr = localtime(&t);
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
@@ -96,6 +91,11 @@ std::string Message::error_page(std::string error)
 	{
 		path = this->m_configuration.errors.error_405;
 		error_name = "Method Not Allowed";
+	}
+	else if (error == "413")
+	{
+		path = this->m_configuration.errors.error_413;
+		error_name = "Payload Too Large";
 	}
 	else if (error == "500")
 	{
@@ -342,6 +342,16 @@ std::string Message::m_post()
 			return (this->error_page("403"));
 		
 		this->m_response.body = cgi.exec_cgi(path, "", this->m_request.method);
+	}
+	if (this->m_response.body == "")
+	{
+		cout << "\nUPLOAD FILE!!\n";
+		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
+		this->m_response.body = "File Uploaded";
+		this->m_response.extension = "text/html";
+		message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
+				<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
+		return (message.str());
 	}
 	this->m_response.extension = "text/html";
 	message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
@@ -695,6 +705,14 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	else if (*(this->m_request.uri.end() -1) == '/' && !this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
 		this->error_page("404");
+		this->m_send_message(client);
+	}
+
+	cout << "\n\nMax-------->" << this->m_configuration.max_body_size << "\n\n";
+	cout << "\n\nBody-------->" << this->m_body.data.size() << "\n\n";
+	if (this->m_body.data.size() > this->m_configuration.max_body_size)
+	{
+		this->error_page("413");
 		this->m_send_message(client);
 	}
 
