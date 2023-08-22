@@ -198,7 +198,7 @@ class TestServer(unittest.TestCase):
             logging.info(server + " OK")
 
 
-    def test_go_crazy(self):
+    def test_oulala(self):
 
         logging.info("**** Going Crazy ****")
 
