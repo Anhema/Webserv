@@ -148,49 +148,102 @@ std::string Message::getRoot(const string &dir) {
 	return "";
 }
 
+std::string Message::m_get_expanded_uri(const string &path)
+{
+	std::vector<std::string> split_path = Utils::split(path, '/');
+
+	std::string expanded_uri;
+
+	Utils::print_vector(split_path);
+
+	for (std::vector<std::string>::iterator split = split_path.begin(); split != split_path.end(); split++)
+	{
+		for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
+		{
+			cout << Utils::eraseAll(it->uri, '/') << " || " << *split << endl;
+			if (Utils::eraseAll(it->uri, '/') == *split)
+				expanded_uri.append(it->root);
+		}
+
+	}
+
+	cout << "expanded uri: " << expanded_uri << endl;
+	return expanded_uri;
+}
+
+
 string Message::m_update_location(const string &path)
 {
 	static Data::Location default_location;
-	std::string new_path = "";
+	std::string new_path;
+	std::vector<std::string> location_segments(Utils::split(path, "/"));
 
-	std::vector<std::string> inputDirs = Utils::split(path, '/');
-
-	for (std::vector<std::string>::iterator it = inputDirs.begin(); it != inputDirs.end(); it++)
+//	cout << "Location Segments: ";
+//	Utils::print_vector(location_segments);
+	//this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/', 1));
+	for (std::vector<std::string>::iterator ls_it = location_segments.begin(); ls_it != location_segments.end(); ls_it++)
 	{
-		cout << "Root for: " << *it << " -> " << getRoot(*it) << "\n";
-		new_path.append(getRoot(*it));
-	}
-
-	cout << "New path after iteration: " << new_path << "\n";
-
-	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
-	{
-		if (path.substr(0, it->uri.size()) == it->uri || path.substr(0, it->uri.size()) + '/' == it->uri || path.substr(0, it->uri.size()) == it->uri + '/')
+		for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 		{
-			this->m_current_location = &(*it);
+//			cout << "Location uri: " << '/' + *ls_it << " || it: " << it->uri << endl;
+			if ('/' + *ls_it == it->uri)
+			{
+				cout << "New location: " << it->uri << endl;
+				this->m_current_location = &(*it);
 //			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
-			return (new_path);
+				return (new_path);
+			}
 		}
+
 	}
+	cout << "*****NO MATCHING LOCATION.... CREATING ONE******\n";
 	default_location.uri = path;
 	this->m_current_location = &default_location;
 	return (this->m_current_location->root);
 }
 
+std::string Message::m_get_path()
+{
+	std::string path;
+
+	path.append(this->m_current_location->root);
+	std::string file = this->m_request.uri.substr(this->m_request.uri.find_last_of('/'), this->m_request.uri.size());
+
+	if (*(this->m_request.uri.end() - 1) == '/' && !this->m_current_location->index.empty())
+	{
+		cout << "aplica el index a " << path << endl;
+		path.append(this->m_current_location->index);
+	}
+	else
+	{
+		cout << "append del file " <<  file << " a " << path << endl;
+
+
+		cout << "path + file: " << path + file << endl;
+		cout << "is dir returns: " << Utils::is_directory("/objs") << endl;
+		if (file != "/" && Utils::is_directory(path + file) == false)
+			path.append(file);
+	}
+
+	if (!this->m_current_location->index.empty())
+	{
+		if (*(this->m_request.uri.end() - 1) != '/')
+			path.push_back('/');
+		path.append(this->m_current_location->index);
+	}
+
+	cout << "Get Path returns: " << path << endl;
+	return path;
+}
+
 std::string Message::m_get()
 {
 	std::ostringstream	message;
-	std::string 		path;
 	std::string 		args = "";
 	std::string 		type = "";
 	std::string 		x_type = "";
 
-	path.append(this->m_current_location->root);
-
-	if (*(this->m_request.uri.end() - 1) == '/' && !this->m_current_location->index.empty())
-		path.append(this->m_current_location->index);
-	else
-		path.append(this->m_request.uri);
+	std::string 		path(this->m_get_path());
 
 	args = Utils::split(path, "?")[1];
 	path = Utils::split(path, "?")[0];
@@ -446,9 +499,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	stringstream  	ss;
 	stringstream  	ss_buffer;
 
-	ss << "Request fd: " << client << " size: " << buffer_size;
 	Logger::log(ss.str(), INFO);
-	cout << "****Reading****" << "\n";
 
 	switch (this->m_readStatus)
 	{
@@ -578,13 +629,13 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	struct stat sb;
 
 	(void) sb;
-	ss << "Responding fd: " << client;
+//	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
-	cout << "****Writing****\n";
+//	cout << "****Writing****\n";
 
 	string tmp = this->m_update_location(this->m_request.uri);
 
-	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
+//	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
 
 //	print_headers(this->m_request.headers, this->m_request);
 
@@ -608,8 +659,8 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-	if (this->m_current_location->autoindex && this->m_current_location->index.empty() &&
-		(access(tmp.c_str(), R_OK) != -1 && stat(tmp.c_str(), &sb) == 0))
+//	&& (stat(tmp.c_str(), &sb) == 0)
+	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
 		this->m_make_autoindex();
 		this->m_send_message(client);

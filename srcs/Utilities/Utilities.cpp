@@ -146,6 +146,13 @@ void Utils::capitalize(string &s, string sep)
 	}
 }
 
+bool Utils::is_directory(const std::string& path)
+{
+	struct stat fileInfo;
+
+	return stat(path.c_str(), &fileInfo);
+
+}
 std::vector<std::string> Utils::split(std::string str, char separator)
 {
 	std::vector<std::string>	result;
@@ -154,7 +161,6 @@ std::vector<std::string> Utils::split(std::string str, char separator)
 
 	while (std::getline(sstream, segment, separator))
 	{
-		cout << "Segment: " << segment << "\n";
 		if (!segment.empty())
 			result.push_back(segment);
 	}
