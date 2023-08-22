@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo $QUERY_STRING
+echo "$QUERY_STRING holi :)"

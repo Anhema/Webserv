@@ -210,7 +210,7 @@ std::string Message::m_get()
 	
 	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "sh")
 	{
-		this->m_response.body = cgi.exec_cgi(path, args);
+		this->m_response.body = cgi.exec_cgi(path, args, this->m_request.method);
 		message << "HTTP/1.1 200 OK\nContent-Type: text/html\r\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 		return (message.str());
@@ -253,7 +253,7 @@ std::string Message::m_post()
 		string content;
 		for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
 			content += (*it);
-		this->m_response.body = cgi.exec_cgi(path, content);
+		this->m_response.body = cgi.exec_cgi(path, content, this->m_request.method);
 	}
 	else
 	{
@@ -262,7 +262,7 @@ std::string Message::m_post()
 		else if (access(path.c_str(), X_OK) != 0)
 			return (this->error_page("403"));
 		
-		this->m_response.body = cgi.exec_cgi(path, "");
+		this->m_response.body = cgi.exec_cgi(path, "", this->m_request.method);
 	}
 	this->m_response.extension = "text/html";
 	message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"

@@ -23,7 +23,7 @@ char** CGI::crete_env(string file_path, t_request request, size_t contentLength,
 	return (ret);
 }
 
-string CGI::exec_cgi(string file_path, string body)
+string CGI::exec_cgi(string file_path, string body, string method)
 {
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -40,24 +40,41 @@ string CGI::exec_cgi(string file_path, string body)
 	else
 		return ("");
 
-	char* args[] = {&interpreter[0], &file_path[0], NULL};
+	char* args[] = {&interpreter[0], &file_path[0], (char *)body.c_str(), NULL};
 	//char** env = this->crete_env(file_path, request, request.content_length, "text");
+	cout << "\n\n--" << body << "--\n\n";
+	std::vector<string> env_list;
+	env_list.push_back("SERVER_SOFTWARE=");
+	env_list.push_back("SERVER_NAME=localhost");
+	env_list.push_back("GATEWAY_INTERFACE=CGI/1.1");
 
-	string path_info = "PATH_INFO=" + file_path;
-	string content_length = "CONTENT_LENGTH=" + std::to_string(body.size());
-	string content = "QUERY_STRING=" + body;
-	string num1 = "num1=1";
-	string num2 = "num2=2";
+	env_list.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	env_list.push_back("SERVER_PORT=8080");
+	env_list.push_back("REQUEST_METHOD=" + method);
+	env_list.push_back("PATH_INFO=" + file_path);
+	env_list.push_back("PATH_TRANSLATED=" + file_path);
+	env_list.push_back("SCRIPT_NAME=" + file_path);
+	env_list.push_back("SCRIPT_FILENAME=file:///Users/aherrero/Desktop/Cursus/Webserv/" + file_path);
+	env_list.push_back("QUERY_STRING=" + body);
+	env_list.push_back("SERVER_SIGNATURE=");
+	env_list.push_back("HTTP_HOST=localhost");
+	env_list.push_back("HTTP_USER_AGENT=aherrero");
+	env_list.push_back("REMOTE_ADDR=127.0.0.1");
+	env_list.push_back("SERVER_ADDR=127.0.0.1");
+	env_list.push_back("CONTENT_LENGTH=" + std::to_string(body.length()));
+	env_list.push_back("CONTENT_TYPE=application/x-www-form-urlencoded;charset=utf-8");
 
-	char *env[] =
+	char **env = NULL;
+	env = new char*[env_list.size() + 1];;
+
+	for (size_t i = 0; i < env_list.size(); i++)
 	{
-		(char *)path_info.c_str(),
-		(char *)content_length.c_str(),
-		(char *)content.c_str(),
-		(char *)num1.c_str(),
-		(char *)num2.c_str(),
-		NULL
-	};
+    	env[i] = new char[env_list[i].size() + 1];
+    	::strncpy(env[i], env_list[i].c_str(), env_list[i].size() + 1);
+
+		cout << "\n" << env[i] << "\n";
+	}
+	env[env_list.size()] = nullptr;
 
 	pid_t pid = fork();
 	if (pid == 0)
@@ -66,6 +83,7 @@ string CGI::exec_cgi(string file_path, string body)
 		dup2(pipefd[1], 1);
 		dup2(pipefd[1], 2);
 		close(pipefd[1]);
+
 		execve(args[0], args, env);
 		std::cerr << "Error";
 		exit (1);
@@ -80,5 +98,6 @@ string CGI::exec_cgi(string file_path, string body)
 		output.append(buffer);
 	}
 	close(pipefd[0]);
+	delete []env;
 	return (output);
 }
