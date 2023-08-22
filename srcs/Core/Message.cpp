@@ -200,18 +200,24 @@ string Message::m_update_location(const string &path)
 	cout << "*****NO MATCHING LOCATION.... CREATING ONE******\n";
 	default_location.uri = path;
 	this->m_current_location = &default_location;
-	this->m_expanded_root = this->m_current_location->root;
+	std::string full_path = this->m_current_location->root;
+	if (*(full_path.end() - 1) == '/')
+		full_path = full_path.substr(0, full_path.size() - 1);
+	full_path.append(this->m_request.uri);
+			//+ this->m_request.uri;
+	this->m_expanded_root = full_path;
 	return (this->m_current_location->root);
 }
 
 std::string Message::m_get_path()
 {
+
+
+
 	std::string path;
 
 	path.append(this->m_current_location->root);
 	std::string file = this->m_request.uri.substr(this->m_request.uri.find_last_of('/'), this->m_request.uri.size());
-
-	std::string file_path;
 
 
 //		if (*(this->m_request.uri.end() - 1) != '/')
@@ -230,10 +236,19 @@ std::string Message::m_get_path()
 	cout << "path + file: " << path + file << endl;
 
 	cout << "is dir returns: " <<  isdir << endl;
-
-
-	if (!this->m_current_location->index.empty() && this->m_request.uri == "/")
+	cout << "Uri: " << this->m_request.uri << endl;
+	if (!this->m_expanded_root.empty())
 	{
+		cout << "FULLLLLL Get Path returns: " << this->m_expanded_root << endl;
+		return this->m_expanded_root;
+
+	}
+
+
+	if (!this->m_current_location->index.empty() && isdir)
+	{
+		if (*(path.end() - 1) != '/')
+			path.push_back('/');
 		path.append(this->m_current_location->index);
 	}
 	else
@@ -244,6 +259,7 @@ std::string Message::m_get_path()
 	}
 
 	cout << "Get Path returns: " << path << endl;
+	cout << "Full Path: " << this->m_expanded_root << endl;
 	return path;
 }
 

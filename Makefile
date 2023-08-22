@@ -46,7 +46,7 @@ $(PCHDIR):
 $(OBJDIR):
 	$(MKDIR) $(OBJDIR)
 
-test: $(NAME_SANI)
+test: all
 	python3 tests/tester.py
 
 sani: $(NAME_SANI)
