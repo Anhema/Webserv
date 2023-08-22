@@ -178,19 +178,20 @@ string Message::m_update_location(const string &path)
 	std::string new_path;
 	std::vector<std::string> location_segments(Utils::split(path, "/"));
 
-//	cout << "Location Segments: ";
-//	Utils::print_vector(location_segments);
-	//this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/', 1));
-	for (std::vector<std::string>::iterator ls_it = location_segments.begin(); ls_it != location_segments.end(); ls_it++)
+	cout << "Location Segments: ";
+	Utils::print_vector(location_segments);
+	this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/', 1));
+	for (std::vector<std::string>::iterator ls_it = location_segments.begin() + 1; ls_it != location_segments.end(); ls_it++)
 	{
 		for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 		{
-//			cout << "Location uri: " << '/' + *ls_it << " || it: " << it->uri << endl;
+			cout << "Location uri: " << '/' + *ls_it << " || it: " << it->uri << endl;
 			if ('/' + *ls_it == it->uri)
 			{
 				cout << "New location: " << it->uri << endl;
 				this->m_current_location = &(*it);
 //			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
+				this->m_expanded_root = new_path;
 				return (new_path);
 			}
 		}
@@ -199,6 +200,7 @@ string Message::m_update_location(const string &path)
 	cout << "*****NO MATCHING LOCATION.... CREATING ONE******\n";
 	default_location.uri = path;
 	this->m_current_location = &default_location;
+	this->m_expanded_root = this->m_current_location->root;
 	return (this->m_current_location->root);
 }
 
@@ -217,27 +219,29 @@ std::string Message::m_get_path()
 //		path.append(this->m_current_location->index);
 
 
-		if (file.at(0) == '/')
-			file.erase(file.begin(), file.begin() + 1);
+	if (file.at(0) == '/')
+		file.erase(file.begin(), file.begin() + 1);
+
+	cout << "Expanded path: " << this->m_expanded_root << "\n";
+
+	bool isdir = file == "/" ? Utils::is_directory(path) : Utils::is_directory(path + file);
+
+	cout << "path: " << path << " file: " << file << endl;
+	cout << "path + file: " << path + file << endl;
+
+	cout << "is dir returns: " <<  isdir << endl;
 
 
-		cout << "path: " << path << " file: " << file << endl;
-		cout << "path + file: " << path + file << endl;
-		bool isdir = file == "/" ? Utils::is_directory(path) : Utils::is_directory(path + file);
-
-		cout << "is dir returns: " <<  isdir << endl;
-
-
-		if (!isdir && Utils::get_extension(file).empty())
-			path.append(file);
-//	}
-	std::string full_path = path + file;
 	if (!this->m_current_location->index.empty() && this->m_request.uri == "/")
 	{
 		path.append(this->m_current_location->index);
 	}
 	else
+	{
+		if (*(path.end() - 1) != '/')
+			path.push_back('/');
 		path.append(file);
+	}
 
 	cout << "Get Path returns: " << path << endl;
 	return path;
@@ -639,7 +643,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
 
-	string tmp = this->m_update_location(this->m_request.uri);
+	this->m_update_location(this->m_request.uri);
 
 //	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
 

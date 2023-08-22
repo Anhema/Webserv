@@ -189,6 +189,14 @@ class TestServer(unittest.TestCase):
             self.assertEqual(response.title, "Directory Links")
             logging.info(server + " OK")
         print("")
+    def test_directory_location(self):
+        for server in servers:
+            response = get_response("GET", server, "/directory")
+
+            self.assertEqual(response.status, 200, server + " failed")
+            self.assertEqual(response.title, "Directory Links")
+            logging.info(server + " OK")
+
 
     def test_go_crazy(self):
 

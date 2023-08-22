@@ -65,6 +65,7 @@ private:
 	Request::Status			m_readStatus;
 	std::string 			m_server_message;
 	Data::Location			*m_current_location;
+	std::string 			m_expanded_root;
 
 private:
 	std::string 			m_get_expanded_uri(const string &path);
