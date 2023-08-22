@@ -209,28 +209,35 @@ std::string Message::m_get_path()
 	path.append(this->m_current_location->root);
 	std::string file = this->m_request.uri.substr(this->m_request.uri.find_last_of('/'), this->m_request.uri.size());
 
-	if (*(this->m_request.uri.end() - 1) == '/' && !this->m_current_location->index.empty())
+	std::string file_path;
+
+
+//		if (*(this->m_request.uri.end() - 1) != '/')
+//			path.push_back('/');
+//		path.append(this->m_current_location->index);
+
+
+		if (file.at(0) == '/')
+			file.erase(file.begin(), file.begin() + 1);
+
+
+		cout << "path: " << path << " file: " << file << endl;
+		cout << "path + file: " << path + file << endl;
+		bool isdir = file == "/" ? Utils::is_directory(path) : Utils::is_directory(path + file);
+
+		cout << "is dir returns: " <<  isdir << endl;
+
+
+		if (!isdir && Utils::get_extension(file).empty())
+			path.append(file);
+//	}
+	std::string full_path = path + file;
+	if (!this->m_current_location->index.empty() && this->m_request.uri == "/")
 	{
-		cout << "aplica el index a " << path << endl;
 		path.append(this->m_current_location->index);
 	}
 	else
-	{
-		cout << "append del file " <<  file << " a " << path << endl;
-
-
-		cout << "path + file: " << path + file << endl;
-		cout << "is dir returns: " << Utils::is_directory("/objs") << endl;
-		if (file != "/" && Utils::is_directory(path + file) == false)
-			path.append(file);
-	}
-
-	if (!this->m_current_location->index.empty())
-	{
-		if (*(this->m_request.uri.end() - 1) != '/')
-			path.push_back('/');
-		path.append(this->m_current_location->index);
-	}
+		path.append(file);
 
 	cout << "Get Path returns: " << path << endl;
 	return path;
@@ -290,7 +297,6 @@ std::string Message::m_post()
 	std::ostringstream message;
 	std::string path = this->m_current_location->root;
 
-	path.append("/");
 	path.append(this->m_request.uri);
 
 	std::ifstream ifs(path, std::ios::binary);
