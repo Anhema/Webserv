@@ -67,6 +67,8 @@ private:
 	Data::Location			*m_current_location;
 
 private:
+	std::string 			m_get_expanded_uri(const string &path);
+	std::string 			m_get_path();
 	std::string				m_get();
 	std::string				m_post();
 	std::string				m_delete();

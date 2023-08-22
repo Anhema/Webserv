@@ -140,13 +140,23 @@ class TestServer(unittest.TestCase):
         logging.info("**** Rooted Index Test ****")
 
         for server in servers:
-            response = get_response("GET", server, "/rooted")
+            response = get_response("GET", server, "/rooted_index")
 
             self.assertEqual(response.status, 200, server + " failed")
             self.assertEqual(response.title, "Nested Html")
 
             logging.info(server + " OK")
         print("")
+
+    def test_rooted_file(self):
+        for server in servers:
+
+            response = get_response("GET", server, "/rooted/nested_index.html")
+            self.assertEqual(response.status, 200, server + " failed")
+            self.assertEqual(response.title, "Nested Html")
+            logging.info(server + " OK")
+        print("")
+
 
     def test_put(self):
         logging.info("**** Put Test ****")
@@ -194,7 +204,7 @@ class TestServer(unittest.TestCase):
 if __name__ == "__main__":
     logging.info("Starting Test Server")
     os.system("pkill webserv")
-    os.system("./webserv_sani tests/test.conf > /dev/null & ")
+    os.system("./webserv_sani tests/test.conf  & ")
     time.sleep(1)
     logging.info("Initializing tests\n")
     unittest.main()
