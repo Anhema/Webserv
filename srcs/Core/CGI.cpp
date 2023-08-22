@@ -37,6 +37,8 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		interpreter = "/usr/bin/php";
 	else if (Utils::get_extension(file_path) == "sh")
 		interpreter = "/bin/bash";
+	else if (Utils::get_extension(file_path) == "py")
+		interpreter = "/bin/python3";
 	else
 		return ("");
 

@@ -148,10 +148,10 @@ void Utils::capitalize(string &s, string sep)
 
 bool Utils::is_directory(const std::string& path)
 {
-	struct stat fileInfo;
-
-	return stat(path.c_str(), &fileInfo);
-
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) != 0)
+		return 0;
+	return S_ISDIR(statbuf.st_mode);
 }
 std::vector<std::string> Utils::split(std::string str, char separator)
 {

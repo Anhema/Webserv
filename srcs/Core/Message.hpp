@@ -68,6 +68,7 @@ private:
 	std::string 			m_expanded_root;
 
 private:
+	std::string 			m_expand_my_uri(const string &path);
 	std::string 			m_get_expanded_uri(const string &path);
 	std::string 			m_get_path();
 	std::string				m_get();
