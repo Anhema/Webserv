@@ -212,6 +212,13 @@ class TestServer(unittest.TestCase):
 
             self.assertEqual(response.status, 200, server + " failed")
             logging.info(server + " OK")
+    def test_basic_beans(self):
+        for server in crazy_servers:
+            response = get_response("GET", server, "/")
+
+            self.assertEqual(response.status, 200, server + " failed")
+            self.assertEqual(response.title, "Bean Emporium", server + "failed")
+
 
 if __name__ == "__main__":
     logging.info("Starting Test Server")

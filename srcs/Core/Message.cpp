@@ -247,12 +247,21 @@ std::string Message::m_get_path()
 
 	if (!this->m_current_location->index.empty() && isdir)
 	{
+		cout << "first if llega\n";
+		if (*(path.end() - 1) != '/')
+			path.push_back('/');
+		path.append(this->m_current_location->index);
+	}
+	else if (this->m_request.uri == "/")
+	{
+		cout << "else if llega\n";
 		if (*(path.end() - 1) != '/')
 			path.push_back('/');
 		path.append(this->m_current_location->index);
 	}
 	else
 	{
+		cout << "else llega\n";
 		if (*(path.end() - 1) != '/')
 			path.push_back('/');
 		path.append(file);
