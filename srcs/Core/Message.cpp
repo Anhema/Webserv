@@ -315,37 +315,6 @@ std::string Message::m_get_path()
 
 	std::string path(this->m_uri.expanded);
 
-//	std::string path = this->m_current_location->root;
-//
-//	std::string file = this->m_request.plain_uri.substr(this->m_request.plain_uri.find_last_of('/'), this->m_request.plain_uri.size());
-//
-//
-////		if (*(this->m_request.plain_uri.end() - 1) != '/')
-////			path.push_back('/');
-////		path.append(this->m_current_location->index);
-//
-//
-//	if (file.at(0) == '/')
-//		file.erase(file.begin(), file.begin() + 1);
-//
-//	cout << "Expanded path: " << this->m_expanded_root << "\n";
-//
-//	bool isdir = Utils::is_directory(path);
-//
-//	cout << "path: " << path << " file: " << file << endl;
-//	cout << "path + file: " << path + file << endl;
-//
-//	cout << "is dir returns: " <<  isdir << endl;
-//	cout << "Uri: " << this->m_request.plain_uri << endl;
-//	if (!this->m_expanded_root.empty())
-//	{
-//		cout << "FULLLLLL Get Path returns: " << this->m_expanded_root << endl;
-////		this->m_expand_my_uri(path);
-//		return this->m_expanded_root;
-//
-//	}
-//
-//
 	cout << "llega el path: " << path << " location uri: " << this->m_current_location->uri << "\n";
 	if (path.find(this->m_current_location->root) != 0 && this->m_current_location->index.empty())
 	{
@@ -371,6 +340,8 @@ std::string Message::m_get_path()
 		cout << "CASO 2 ===== \n";
 		Utils::deleteConsecutives(path, '/');
 		cout << "Get Path returns: " << path << endl;
+		if (path.find(this->m_current_location->root) != 0)
+			path = this->m_current_location->root + path;
 		return path;
 
 	}
@@ -385,24 +356,8 @@ std::string Message::m_get_path()
 		path.append(this->m_current_location->index);
 	}
 
-//	else if (this->m_request.plain_uri == "/")
-//	{
-//		cout << "else if llega\n";
-//		if (*(path.end() - 1) != '/')
-//			path.push_back('/');
-//		path.append(this->m_current_location->index);
-//	}
-//	else
-//	{
-//		cout << "else llega\n";
-//		if (*(path.end() - 1) != '/')
-//			path.push_back('/');
-//		path.append(file);
-//	}
-//
 	Utils::deleteConsecutives(path, '/');
 	cout << "Get Path returns: " << path << endl;
-//	cout << "Full Path: " << this->m_expanded_root << endl;
 	return path;
 }
 

@@ -214,6 +214,12 @@ class TestServer(unittest.TestCase):
             response = get_response("GET", server, "/directory/oulalala")
 
             self.assertEqual(response.status, 404, server + " failed")
+    def test_cgi_path_normal(self):
+        server = "localhost:9090"
+        response = get_response("GET", server, "/CGI/add.html")
+
+        self.assertEqual(response.status, 200, server + " failed")
+        logging.info(server + " OK")
     def test_cgi_path(self):
         for server in servers:
             response = get_response("GET", server, "/CGI/add.html")
