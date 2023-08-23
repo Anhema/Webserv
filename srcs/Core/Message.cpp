@@ -572,7 +572,7 @@ void Message::m_parseHeader(const std::string &header)
 	if (header == "")
 	{
 		this->m_request.method = "";
-		this->m_request.uri = "";
+		this->m_request.plain_uri = "";
 		this->m_request.version = "";
 		this->m_parseBody(header);
 		this->m_readStatus = Request::BODY;
@@ -815,7 +815,7 @@ void Message::m_make_autoindex(void)
 void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
-	
+
 //	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
