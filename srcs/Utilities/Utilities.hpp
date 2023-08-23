@@ -148,7 +148,7 @@ namespace Utils
     template<class T>
     static void print_vector(T x) {
         for (typename T::iterator it = x.begin(); it != x.end(); it++)
-            cout << *it << " ";
+            cout << "(" << *it << ")";
         cout << "\n";
     }
 
@@ -167,6 +167,7 @@ namespace Utils
 	bool						comparePaths(std::string const &lhs, std::string const &rhs);
 	std::string 				eraseAll(std::string const src, char c);
 	bool						is_directory(std::string const &path);
+	void						deleteConsecutives(std::string &src, char c);
 }
 
 

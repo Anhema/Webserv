@@ -171,38 +171,115 @@ std::string Message::m_get_expanded_uri(const string &path)
 
 	}
 
-	cout << "expanded uri: " << expanded_uri << endl;
+//	cout << "expanded plain_uri: " << expanded_uri << endl;
 	return expanded_uri;
 }
 
+std::string Message::m_get_uri_segment_root(string &filter) {
+
+	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
+		if (it->uri == filter)
+			return it->root;
+
+	return std::string(filter);
+}
+
+std::string Message::m_parse_uri(const string uri)
+{
+	cout << "*******Parse URI *******\n";
+	// Split into segments;
+
+	this->m_uri.location_filter.push_back("/");
+	if (uri == "/")
+	{
+		this->m_uri.segments.push_back("/");
+	}
+	else
+	{
+		this->m_uri.segments = Utils::split(uri, '/');
+
+		for (std::vector<std::string>::iterator it = this->m_uri.segments.begin(); it != this->m_uri.segments.end(); it++)
+			*it = '/' + *it;
+//		this->m_uri.location_filter.push_back(this->m_uri.segments.at(0));
+		this->m_uri.file = *(this->m_uri.segments.end() - 1);
+		this->m_uri.file.erase(this->m_uri.file.begin(), this->m_uri.file.begin() + 1);
+		if (this->m_uri.segments.size() == 1)
+			this->m_uri.location_filter.push_back("/");
+	}
+
+	if (this->m_uri.segments.size() == 1)
+	{
+		std::string filter("/");
+		std::string expanded_root = this->m_get_uri_segment_root(filter);
+		cout << "Expande size 1: " << expanded_root << "\n";
+		this->m_uri.expanded.append(expanded_root);
+	}
+	else
+	{
+		for (std::vector<std::string>::iterator it = this->m_uri.segments.begin(); it != this->m_uri.segments.end(); it++)
+		{
+			std::string expanded_root = this->m_get_uri_segment_root(*it);
+			cout << "Extended root for " << *it << " is: " << expanded_root << "\n";
+			// Couldnt find a matching location
+			if (*it == expanded_root)
+				this->m_uri.expanded.append(expanded_root);
+
+		}
+	}
+
+	for (std::vector<std::string>::iterator it = this->m_uri.segments.begin(); it != this->m_uri.segments.end(); it++)
+		this->m_uri.location_filter.push_back(*it);
+//		if (*it != "/" + this->m_uri.file)
+
+	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
+	if (this->m_uri.is_dir)
+	{
+		cout << "appendea el file porque es un dir\n";
+		this->m_uri.expanded.append(this->m_uri.file);
+	}
+	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
+
+//	if (!this->m_uri.is_dir)
+//		this->m_uri.location_filter = uri;
+
+
+	cout << "Segments: ";
+	Utils::print_vector(this->m_uri.segments);
+
+	cout << "Plain uri: " << uri << "\n";
+	cout << "Location filter: ";
+	Utils::print_vector(this->m_uri.location_filter);
+	cout << "File: " << this->m_uri.file << "\n";
+	cout << "Expanded Uri: " << this->m_uri.expanded << "\n";
+	cout << "Is dir: " << this->m_uri.is_dir << "\n";
+
+
+
+	cout << "\n\n";
+	return std::string("");
+}
 
 string Message::m_update_location(const string &path)
 {
 	static Data::Location default_location;
-	std::vector<std::string> location_segments(Utils::split(path, "/"));
+	std::vector<std::string> location_segments(Utils::split(path, '/'));
 
-	cout << "Location Segments: ";
-	Utils::print_vector(location_segments);
 	std::string expanded_uri = this->m_get_expanded_uri(path);
 
-	cout << "Expanded Uri: " << expanded_uri << endl;
-
-	bool uri_is_dir = Utils::is_directory(expanded_uri);
-	cout << "Update Localition is dir: " << uri_is_dir << endl;
-	this->m_request.uri.substr(0, this->m_request.uri.find_last_of('/', 1));
-	for (std::vector<std::string>::iterator ls_it = location_segments.begin() + 1; ls_it != location_segments.end(); ls_it++)
+	this->m_request.plain_uri.substr(0, this->m_request.plain_uri.find_last_of('/', 1));
+	for (std::vector<std::string>::reverse_iterator filter = this->m_uri.location_filter.rbegin(); filter != this->m_uri.location_filter.rend(); filter++)
 	{
 		for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 		{
-			cout << "Location uri: " << '/' + *ls_it << " || it: " << it->uri << endl;
-			if ('/' + *ls_it == it->uri)
+			cout << "Filter-> " << *filter << " it uri-> " << it->uri << "\n";
+			if (*filter == it->uri)
 			{
 				cout << "New location: " << it->uri << endl;
 				this->m_current_location = &(*it);
-//			new_path = this->m_current_location->root.substr(0, this->m_current_location->root.size() - 1) + (path.substr(it->uri.size() - 1, path.size()));
 				this->m_expanded_root.clear();
 				return ("");
 			}
+
 		}
 
 	}
@@ -212,87 +289,120 @@ string Message::m_update_location(const string &path)
 	std::string full_path = this->m_current_location->root;
 	if (*(full_path.end() - 1) == '/')
 		full_path = full_path.substr(0, full_path.size() - 1);
-	full_path.append(this->m_request.uri);
-			//+ this->m_request.uri;
+	full_path.append(this->m_request.plain_uri);
+			//+ this->m_request.plain_uri;
 	this->m_expanded_root = full_path;
 	return (this->m_current_location->root);
 }
 
-std::string Message::m_expand_my_uri(const std::string &uri)
-{
-
-	std::string new_uri(uri);
-
-	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
-	{
-		new_uri.replace(new_uri.begin(), new_uri.end(), it->root);
-	}
-
-	cout << "Expand My uri returns: " << new_uri;
-	cout << "Base: " << uri << endl;
-	return new_uri;
-}
+//std::string Message::m_expand_my_uri(const std::string &uri)
+//{
+//
+//	std::string new_uri(uri);
+//
+//	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
+//	{
+//		new_uri.replace(new_uri.begin(), new_uri.end(), it->root);
+//	}
+//
+//	cout << "Expand My plain_uri returns: " << new_uri;
+//	cout << "Base: " << uri << endl;
+//	return new_uri;
+//}
 
 std::string Message::m_get_path()
 {
 
+	std::string path(this->m_uri.expanded);
 
+//	std::string path = this->m_current_location->root;
+//
+//	std::string file = this->m_request.plain_uri.substr(this->m_request.plain_uri.find_last_of('/'), this->m_request.plain_uri.size());
+//
+//
+////		if (*(this->m_request.plain_uri.end() - 1) != '/')
+////			path.push_back('/');
+////		path.append(this->m_current_location->index);
+//
+//
+//	if (file.at(0) == '/')
+//		file.erase(file.begin(), file.begin() + 1);
+//
+//	cout << "Expanded path: " << this->m_expanded_root << "\n";
+//
+//	bool isdir = Utils::is_directory(path);
+//
+//	cout << "path: " << path << " file: " << file << endl;
+//	cout << "path + file: " << path + file << endl;
+//
+//	cout << "is dir returns: " <<  isdir << endl;
+//	cout << "Uri: " << this->m_request.plain_uri << endl;
+//	if (!this->m_expanded_root.empty())
+//	{
+//		cout << "FULLLLLL Get Path returns: " << this->m_expanded_root << endl;
+////		this->m_expand_my_uri(path);
+//		return this->m_expanded_root;
+//
+//	}
+//
+//
+	cout << "llega el path: " << path << " location uri: " << this->m_current_location->uri << "\n";
+	if (path.find(this->m_current_location->root) != 0 && this->m_current_location->index.empty())
+	{
+		cout << "appendea el path\n";
+		path = this->m_current_location->root + path;
+	}
+	else if (path.find(this->m_current_location->index) == std::string::npos
+			&& ("/" + this->m_uri.file == this->m_current_location->uri))
+	{
+		cout << "appendea el index al principio\n";
+		path = this->m_current_location->root + "/" + this->m_current_location->index;
+	}
 
-	std::string path = this->m_current_location->root;
+	if (!this->m_current_location->index.empty()
+		&& this->m_uri.is_dir && this->m_uri.file.empty()
+		&& (path.find(this->m_current_location->index) == std::string::npos))
+	{
+		cout << "CASO 1 ===== \n";
+		path.append(this->m_current_location->index);
+	}
+	else if (!this->m_uri.is_dir)
+	{
+		cout << "CASO 2 ===== \n";
+		Utils::deleteConsecutives(path, '/');
+		cout << "Get Path returns: " << path << endl;
+		return path;
 
-	std::string file = this->m_request.uri.substr(this->m_request.uri.find_last_of('/'), this->m_request.uri.size());
+	}
+	else if (this->m_uri.is_dir && this->m_current_location->index.empty())
+	{
+		cout << "CASO 3 ===== \n";
+		path.append(this->m_uri.file);
+	}
+	else if (!this->m_current_location->index.empty() && (path.find(this->m_current_location->index) == std::string::npos))
+	{
+		cout << "CASO 4 ===== \n";
+		path.append(this->m_current_location->index);
+	}
 
-
-//		if (*(this->m_request.uri.end() - 1) != '/')
+//	else if (this->m_request.plain_uri == "/")
+//	{
+//		cout << "else if llega\n";
+//		if (*(path.end() - 1) != '/')
 //			path.push_back('/');
 //		path.append(this->m_current_location->index);
-
-
-	if (file.at(0) == '/')
-		file.erase(file.begin(), file.begin() + 1);
-
-	cout << "Expanded path: " << this->m_expanded_root << "\n";
-
-	bool isdir = Utils::is_directory(path);
-
-	cout << "path: " << path << " file: " << file << endl;
-	cout << "path + file: " << path + file << endl;
-
-	cout << "is dir returns: " <<  isdir << endl;
-	cout << "Uri: " << this->m_request.uri << endl;
-	if (!this->m_expanded_root.empty())
-	{
-		cout << "FULLLLLL Get Path returns: " << this->m_expanded_root << endl;
-//		this->m_expand_my_uri(path);
-		return this->m_expanded_root;
-
-	}
-
-
-	if (!this->m_current_location->index.empty() && isdir)
-	{
-		cout << "first if llega\n";
-		if (*(path.end() - 1) != '/')
-			path.push_back('/');
-		path.append(this->m_current_location->index);
-	}
-	else if (this->m_request.uri == "/")
-	{
-		cout << "else if llega\n";
-		if (*(path.end() - 1) != '/')
-			path.push_back('/');
-		path.append(this->m_current_location->index);
-	}
-	else
-	{
-		cout << "else llega\n";
-		if (*(path.end() - 1) != '/')
-			path.push_back('/');
-		path.append(file);
-	}
-
+//	}
+//	else
+//	{
+//		cout << "else llega\n";
+//		if (*(path.end() - 1) != '/')
+//			path.push_back('/');
+//		path.append(file);
+//	}
+//
+	Utils::deleteConsecutives(path, '/');
 	cout << "Get Path returns: " << path << endl;
-	cout << "Full Path: " << this->m_expanded_root << endl;
+//	cout << "Full Path: " << this->m_expanded_root << endl;
 	return path;
 }
 
@@ -416,7 +526,7 @@ std::string Message::m_delete()
 
 void print_headers(std::map<string, string> headers, t_request &request)
 {
-	cout << "URI -> " << request.uri << "\n";
+	cout << "URI -> " << request.plain_uri << "\n";
 	cout << "Target -> " << request.target << "\n";
 	cout << "Method -> " << request.method << "\n";
 	for (std::map<string, string>::iterator it = headers.begin(); it != headers.end(); it++)
@@ -470,7 +580,7 @@ void Message::m_parseHeader(const std::string &header)
 		return;
 	}
 	this->m_request.method = r_line[0];
-	this->m_request.uri = r_line[1];
+	this->m_request.plain_uri = r_line[1];
 	this->m_request.version = r_line[2];
 
 
@@ -705,23 +815,17 @@ void Message::m_make_autoindex(void)
 void Message::make_response(const fd client, size_t __unused buffer_size)
 {
 	stringstream  ss;
-	struct stat sb;
-
-	(void) sb;
+	
 //	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
 
 	if (this->m_request.method == "")
-	{
-		//this->error_page("403");
-		//this->m_send_message(client);
 		return;
-	}
+	this->m_parse_uri(this->m_request.plain_uri);
+	this->m_update_location(this->m_request.plain_uri);
 
-	this->m_update_location(this->m_request.uri);
-
-//	cout << this->m_request.uri << "\n\n**********" << tmp << "************" << this->m_current_location->uri << "\n\n";
+//	cout << this->m_request.plain_uri << "\n\n**********" << tmp << "************" << this->m_current_location->plain_uri << "\n\n";
 
 //	print_headers(this->m_request.headers, this->m_request);
 
@@ -748,7 +852,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 //	&& (stat(tmp.c_str(), &sb) == 0)
 	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
-		std::vector<std::string> uri_segments(Utils::split(this->m_request.uri, "/"));
+		std::vector<std::string> uri_segments(Utils::split(this->m_request.plain_uri, "/"));
 		cout << "Last Uri Segment:" << *(uri_segments.end() - 1) << endl;
 		cout << "Uri: " << this->m_current_location->uri << endl;
 
@@ -763,7 +867,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 		return;
 	}
-	else if (*(this->m_request.uri.end() -1) == '/' && !this->m_current_location->autoindex && this->m_current_location->index.empty())
+	else if (*(this->m_request.plain_uri.end() - 1) == '/' && !this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
 		this->error_page("404");
 		this->m_send_message(client);
@@ -810,7 +914,7 @@ void Message::reset()
 	this->m_request.method.clear();
 	this->m_request.target.clear();
 	this->m_request.connection.clear();
-	this->m_request.uri.clear();
+	this->m_request.plain_uri.clear();
 	this->m_request.version.clear();
 	this->m_request.content_length = 0;
 	this->m_request.headers.clear();
@@ -823,4 +927,10 @@ void Message::reset()
 	this->m_readStatus = Request::HEADER;
 	this->m_server_message.clear();
 	this->finishedReading = false;
+
+	// Uri struct
+	this->m_uri.segments.clear();
+	this->m_uri.expanded.clear();
+	this->m_uri.file.clear();
+	this->m_uri.location_filter.clear();
 }

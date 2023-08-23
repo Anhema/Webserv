@@ -22,6 +22,15 @@ namespace Request
 
 #define HTTP_1_1 "HTTP/1.1";
 
+typedef struct s_uri
+{
+	std::vector<std::string>			segments;
+	std::string 						file;
+	std::string							expanded;
+	std::vector<std::string>			location_filter;
+	bool								is_dir;
+}	t_uri;
+
 typedef struct s_body
 {
 	std::vector<char>					data;
@@ -36,7 +45,7 @@ typedef struct s_request
 	std::string							method;
 	std::string							target;
 	std::string							connection;
-	std::string							uri;
+	std::string							plain_uri;
 	std::string							version;
 	size_t 								content_length;
 	std::map<std::string, std::string>	headers;
@@ -66,9 +75,16 @@ private:
 	std::string 			m_server_message;
 	Data::Location			*m_current_location;
 	std::string 			m_expanded_root;
+	t_uri 					m_uri;
 
 private:
-	std::string 			m_expand_my_uri(const string &path);
+	// Takes the request uri and fills t_uri structures
+	std::string 			m_parse_uri(const string uri);
+
+	// Returns a location object corresponding a uri
+	std::string				m_get_uri_segment_root(std::string &filter);
+
+	// Se me fue la cabeza
 	std::string 			m_get_expanded_uri(const string &path);
 	std::string 			m_get_path();
 	std::string				m_get();

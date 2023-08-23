@@ -198,6 +198,14 @@ class TestServer(unittest.TestCase):
             logging.info(server + " OK")
 
 
+    def test_rooted_location_variation(self):
+        for server in servers:
+            response = get_response("GET", server, "/doubleroot/next/potato/sausage/nested_index.html")
+
+            self.assertEqual(response.status, 200, server + " failed")
+            self.assertEqual(response.title, "Nested Html")
+            logging.info(server + " OK")
+
     def test_oulala(self):
 
         logging.info("**** Going Crazy ****")
@@ -218,6 +226,12 @@ class TestServer(unittest.TestCase):
 
             self.assertEqual(response.status, 200, server + " failed")
             self.assertEqual(response.title, "Bean Emporium", server + "failed")
+    def test_location_find(self):
+        for server in servers:
+            response = get_response("GET", server, "/patata")
+
+            self.assertEqual(response.status, 404, server + " failed")
+            logging.info(server + " OK")
 
 
 if __name__ == "__main__":

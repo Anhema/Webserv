@@ -102,19 +102,25 @@ bool Utils::can_open_file(const string &file)
 	return false;
 }
 
-std::vector<std::string>    Utils::split(std::string str, std::string del)
-{
-	std::vector<std::string>    result;
-	std::string                 line;
+std::vector<std::string>    Utils::split(std::string str, std::string del) {
+	std::vector<std::string> result;
+	std::string line;
 
-	int end = str.find(del);
-	while (end != -1)
-	{
-		result.push_back(str.substr(0, end));
-		str.erase(str.begin(), str.begin() + end + 1);
-		end = str.find(del);
-	}
-	result.push_back(str.substr(0, end));
+	char *token = std::strtok((char *) str.c_str(), del.c_str());
+	do {
+		result.push_back(token);
+		token = std::strtok(NULL, del.c_str());
+	} while (token);
+//	int end = str.find(del);
+//	char *
+//	while (end != -1)
+//	{
+//		result.push_back(str.substr(0, end));
+//		str.erase(str.begin(), str.begin() + end + 1);
+//		end = str.find(del);
+//	}
+//	result.push_back(str.substr(0, end));
+
 	return (result);
 }
 
@@ -166,6 +172,21 @@ std::vector<std::string> Utils::split(std::string str, char separator)
 	}
 
 	return result;
+}
+
+void Utils::deleteConsecutives(string &src, __unused char c)
+{
+	std::string result;
+
+	result.reserve(src.size());
+	for (std::string::iterator it = src.begin(); it != src.end(); it++)
+	{
+		if (*it == c && *(it + 1) == c)
+			continue;
+		else
+			result.push_back(*it);
+	}
+	src = result;
 }
 
 std::string Utils::eraseAll(const std::string src, char c)
