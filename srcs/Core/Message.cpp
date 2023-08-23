@@ -34,6 +34,8 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	string composition_name;
 
+	cout << "\n\n***********\nFileName = " << this->m_body.headers[filename] << "\nExtension = " << this->m_body.file_extension << "\n";
+
 	composition_name.append("uploads/");
 	composition_name.append(filename);
 	composition_name.append(time_str);
@@ -319,7 +321,7 @@ std::string Message::m_get()
 	
 	CGI cgi;
 	
-	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "sh")
+	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "py" || Utils::get_extension(path) == "sh")
 	{
 		this->m_response.body = cgi.exec_cgi(path, args, this->m_request.method);
 		message << "HTTP/1.1 200 OK\nContent-Type: text/html\r\n"
@@ -346,9 +348,7 @@ std::string Message::m_get()
 std::string Message::m_post()
 {
 	std::ostringstream message;
-	std::string path = this->m_current_location->root;
-
-	path.append(this->m_request.uri);
+	std::string path(this->m_get_path());
 
 	std::ifstream ifs(path, std::ios::binary);
 
@@ -357,8 +357,6 @@ std::string Message::m_post()
 	{
 		if (access(path.c_str(), F_OK) != 0)
 			return (this->error_page("404"));
-		else if (access(path.c_str(), X_OK) != 0)
-			return (this->error_page("403"));
 		
 		string content;
 		for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
@@ -369,11 +367,13 @@ std::string Message::m_post()
 	{
 		if (access(path.c_str(), F_OK) != 0)
 			return (this->error_page("404"));
-		else if (access(path.c_str(), X_OK) != 0)
-			return (this->error_page("403"));
 		
 		this->m_response.body = cgi.exec_cgi(path, "", this->m_request.method);
 	}
+	if (this->m_response.body == "403")
+		return (this->error_page("403"));
+	if (this->m_response.body == "Error")
+		return (this->error_page("502"));
 	if (this->m_response.body == "")
 	{
 		cout << "\nUPLOAD FILE!!\n";
@@ -393,11 +393,8 @@ std::string Message::m_post()
 std::string Message::m_delete()
 {
 	std::ostringstream message;
-	std::string path = "www";
-	if (this->m_request.uri == "/")
-		this->m_response.htmlFile = Utils::read_file(path.append("/index.html"));
-	else
-		path.append(this->m_request.uri);
+	std::string path(this->m_get_path());
+
 	std::ifstream ifs(path);
 
 	if (access(path.c_str(), R_OK) != 0)
@@ -449,6 +446,7 @@ string Message::m_readHeader(const fd client)
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			Logger::log("Bad Header", WARNING);
+			header = "";
 			break;
 		}
 	}
@@ -461,9 +459,20 @@ void Message::m_parseHeader(const std::string &header)
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), " ");
 
+	if (header == "")
+	{
+		this->m_request.method = "";
+		this->m_request.uri = "";
+		this->m_request.version = "";
+		this->m_parseBody(header);
+		this->m_readStatus = Request::BODY;
+		this->finishedReading = true;
+		return;
+	}
 	this->m_request.method = r_line[0];
 	this->m_request.uri = r_line[1];
 	this->m_request.version = r_line[2];
+
 
 	while (++line != request.end())
 	{
@@ -490,6 +499,7 @@ void Message::m_parseHeader(const std::string &header)
 	if (this->m_request.content_length)
 	{
 		Logger::log("READ STATUS -> BODY HEADER", INFO);
+		cout << header << "\n";
 		this->m_parseBody(header);
 		this->m_readStatus = Request::BODY;
 	}
@@ -505,6 +515,8 @@ void Message::m_parseBody(const std::string &header)
 	string  filename;
 	char    *tmp;
 
+	if (header == "")
+		return;
 	this->m_body.boundary = header.substr(0, header.find("\r\n"));
 
 	if (!header.find("filename="))
@@ -699,6 +711,13 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 //	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
+
+	if (this->m_request.method == "")
+	{
+		//this->error_page("403");
+		//this->m_send_message(client);
+		return;
+	}
 
 	this->m_update_location(this->m_request.uri);
 

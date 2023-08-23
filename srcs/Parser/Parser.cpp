@@ -218,7 +218,7 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
         handler->initHandlers();
     }
 	else
-		throw (std::invalid_argument("VAYA PERRO EH, QUE PONES UN BLOQUE QUE NO DEBIAS EH!"));
+		throw (std::invalid_argument("Invalid Argument"));
 
 	handler->validate_header(header);
 

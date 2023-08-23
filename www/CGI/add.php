@@ -1,6 +1,4 @@
 <?php
-	$parameter = $_SERVER['QUERY_STRING'];
-	echo $parameter;
 	if (isset($_POST['num1']) && isset($_POST['num2']))
 	{
 		// Retrieve the numbers from the form
@@ -15,6 +13,6 @@
 	}
 	else
 	{
-		echo "<br><br>Invalid input. Please enter two numbers.<br>";
+		echo "Invalid input. Please enter two numbers.";
 	}
 ?>

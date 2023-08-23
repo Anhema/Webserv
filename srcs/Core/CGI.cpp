@@ -33,18 +33,31 @@ string CGI::exec_cgi(string file_path, string body, string method)
 	}
 
 	std::string interpreter = "";
+	std::string cgi = "";
 	if (Utils::get_extension(file_path) == "php")
+	{
 		interpreter = "/usr/bin/php";
+		cgi = "php";
+	}
 	else if (Utils::get_extension(file_path) == "sh")
+	{
 		interpreter = "/bin/bash";
+		cgi = "bash";
+	}
 	else if (Utils::get_extension(file_path) == "py")
-		interpreter = "/bin/python3";
+	{
+		interpreter = "/usr/bin/python3";
+		cgi = "py";
+	}
 	else
 		return ("");
+	
+	if (access(file_path.c_str(), X_OK) != 0)
+		return ("403");
 
-	char* args[] = {&interpreter[0], &file_path[0], NULL};
-	//char** env = this->crete_env(file_path, request, request.content_length, "text");
-	cout << "\n\n--" << body << "--\n\n";
+	char* args[] = {(char *)cgi.c_str(), (char *)file_path.c_str(), (char*)body.c_str(), NULL};
+
+	(void)method;
 	std::vector<string> env_list;
 	env_list.push_back("SERVER_SOFTWARE=");
 	env_list.push_back("SERVER_NAME=localhost");
@@ -52,7 +65,6 @@ string CGI::exec_cgi(string file_path, string body, string method)
 
 	env_list.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	env_list.push_back("SERVER_PORT=8080");
-	env_list.push_back("REQUEST_METHOD=" + method);
 	env_list.push_back("PATH_INFO=" + file_path);
 	env_list.push_back("PATH_TRANSLATED=" + file_path);
 	env_list.push_back("SCRIPT_NAME=" + file_path);
@@ -76,7 +88,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
 
 		cout << "\n" << env[i] << "\n";
 	}
-	env[env_list.size()] = nullptr;
+	env[env_list.size()] = NULL;
 	pid_t pid = fork();
 	if (pid == 0)
 	{
@@ -84,7 +96,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		dup2(pipefd[1], 1);
 		dup2(pipefd[1], 2);
 		close(pipefd[1]);
-		execve(args[0], args, env);
+		execve(interpreter.c_str(), args, env);
 		std::cerr << "Error";
 		exit (1);
 	}

@@ -1,1 +1,3 @@
-print("42")
+#!/usr/bin/python3
+
+print(42)

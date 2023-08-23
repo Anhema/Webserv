@@ -39,7 +39,7 @@ satisfactionForm.addEventListener('submit', function(event) {
 	event.preventDefault();
 	const formData = new FormData(satisfactionForm);
 	const xhr = new XMLHttpRequest();
-	xhr.open('POST', '/upload', true);
+	xhr.open('POST', '/', true);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
 			thanksMessage.classList.remove('hidden');
