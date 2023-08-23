@@ -209,6 +209,7 @@ std::string Message::m_parse_uri(const string uri)
 	{
 		std::string filter("/");
 		std::string expanded_root = this->m_get_uri_segment_root(filter);
+		cout << "Expande size 1: " << expanded_root << "\n";
 		this->m_uri.expanded.append(expanded_root);
 	}
 	else
@@ -228,8 +229,12 @@ std::string Message::m_parse_uri(const string uri)
 		this->m_uri.location_filter.push_back(*it);
 //		if (*it != "/" + this->m_uri.file)
 
+	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
 	if (this->m_uri.is_dir)
+	{
+		cout << "appendea el file porque es un dir\n";
 		this->m_uri.expanded.append(this->m_uri.file);
+	}
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
 
 //	if (!this->m_uri.is_dir)
@@ -339,18 +344,44 @@ std::string Message::m_get_path()
 //	}
 //
 //
-	if (path.find(this->m_current_location->root) != 0)
-		path = this->m_current_location->root + path;
-	if (!this->m_current_location->index.empty() && this->m_uri.is_dir && this->m_uri.file.empty())
+	cout << "llega el path: " << path << " location uri: " << this->m_current_location->uri << "\n";
+	if (path.find(this->m_current_location->root) != 0 && this->m_current_location->index.empty())
 	{
-//		if (*(path.end() - 1) != '/')
-//			path.push_back('/');
+		cout << "appendea el path\n";
+		path = this->m_current_location->root + path;
+	}
+	else if (path.find(this->m_current_location->index) == std::string::npos
+			&& ("/" + this->m_uri.file == this->m_current_location->uri))
+	{
+		cout << "appendea el index al principio\n";
+		path = this->m_current_location->root + "/" + this->m_current_location->index;
+	}
+
+	if (!this->m_current_location->index.empty()
+		&& this->m_uri.is_dir && this->m_uri.file.empty()
+		&& (path.find(this->m_current_location->index) == std::string::npos))
+	{
+		cout << "CASO 1 ===== \n";
 		path.append(this->m_current_location->index);
 	}
+	else if (!this->m_uri.is_dir)
+	{
+		cout << "CASO 2 ===== \n";
+		Utils::deleteConsecutives(path, '/');
+		cout << "Get Path returns: " << path << endl;
+		return path;
+
+	}
 	else if (this->m_uri.is_dir && this->m_current_location->index.empty())
+	{
+		cout << "CASO 3 ===== \n";
 		path.append(this->m_uri.file);
-	else if (!this->m_current_location->index.empty())
+	}
+	else if (!this->m_current_location->index.empty() && (path.find(this->m_current_location->index) == std::string::npos))
+	{
+		cout << "CASO 4 ===== \n";
 		path.append(this->m_current_location->index);
+	}
 
 //	else if (this->m_request.plain_uri == "/")
 //	{

@@ -203,7 +203,7 @@ class TestServer(unittest.TestCase):
             response = get_response("GET", server, "/doubleroot/next/potato/sausage/nested_index.html")
 
             self.assertEqual(response.status, 200, server + " failed")
-            self.assertEqual(response.title, "Nested Index")
+            self.assertEqual(response.title, "Nested Html")
             logging.info(server + " OK")
 
     def test_oulala(self):
