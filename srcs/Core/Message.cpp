@@ -41,7 +41,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
 		cout << *it;
 	cout << "\n";
-	cout << "\n\n***********\nFileName = " << this->m_body.headers[filename] << "\nExtension = " << this->m_body.file_extension << "\n";
+	cout << "\n\n***********\nFileName = " << this->m_body.file_name << "\nExtension = " << this->m_body.file_extension << "\n";
 
 	composition_name.append("uploads/");
 	composition_name.append(filename);
@@ -487,16 +487,26 @@ string Message::m_readHeader(const fd client)
 	while (header.find(HEADER_END) == string::npos)
 	{
 		read_bytes = recv(client, &buffer, 1, 0);
-		header.push_back(buffer);
 		if (read_bytes == -1)
 		{
 			err_count++;
 		}
 		else
+		{
 			err_count = 0;
+			header.push_back(buffer);
+		}
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			Logger::log("Bad Header", WARNING);
+			cout << header << "\n";
+			for (size_t i = 0; i < header.size(); i++)
+				this->m_body.data.push_back(header[i]);
+			if (!header.empty())
+			{
+				Logger::log("READ STATUS -> FINISHED BODY", INFO);
+				this->m_readStatus = Request::FINISHED_BODY;
+			}
 			break;
 		}
 		if (this->m_readStatus == Request::BODY_HEADER)
@@ -575,12 +585,32 @@ void Message::m_parseBody(const std::string &header)
 {
 	string  filename;
 
-	cout << "Parse body input: " << header << "\n";
-	stringstream sstream(header);
+	if (this->m_readStatus == Request::FINISHED_BODY)
+		return;
 
+	string boundary = "";
+	std::vector<std::string> headers = Utils::split(header.substr(header.find("\r\n"), header.size() - 1), ';');
+
+	cout << "Parse body input: " << header << "\n";
+
+	this->m_body.boundary = header.substr(0, header.find("\r\n"));
+	
+	for (size_t i = 0; i < headers.size(); i++)
+	{
+		if (Utils::split(headers[i], '=')[0] == " filename")
+		{
+			string name = Utils::split(Utils::split(headers[i], '=')[1], "\r\n")[0];
+			cout << "\n--" << name << "--\n";
+			name.replace(0, 1, "");
+			name.replace(name.size() - 1, 1, "");
+			this->m_body.file_name = name.substr(name.find_first_of("\"") + 1, name.find_last_of("."));
+			this->m_body.file_extension = Utils::get_extension(name);
+		}
+	}
+	
 	cout << "***parsing body header***\n";
 
-	cout << "Extension:" << this->m_body.file_extension << "\n";
+	cout << "Extension: " << this->m_body.file_extension << "\n";
 	cout << "Boundary: " << this->m_body.boundary << "\n";
 	cout << "FileName: " << this->m_body.file_name << "\n";
 }
@@ -624,18 +654,6 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 		this->finishedReading = true;
 		totalRead = 0;
 	}
-}
-
-void Message::m_parse_body_header()
-{
-	cout << "***parsing body header***\n";
-
-
-
-
-	cout << "Extension:" << this->m_body.file_extension << "\n";
-	cout << "Boundary: " << this->m_body.boundary << "\n";
-	cout << "FileName: " << this->m_body.file_name << "\n";
 }
 
 void Message::handle_request(const fd client, size_t buffer_size)
