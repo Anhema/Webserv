@@ -155,17 +155,17 @@ namespace Parser
 			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
 		};
 
-//		class UploadPath: public Parser::Directive
-//		{
-//		public:
-//			UploadPath();
-//			~UploadPath();
-//
-//		private:
-//			void	m_validate_token(const std::string &token);
-//			void	m_format_checker(const std::vector<std::string> &tokens);
-//			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
-//		};
+		class UploadPath: public Parser::Directive
+		{
+		public:
+			UploadPath();
+			~UploadPath();
+
+		private:
+			void	m_validate_token(const std::string &token);
+			void	m_format_checker(const std::vector<std::string> &tokens);
+			void	m_save(const std::vector<std::string> &tokens, Data::Conf *config);
+		};
 	}
 }
 

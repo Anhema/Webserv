@@ -505,18 +505,44 @@ void Parser::Keys::Autoindex::m_save(const std::vector<std::string> &tokens, Dat
 		throw (std::runtime_error("casting in autoindex directive"));
 }
 
-//Parser::Keys::UploadPath::UploadPath(): Parser::Directive("upload", 1) {
-//
-//}
-//
-//Parser::Keys::UploadPath::~UploadPath() {
-//
-//}
-//
-//void Parser::Keys::UploadPath::m_validate_token(const string &token)
-//{
-//	if (!this->asciiCheck(token))
-//		return;
-//
-//
-//}
+Parser::Keys::UploadPath::UploadPath(): Directive("upload", 1)
+{
+	//cout << "Directive root constructed\n";
+}
+
+Parser::Keys::UploadPath::~UploadPath()
+{
+	//cout << "Directive Root destructed\n";
+
+}
+
+void Parser::Keys::UploadPath::m_format_checker(const std::vector <std::string> &tokens)
+{
+	this->std_max_tokens_check(tokens);
+}
+
+void Parser::Keys::UploadPath::m_validate_token(const std::string &token)
+{
+	cout << "toke: " << token << "\n";
+	if (!Utils::can_open_dir(token.c_str()))
+	{
+		this->m_errno = INVALID_VALUE;
+		this->m_err_token = token;
+	}
+}
+
+void Parser::Keys::UploadPath::m_save(const std::vector<std::string> &tokens, Data::Conf *config)
+{
+	{
+		Data::Location *dst;
+
+		dst = dynamic_cast<Data::Location *>(config);
+		if (dst)
+		{
+			cout << "Saving in upload: " << tokens.at(0) << "\n";
+			dst->upload_path = tokens.at(0);
+			return;
+		}
+	}
+	throw (std::runtime_error("casting root directive"));
+}
