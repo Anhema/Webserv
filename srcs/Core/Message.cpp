@@ -379,6 +379,14 @@ std::string Message::m_get()
 	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "py" || Utils::get_extension(path) == "sh")
 	{
 		this->m_response.body = cgi.exec_cgi(path, args, this->m_request.method);
+
+		if (this->m_response.body == "timeout")
+			return (this->error_page("502"));
+		if (this->m_response.body == "403")
+			return (this->error_page("403"));
+		if (this->m_response.body == "Error")
+			return (this->error_page("502"));
+
 		message << "HTTP/1.1 200 OK\nContent-Type: text/html\r\n"
 			<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
 		return (message.str());
@@ -425,6 +433,8 @@ std::string Message::m_post()
 		
 		this->m_response.body = cgi.exec_cgi(path, "", this->m_request.method);
 	}
+	if (this->m_response.body == "timeout")
+		return (this->error_page("502"));
 	if (this->m_response.body == "403")
 		return (this->error_page("403"));
 	if (this->m_response.body == "Error")

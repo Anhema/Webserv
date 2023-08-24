@@ -1,4 +1,5 @@
 #include "CGI.hpp"
+#include "Logger.hpp"
 
 CGI::CGI(){}
 CGI::~CGI(){}
@@ -99,6 +100,26 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		execve(interpreter.c_str(), args, env);
 		std::cerr << "Error";
 		exit (1);
+	}
+	else
+	{
+		pid_t result;
+		int timeout = 5;
+		time_t start = time(NULL);
+
+		do {
+			result = waitpid(pid, 0, WNOHANG);
+
+			if (result == 0) {
+				time_t current = time(NULL);
+				if (current - start >= timeout) {
+					std::cout << "Timeout reached. Child process is still running." << std::endl;
+					Logger::log("Timeout CGI", WARNING);
+					return "timeout";
+				}
+				usleep(100000);
+			}
+		} while (result == 0);
 	}
 	close(pipefd[1]);
 	char buffer[1024];
