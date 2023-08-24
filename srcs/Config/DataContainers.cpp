@@ -66,13 +66,13 @@ Data::Location::Location():
 {
 	this->accepted_methods.methods.push_back(GET_METHOD);
 	this->accepted_methods.methods.push_back(POST_METHOD);
+	this->upload_path = "uploads/";
 }
 
 Data::Location::Location(Data::Server const &context):
 		uri(), root(context.root), directory_file(), index(context.index),
 		autoindex(false), accepted_methods(context.accepted_methods), redirection()
 {
-
 }
 
 Data::Location::Location(Location const &rhs):
@@ -133,6 +133,7 @@ std::ostream &operator<<(std::ostream &os, const Data::Location &location)
 	os << "\turi-> " << (location).uri << "\n";
 	os << "\tRoot-> " << (location).root << "\n";
 	os << "\tIndex-> " << (location).index << "\n";
+	os << "\tUpload path -> " << location.upload_path << "\n";
 	os << "\tAccept -> ";
 	Utils::print_vector(location.accepted_methods.methods);
 	os << "\tRedirection -> ";
