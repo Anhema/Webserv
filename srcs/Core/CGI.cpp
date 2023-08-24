@@ -111,7 +111,8 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		do {
 			result = waitpid(pid, 0, WNOHANG);
 
-			if (result == 0) {
+			if (result == 0)
+			{
 				time_t current = time(NULL);
 				if (current - start >= timeout) {
 					std::cout << "Timeout reached. Child process is still running." << std::endl;
@@ -119,7 +120,6 @@ string CGI::exec_cgi(string file_path, string body, string method)
 					kill(pid, SIGKILL);
 					return "timeout";
 				}
-				usleep(100000);
 			}
 		} while (result == 0);
 	}

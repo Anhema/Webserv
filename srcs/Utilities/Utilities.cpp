@@ -38,12 +38,10 @@ std::vector<std::string> Utils::read_dir(const string &path)
 
 std::string Utils::read_file(std::string file_name)
 {
-	std::ifstream   file;
+	std::ifstream   file(file_name.c_str());
 	std::string     result;
 	std::string     line;
 	std::ostringstream buffer;
-
-	file.open(file_name.c_str());
 
 	if (file.fail())
 	{
