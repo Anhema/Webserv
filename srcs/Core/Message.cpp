@@ -34,6 +34,8 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	string composition_name;
 
+	if (this->m_body.data.size() <= 0)
+		return;
 	cout << "\n\n***********\nFileName = " << this->m_body.headers[filename] << "\nExtension = " << this->m_body.file_extension << "\n";
 
 	composition_name.append("uploads/");
@@ -488,7 +490,6 @@ string Message::m_readHeader(const fd client)
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			Logger::log("Bad Header", WARNING);
-			header = "";
 			break;
 		}
 	}
@@ -497,10 +498,7 @@ string Message::m_readHeader(const fd client)
 
 void Message::m_parseHeader(const std::string &header)
 {
-	std::vector<std::string> request = Utils::split(header, "\n");
-	std::vector<std::string>::iterator line = request.begin();
-	std::vector<std::string> r_line = Utils::split((*line), " ");
-
+	cout << "\n\n------>" << header << "<------\n\n";
 	if (header == "")
 	{
 		this->m_request.method = "";
@@ -511,6 +509,10 @@ void Message::m_parseHeader(const std::string &header)
 		this->finishedReading = true;
 		return;
 	}
+	std::vector<std::string> request = Utils::split(header, '\n');
+	std::vector<std::string>::iterator line = request.begin();
+	std::vector<std::string> r_line = Utils::split((*line), ' ');
+
 	this->m_request.method = r_line[0];
 	this->m_request.plain_uri = r_line[1];
 	this->m_request.version = r_line[2];

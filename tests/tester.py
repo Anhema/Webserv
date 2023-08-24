@@ -35,7 +35,7 @@ console_handler.setFormatter(formatter)
 
 
 
-def calculate_file_hash(filename, block_size=65536)
+def calculate_file_hash(filename, block_size=65536):
     hasher = hashlib.sha256()
     with open(filename, 'rb') as f:
         for block in iter(lambda: f.read(block_size), b''):
