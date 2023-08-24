@@ -4,6 +4,9 @@ import http.client
 import logging
 import time
 from html.parser import HTMLParser
+import hashlib
+
+
 
 server_host = "localhost:8080"
 server_path = "/"
@@ -28,6 +31,16 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 
+
+
+
+
+def calculate_file_hash(filename, block_size=65536)
+    hasher = hashlib.sha256()
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(block_size), b''):
+            hasher.update(block)
+    return hasher.hexdigest()
 
 class HtmlExtractor(HTMLParser):
     def __init__(self):

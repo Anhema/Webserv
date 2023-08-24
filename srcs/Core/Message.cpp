@@ -125,7 +125,6 @@ std::string Message::error_page(std::string error)
 
 	if (this->m_response.htmlFile.empty())
 	{
-		cout << "llega aqui\n";
 		message << "HTTP/1.1 200 OK\r\n Content-Type: text/plain\r\nContent-Length: 3\r\n\r\n" << "404";
 	}
 	else
@@ -171,7 +170,6 @@ std::string Message::m_get_expanded_uri(const string &path)
 
 	}
 
-//	cout << "expanded plain_uri: " << expanded_uri << endl;
 	return expanded_uri;
 }
 
@@ -187,7 +185,6 @@ std::string Message::m_get_uri_segment_root(string &filter) {
 std::string Message::m_parse_uri(const string uri)
 {
 	cout << "*******Parse URI *******\n";
-	// Split into segments;
 
 	this->m_uri.location_filter.push_back("/");
 	if (uri == "/")
@@ -286,29 +283,9 @@ string Message::m_update_location(const string &path)
 	cout << "*****NO MATCHING LOCATION.... CREATING ONE******\n";
 	default_location.uri = path;
 	this->m_current_location = &default_location;
-	std::string full_path = this->m_current_location->root;
-	if (*(full_path.end() - 1) == '/')
-		full_path = full_path.substr(0, full_path.size() - 1);
-	full_path.append(this->m_request.plain_uri);
-			//+ this->m_request.plain_uri;
-	this->m_expanded_root = full_path;
 	return (this->m_current_location->root);
 }
 
-//std::string Message::m_expand_my_uri(const std::string &uri)
-//{
-//
-//	std::string new_uri(uri);
-//
-//	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
-//	{
-//		new_uri.replace(new_uri.begin(), new_uri.end(), it->root);
-//	}
-//
-//	cout << "Expand My plain_uri returns: " << new_uri;
-//	cout << "Base: " << uri << endl;
-//	return new_uri;
-//}
 
 std::string Message::m_get_path()
 {

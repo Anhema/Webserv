@@ -162,7 +162,7 @@ void Parser::Reader::m_getBracketData(std::stringstream &dst)
 
         this->m_current_line++;
         line.update(raw);
-//		cout << "Parsing 3 -> " << raw << "\n";
+
         if (lineIsCloser(line) || lineIsOpener(line))
         {
             this->m_filestream.seekg(this->m_filestream.tellg() - static_cast<std::streampos>(raw.size()));
@@ -185,21 +185,17 @@ void Parser::Reader::m_find_bracket()
         line.tokenize();
         if (raw.empty())
             continue;
-//        cout << "Parsing 1 -> " << line << "\n";
+
         if (this->lineIsOpener(line))
         {
-//			cout << "Abre: " << line.raw << "\n";
 			this->total_depth++;
-//            cout << "Is opener! " << line << "\n";
             std::stringstream new_bracket;
             this->m_getBracketData(new_bracket);
-//			cout << "Bracket filled:\n" << new_bracket.str();
             this->m_read_bracket(new_bracket, line);
         }
 		else if (lineIsCloser(line))
 		{
 
-//			cout << "Cierra: " << line.raw << "\n";
 			this->total_depth--;
 		}
 		else
@@ -233,14 +229,11 @@ void Parser::Reader::m_read_bracket(std::stringstream &bracket, Data::Line const
 
 		if (raw.empty())
 			continue;
-//		else if (raw.find_first_not_of(WHITESPACE) == this->m_rules.comment)
-//			continue;
+
 		raw.erase(raw.begin(), raw.begin() + raw.find_first_not_of(WHITESPACE));
         line.update(raw);
         line.tokenize();
 
-
-//		cout << "Parsing 2 -> " << line << "\n";
         if (lineIsOpener(line) || lineIsCloser(line))
         {
             this->save(handler->getDestination());
@@ -268,12 +261,13 @@ Data::Line Parser::Reader::strline(const std::string &raw)
 	return ret;
 }
 
-void Parser::Reader::m_checkFile() const
+void Parser::Reader::m_checkFile()
 {
-	// TODO better exceptions
 	if (Utils::get_extension(this->m_filename) != this->m_rules.extension)
 		throw (Parser::InvalidFile("", this->m_filename, 10));
 	if (!this->m_filestream.is_open() || !this->m_filestream.good())
+		throw (Parser::InvalidFile("", this->m_filename, 10));
+	if (this->m_filestream.peek() == std::ifstream::traits_type::eof())
 		throw (Parser::InvalidFile("", this->m_filename, 10));
 }
 

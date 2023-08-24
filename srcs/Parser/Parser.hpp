@@ -125,7 +125,7 @@ namespace Parser
 		std::ifstream										m_filestream;
 		std::map<const std::string, Parser::BlockHandler *>	m_BlockHandlers;
 
-		void						m_checkFile() const;
+		void						m_checkFile();
 		void						m_find_bracket();
 		void						m_read_bracket(std::stringstream &bracket, Data::Line const &header);
         void                        m_getBracketData(std::stringstream &dst);
