@@ -185,6 +185,8 @@ std::string Message::m_get_uri_segment_root(string &filter) {
 std::string Message::m_parse_uri(const string uri)
 {
 	cout << "*******Parse URI *******\n";
+	cout << "Plain uri: " << uri << "\n";
+
 
 	this->m_uri.location_filter.push_back("/");
 	if (uri == "/")
@@ -243,7 +245,6 @@ std::string Message::m_parse_uri(const string uri)
 	cout << "Segments: ";
 	Utils::print_vector(this->m_uri.segments);
 
-	cout << "Plain uri: " << uri << "\n";
 	cout << "Location filter: ";
 	Utils::print_vector(this->m_uri.location_filter);
 	cout << "File: " << this->m_uri.file << "\n";
@@ -752,6 +753,12 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
 
+	if (this->m_request.plain_uri.empty())
+	{
+		this->error_page("400");
+		return;
+	}
+
 	if (this->m_request.method == "")
 		return;
 	this->m_parse_uri(this->m_request.plain_uri);
@@ -759,7 +766,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 //	cout << this->m_request.plain_uri << "\n\n**********" << tmp << "************" << this->m_current_location->plain_uri << "\n\n";
 
-//	print_headers(this->m_request.headers, this->m_request);
+	print_headers(this->m_request.headers, this->m_request);
 
 	cout << "Using location:\n" << *this->m_current_location << "\n";
 

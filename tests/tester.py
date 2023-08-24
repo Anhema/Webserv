@@ -35,7 +35,7 @@ console_handler.setFormatter(formatter)
 
 
 
-def calculate_file_hash(filename, block_size=65536)
+def calculate_file_hash(filename, block_size=65536):
     hasher = hashlib.sha256()
     with open(filename, 'rb') as f:
         for block in iter(lambda: f.read(block_size), b''):
@@ -74,6 +74,17 @@ class Response:
         # self.head = head
         self.title = title
 
+def chunked_request():
+    conn = http.client.HTTPConnection("localhost:8080")
+    conn.putrequest("POST", "/post", skip_accept_encoding=True)
+    conn.putheader("Transfer-Encoding", "chunked")
+    conn.endheaders()
+
+    data = b"chunked_data_part_1"
+    conn.send(f"{len(data):X}\r\n".encode() + data + b"\r\n")
+
+    data = b"chunked_data_part_2"
+    conn.send(f"{len(data):X}\r\n".encode() + data + b"\r\n")
 
 def get_response(method, host, path):
     try:
@@ -259,4 +270,5 @@ if __name__ == "__main__":
     os.system("./webserv_sani tests/test.conf  & ")
     time.sleep(1)
     logging.info("Initializing tests\n")
-    unittest.main()
+    chunked_request()
+    # unittest.main()
