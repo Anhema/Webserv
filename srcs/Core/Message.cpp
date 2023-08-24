@@ -6,6 +6,7 @@
 
 Message::Message(): m_responseCode(HttpStatus::OK), m_readStatus(Request::HEADER), finishedReading(false)
 {
+	this->m_body.body_has_headers = false;
 }
 
 Message::~Message() {}
@@ -33,7 +34,14 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
+	if (this->m_body.data.empty())
+		return;
 
+
+	cout << "Data size: " << this->m_body.data.size() << "\n";
+	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
+		cout << *it;
+	cout << "\n";
 	cout << "\n\n***********\nFileName = " << this->m_body.headers[filename] << "\nExtension = " << this->m_body.file_extension << "\n";
 
 	composition_name.append("uploads/");
@@ -269,7 +277,8 @@ string Message::m_update_location(const string &path)
 	{
 		for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
 		{
-			cout << "Filter-> " << *filter << " it uri-> " << it->uri << "\n";
+//			cout << "Filter-> " << *filter << " it uri-> " << it->uri << "\n";
+			if (*filter == it->uri)
 			if (*filter == it->uri)
 			{
 				cout << "New location: " << it->uri << endl;
@@ -489,14 +498,16 @@ string Message::m_readHeader(const fd client)
 		if (err_count >= Message::s_maxRecvErrors)
 		{
 			Logger::log("Bad Header", WARNING);
-			header = "";
 			break;
 		}
+		if (this->m_readStatus == Request::BODY_HEADER)
+			this->m_body.current_read += read_bytes;
 	}
+	cout << "Header read finished\n";
 	return header;
 }
 
-void Message::m_parseHeader(const std::string &header)
+void Message::m_parseHeader(std::string &header)
 {
 	std::vector<std::string> request = Utils::split(header, "\n");
 	std::vector<std::string>::iterator line = request.begin();
@@ -537,14 +548,21 @@ void Message::m_parseHeader(const std::string &header)
 
 	this->m_request.connection = this->m_request.headers["Connection"];
 	this->m_request.content_length = (size_t)std::atoi(this->m_request.headers["Content-Length"].c_str());
+	this->m_request.transfer_encoding = this->m_request.headers["Transfer-Encoding"];
+
 	if (this->m_request.headers["Host"].find(":"))
 		this->m_request.headers["Host"] = this->m_request.headers["Host"].substr(0, this->m_request.headers["Host"].find(":"));
+	if (this->m_request.transfer_encoding == "chunked")
+	{
+		Logger::log("Chunked request incoming", INFO);
+		this->m_readStatus = Request::CHUNKED_TRANSFER;
+	}
 	if (this->m_request.content_length)
 	{
 		Logger::log("READ STATUS -> BODY HEADER", INFO);
 		cout << header << "\n";
 		this->m_parseBody(header);
-		this->m_readStatus = Request::BODY;
+		this->m_readStatus = Request::BODY_HEADER;
 	}
 	else
 	{
@@ -558,21 +576,14 @@ void Message::m_parseBody(const std::string &header)
 	string  filename;
 	char    *tmp;
 
-	if (header == "")
-		return;
-	this->m_body.boundary = header.substr(0, header.find("\r\n"));
+	cout << "Parse body input: " << header << "\n";
+	stringstream sstream(header);
 
-	if (!header.find("filename="))
-		strtok((char *)&header.c_str()[header.find("filename=")], "\"=");
-	tmp = strtok(NULL, ".");
+	cout << "***parsing body header***\n";
 
-	if (tmp)
-		this->m_body.file_name = &tmp[1];
-
-	tmp = strtok(NULL, "\"");
-
-	if (tmp)
-		this->m_body.file_extension = tmp;
+	cout << "Extension:" << this->m_body.file_extension << "\n";
+	cout << "Boundary: " << this->m_body.boundary << "\n";
+	cout << "FileName: " << this->m_body.file_name << "\n";
 }
 
 void Message::m_readBody(const fd client, const size_t fd_size)
@@ -584,7 +595,7 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	const size_t 	buffer_size = 30720;
 	char		    buffer[buffer_size];
 
-	while (loopRead < fd_size && totalRead < this->m_request.content_length)
+	while (loopRead < fd_size && this->m_body.current_read < this->m_request.content_length)
 	{
 		read_bytes = recv(client, buffer, buffer_size, 0);
 
@@ -603,10 +614,11 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 		for (ssize_t i = 0; i < read_bytes; i++)
 			this->m_body.data.push_back(buffer[i]);
 
-		totalRead += read_bytes;
+		this->m_body.current_read += read_bytes;
 		loopRead += read_bytes;
 	}
-	if (totalRead >= this->m_request.content_length || this->m_request.content_length == 0)
+	cout << "Total: " << this->m_body.current_read << " Content Lenght: " << this->m_request.content_length << "\n";
+	if (this->m_body.current_read >= this->m_request.content_length || this->m_request.content_length == 0)
 	{
 		Logger::log("READ STATUS -> FINISHED BODY", INFO);
 		this->m_readStatus = Request::FINISHED_BODY;
@@ -615,24 +627,51 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	}
 }
 
+void Message::m_parse_body_header()
+{
+	cout << "***parsing body header***\n";
+
+
+
+
+	cout << "Extension:" << this->m_body.file_extension << "\n";
+	cout << "Boundary: " << this->m_body.boundary << "\n";
+	cout << "FileName: " << this->m_body.file_name << "\n";
+}
+
 void Message::handle_request(const fd client, size_t buffer_size)
 {
 
 	stringstream  	ss;
 	stringstream  	ss_buffer;
 
-	Logger::log(ss.str(), INFO);
 
+	ss << "READ STATUS: " << this->m_readStatus;
+
+
+	Logger::log(ss.str(), INFO);
+	std::string header;
 	switch (this->m_readStatus)
 	{
 		case Request::HEADER:
-			this->m_parseHeader(this->m_readHeader(client));
+			header = this->m_readHeader(client);
+			cout << "incoming header: (" << header << ")\n";
+			this->m_parseHeader(header);
+			cout << "Header parse finished\n";
+			break;
+		case Request::CHUNKED_TRANSFER:
+			//TODO
+			Logger::log("Handling a chunk", INFO);
 			break;
 		case Request::BODY_HEADER:
+			Logger::log("BODY HEADER HANDLE", INFO);
+//			header = this->m_readHeader(client);
+			this->m_parseBody(this->m_readHeader(client));
 			this->m_readStatus = Request::BODY;
 			break;
 		case Request::BODY:
 			this->m_readBody(client, buffer_size);
+			Logger::log("Body Read finished", INFO);
 			break;
 		case Request::FINISHED_BODY:
 			break;
@@ -672,16 +711,16 @@ void Message::m_send_message(const fd client)
 		totalSent += send_bytes;
 	}
 
-	if (totalSent == (long)this->m_server_message.size())
-	{
-		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
-		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
-	}
-	else
-	{
-		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
-		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
-	}
+//	if (totalSent == (long)this->m_server_message.size())
+//	{
+//		Logger::log("SERVER RESPONSE SENT TO CLIENT", INFO);
+//		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
+//	}
+//	else
+//	{
+//		Logger::log("SENDING RESPONSE TO CLIENT", ERROR);
+//		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
+//	}
 
 	this->m_request.headers.clear();
 }
@@ -753,6 +792,14 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
 
+	if (this->m_readStatus == Request::CHUNKED_TRANSFER)
+	{
+		Logger::log("Continue Header Sent", INFO);
+		this->m_server_message = "HTTP/1.1 100 Continue";
+		this->m_send_message(client);
+		return;
+	}
+
 	if (this->m_request.plain_uri.empty())
 	{
 		this->error_page("400");
@@ -761,6 +808,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 	if (this->m_request.method == "")
 		return;
+
 	this->m_parse_uri(this->m_request.plain_uri);
 	this->m_update_location(this->m_request.plain_uri);
 
@@ -872,4 +920,6 @@ void Message::reset()
 	this->m_uri.expanded.clear();
 	this->m_uri.file.clear();
 	this->m_uri.location_filter.clear();
+	this->m_body.current_read = 0;
+	this->m_body.body_has_headers = false;
 }
