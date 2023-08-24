@@ -40,7 +40,6 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	if (this->m_body.data.empty())
 		return;
 
-
 	cout << "Data size: " << this->m_body.data.size() << "\n";
 	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
 		cout << *it;
@@ -512,10 +511,7 @@ string Message::m_readHeader(const fd client)
 
 void Message::m_parseHeader(std::string &header)
 {
-	std::vector<std::string> request = Utils::split(header, "\n");
-	std::vector<std::string>::iterator line = request.begin();
-	std::vector<std::string> r_line = Utils::split((*line), " ");
-
+	cout << "\n\n------>" << header << "<------\n\n";
 	if (header == "")
 	{
 		this->m_request.method = "";
@@ -526,6 +522,10 @@ void Message::m_parseHeader(std::string &header)
 		this->finishedReading = true;
 		return;
 	}
+	std::vector<std::string> request = Utils::split(header, '\n');
+	std::vector<std::string>::iterator line = request.begin();
+	std::vector<std::string> r_line = Utils::split((*line), ' ');
+
 	this->m_request.method = r_line[0];
 	this->m_request.plain_uri = r_line[1];
 	this->m_request.version = r_line[2];

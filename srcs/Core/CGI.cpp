@@ -86,7 +86,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
     	env[i] = new char[env_list[i].size() + 1];
     	::strncpy(env[i], env_list[i].c_str(), env_list[i].size() + 1);
 
-		cout << "\n" << env[i] << "\n";
+		//cout << "\n" << env[i] << "\n";
 	}
 	env[env_list.size()] = NULL;
 	pid_t pid = fork();
