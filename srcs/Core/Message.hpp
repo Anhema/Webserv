@@ -75,7 +75,6 @@ private:
 	t_response				m_response;
 	t_body 					m_body;
 	HttpStatus::Code		m_responseCode;
-	Request::Status			m_readStatus;
 	std::string 			m_server_message;
 	Data::Location			*m_current_location;
 	std::string 			m_expanded_root;
@@ -89,8 +88,8 @@ private:
 	std::string				m_get_uri_segment_root(std::string &filter);
 
 	// Takes the body and fills t_body structures
-	void					m_parse_body_header();
 
+	void					m_read_chunk(const fd client, size_t fd_size);
 	std::string 			m_get_expanded_uri(const string &path);
 	std::string 			m_get_path();
 	std::string				m_get();
@@ -122,6 +121,7 @@ public:
 	std::string				error_page(std::string error);
 
 	bool					finishedReading;
+	Request::Status			m_readStatus;
 
 	static const int		s_maxSendErrors	= 10000;
 	static const int		s_maxRecvErrors	= 10000;

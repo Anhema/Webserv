@@ -271,4 +271,4 @@ if __name__ == "__main__":
     time.sleep(1)
     logging.info("Initializing tests\n")
     chunked_request()
-    # unittest.main()
+    unittest.main()
