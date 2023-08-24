@@ -4,8 +4,9 @@
 #include "Utilities.hpp"
 #include <fcntl.h>
 
-Message::Message(): m_responseCode(HttpStatus::OK), m_readStatus(Request::HEADER), finishedReading(false)
+Message::Message(): m_responseCode(HttpStatus::OK), finishedReading(false)
 {
+	this->m_readStatus = Request::HEADER;
 	this->m_body.body_has_headers = false;
 }
 
@@ -20,6 +21,8 @@ void Message::setConfig(Data::Server &config)
 
 void Message::buildHeader()
 {
+
+
 
 }
 
@@ -656,6 +659,45 @@ void Message::m_readBody(const fd client, const size_t fd_size)
 	}
 }
 
+
+
+void Message::m_read_chunk(const fd client, __unused size_t fd_size)
+{
+	ssize_t 		read_bytes = 0;
+	std::string 	header;
+	std::string 	chunk;
+	char 			header_buff;
+	char 			chunk_buff;
+
+	while (header.find("\r\n") == string::npos)
+	{
+		read_bytes = recv(client, &header_buff, 1, 0);
+		header.push_back(header_buff);
+		if (this->m_readStatus == Request::BODY_HEADER)
+			this->m_body.current_read += read_bytes;
+	}
+	cout << "chunk header: " << header << "\n";
+
+	int chunk_size = std::atoi(header.c_str());
+
+	if (chunk_size == 0)
+	{
+		Logger::log("Last Chunk detected status -> Finished read", INFO);
+		this->m_readStatus = Request::FINISHED_BODY;
+	}
+
+	read_bytes = 0;
+
+	while (chunk.find("\r\n") == string::npos)
+	{
+		read_bytes = recv(client, &chunk_buff, 1, 0);
+		cout << chunk_buff;
+		chunk.push_back(chunk_buff);
+		this->m_body.data.push_back(chunk_buff);
+	}
+	cout << "Chunked read: (" << chunk << ")";
+}
+
 void Message::handle_request(const fd client, size_t buffer_size)
 {
 
@@ -679,6 +721,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 		case Request::CHUNKED_TRANSFER:
 			//TODO
 			Logger::log("Handling a chunk", INFO);
+			this->m_read_chunk(client, buffer_size);
 			break;
 		case Request::BODY_HEADER:
 			Logger::log("BODY HEADER HANDLE", INFO);
@@ -812,7 +855,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 	if (this->m_readStatus == Request::CHUNKED_TRANSFER)
 	{
 		Logger::log("Continue Header Sent", INFO);
-		this->m_server_message = "HTTP/1.1 100 Continue";
+		this->m_server_message = "HTTP/1.1 100 Continue\r\n\r\n";
 		this->m_send_message(client);
 		return;
 	}

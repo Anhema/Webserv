@@ -36,11 +36,11 @@ console_handler.setFormatter(formatter)
 
 
 def calculate_file_hash(filename, block_size=65536):
-	hasher = hashlib.sha256()
-	with open(filename, 'rb') as f:
-		for block in iter(lambda: f.read(block_size), b''):
-			hasher.update(block)
-	return hasher.hexdigest()
+    hasher = hashlib.sha256()
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(block_size), b''):
+            hasher.update(block)
+    return hasher.hexdigest()
 
 class HtmlExtractor(HTMLParser):
 	def __init__(self):
