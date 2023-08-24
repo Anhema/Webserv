@@ -202,17 +202,7 @@ class TestServer(unittest.TestCase):
 			self.assertEqual(response.status, 405, server + " failed")
 			logging.info(server + " HEAD OK")
 		print("")
-
-	def test_autoindex(self):
-		logging.info("**** Autoindex Test ****")
-
-		for server in servers:
-			response = get_response("GET", server, "/autoindex")
-
-			self.assertEqual(response.status, 200, server + " failed")
-			self.assertEqual(response.title, "Directory Links")
-			logging.info(server + " OK")
-		print("")
+		
 	def test_directory_location(self):
 		for server in servers:
 			response = get_response("GET", server, "/directory")

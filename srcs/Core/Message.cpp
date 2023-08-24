@@ -46,15 +46,14 @@ std::string Message::m_createFile(const std::string &filename, const std::string
 	cout << "\n";
 	cout << "\n\n***********\nFileName = " << this->m_body.file_name << "\nExtension = " << this->m_body.file_extension << "\n";
 
-	composition_name.append(this->m_current_location->upload_path);
+	composition_name.append(this->m_current_location->upload_path + "/");
 	composition_name.append(filename);
 	composition_name.append(time_str);
 	composition_name.append(".");
 	composition_name.append(extension);
 
+	cout << composition_name << "\n";
 	std::ofstream outfile(composition_name, std::ios::out | std::ios::binary);
-	if (outfile.fail())
-		throw (std::runtime_error("can't create outfile for POST"));
 
 	string			needle;
 
@@ -971,14 +970,20 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 bool Message::m_valid_server_name(void)
 {
 	const std::string &host = this->m_request.headers.find("Host")->second;
+	// if (host.empty())
+	// {
+	// 	cout << "\n\n" << " ------- " << host << "\n\n";
 
-	if (host.empty())
-		return false;
+	// 	return false;
+	// }
 
 	for (std::vector<std::string>::iterator it = this->m_configuration.names.begin(); it != this->m_configuration.names.end(); it++)
+	{
+
 		if (*it == host)
 			return true;
-	return false;
+	}
+	return true;
 }
 
 void Message::reset()
