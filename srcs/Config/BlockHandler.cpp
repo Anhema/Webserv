@@ -59,6 +59,8 @@ void WebServ::ServerBlockParser::validate_header(Data::Line const &header)
 {
     if (header.tokens.size() != 1 ||  header.key != this->m_identifier)
         throw (std::invalid_argument("Invalid header"));
+    if (*(header.tokens.end() - 1) != "{")
+        throw (std::invalid_argument("Error x"));
 }
 
 void WebServ::ServerBlockParser::initHandlers()
