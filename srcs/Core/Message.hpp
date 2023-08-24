@@ -99,7 +99,7 @@ private:
 	void					m_parseHeader(string &header);
 	void 					m_parseBody(const string &header);
 	void 					m_readBody(const fd client, const size_t fd_size);
-	void					m_createFile(const string &filename, const string &extension);
+	std::string				m_createFile(const string &filename, const string &extension);
 	string					m_update_location(const std::string &path);
 	bool					m_valid_method(void);
 	void					m_send_message(const fd client);

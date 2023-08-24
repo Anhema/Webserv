@@ -26,7 +26,7 @@ void Message::buildHeader()
 
 }
 
-void Message::m_createFile(const std::string &filename, const std::string &extension)
+std::string Message::m_createFile(const std::string &filename, const std::string &extension)
 {
 	char			time_str[100];
 	time_t 			t;
@@ -37,8 +37,8 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
-	if (this->m_body.data.empty())
-		return;
+	if (this->m_body.data.empty() || this->m_body.file_name.empty())
+		return ("400");
 
 	cout << "Data size: " << this->m_body.data.size() << "\n";
 	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
@@ -75,6 +75,7 @@ void Message::m_createFile(const std::string &filename, const std::string &exten
 
 	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != data_end; it++)
 		outfile.write(&*it, 1);
+	return ("");
 }
 
 std::string Message::error_page(std::string error)
@@ -431,12 +432,16 @@ std::string Message::m_post()
 	if (this->m_response.body == "")
 	{
 		cout << "\nUPLOAD FILE!!\n";
-		this->m_createFile(this->m_body.file_name, this->m_body.file_extension);
-		this->m_response.body = "File Uploaded";
-		this->m_response.extension = "text/html";
-		message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
-				<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
-		return (message.str());
+		if (this->m_createFile(this->m_body.file_name, this->m_body.file_extension).empty())
+		{
+			this->m_response.body = "File Uploaded";
+			this->m_response.extension = "text/html";
+			message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
+					<< "Content-Length: " << this->m_response.body.size() << "\r\n\r\n" << this->m_response.body;
+			return (message.str());
+		}
+		else
+			return (this->error_page("400"));
 	}
 	this->m_response.extension = "text/html";
 	message << "HTTP/1.1 200 OK\nContent-Type: text/html\n"
@@ -725,8 +730,13 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			break;
 		case Request::BODY_HEADER:
 			Logger::log("BODY HEADER HANDLE", INFO);
-//			header = this->m_readHeader(client);
-			this->m_parseBody(this->m_readHeader(client));
+			header = this->m_readHeader(client);
+			if (this->m_readStatus == Request::FINISHED_BODY)
+			{
+				this->finishedReading = true;
+				break;
+			}
+			this->m_parseBody(header);
 			this->m_readStatus = Request::BODY;
 			break;
 		case Request::BODY:
