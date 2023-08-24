@@ -88,6 +88,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
     	env[i] = new char[env_list[i].size() + 1];
     	::strncpy(env[i], env_list[i].c_str(), env_list[i].size() + 1);
 
+		//cout << "\n" << env[i] << "\n";
 	}
 	env[env_list.size()] = NULL;
 	pid_t pid = fork();
@@ -109,15 +110,18 @@ string CGI::exec_cgi(string file_path, string body, string method)
 
 		do {
 			result = waitpid(pid, 0, WNOHANG);
+			cout << result;
 
 			if (result == 0)
 			{
 				time_t current = time(NULL);
 				if (current - start >= timeout) {
+					//std::cout << "Timeout reached. Child process is still running." << std::endl;
 					Logger::log("Timeout CGI", WARNING);
 					kill(pid, SIGKILL);
 					return "timeout";
 				}
+				usleep(100000);
 			}
 		} while (result == 0);
 	}

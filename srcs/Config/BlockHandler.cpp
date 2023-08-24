@@ -116,7 +116,7 @@ void WebServ::LocationBlockParser::initHandlers()
 		this->AddKeywordHandler("index", Parser::Directive::KeyFactory<Parser::Keys::Index>());
 		this->AddKeywordHandler("redirection", Parser::Directive::KeyFactory<Parser::Keys::Redirection>());
 		this->AddKeywordHandler("autoindex", Parser::Directive::KeyFactory<Parser::Keys::Autoindex>());
-		this->AddKeywordHandler("upload", Parser::Directive::KeyFactory<Parser::Keys::Autoindex>());
+		this->AddKeywordHandler("upload", Parser::Directive::KeyFactory<Parser::Keys::UploadPath>());
     }
 }
 

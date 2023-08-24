@@ -7,14 +7,15 @@
 
 Data::ErrorPages::ErrorPages():
 error_400("400.html"), error_403("403.html"),
-error_404("404.html"), error_405("405.html"), error_413("413.html"),
+error_404("404.html"), error_405("405.html"),
+error_408("408.html"), error_413("413.html"),
 error_500("500.html"), error_501("501.html"),
 error_502("502.html"), error_505("505.html") {}
 
 Data::ErrorPages::ErrorPages(const Data::ErrorPages &rhs):
 		error_400(rhs.error_400), error_403(rhs.error_403),
 		error_404(rhs.error_404), error_405(rhs.error_405),
-		error_413(rhs.error_413),
+		error_408(rhs.error_408), error_413(rhs.error_413),
 		error_500(rhs.error_500), error_501(rhs.error_501),
 		error_502(rhs.error_502), error_505(rhs.error_505) {}
 
@@ -66,19 +67,20 @@ Data::Location::Location():
 {
 	this->accepted_methods.methods.push_back(GET_METHOD);
 	this->accepted_methods.methods.push_back(POST_METHOD);
-	this->upload_path = "uploads/";
+	this->upload_path = "www/uploads";
 }
 
 Data::Location::Location(Data::Server const &context):
 		uri(), root(context.root), directory_file(), index(context.index),
 		autoindex(false), accepted_methods(context.accepted_methods), redirection()
-{
-}
+{}
 
 Data::Location::Location(Location const &rhs):
 		uri(rhs.uri), root(rhs.root), directory_file(rhs.directory_file), index(rhs.index),
 		autoindex(rhs.autoindex), accepted_methods(rhs.accepted_methods), redirection(rhs.redirection)
-{}
+{
+	this->upload_path = rhs.upload_path;
+}
 
 Data::Location::~Location() { //std::cout << "Destroying Location\n";
 }
@@ -204,6 +206,7 @@ Data::ErrorPages &Data::ErrorPages::operator=(const Data::ErrorPages &rhs) {
 	this->error_403 = rhs.error_403;
 	this->error_404 = rhs.error_404;
 	this->error_405 = rhs.error_405;
+	this->error_408 = rhs.error_408;
 	this->error_413 = rhs.error_413;
 	this->error_500 = rhs.error_500;
 	this->error_501 = rhs.error_501;

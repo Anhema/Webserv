@@ -384,6 +384,7 @@ const std::vector<std::string> &Parser::Keys::ErrorPage::get_valid_pages() {
 		valid_pages.push_back("403");
 		valid_pages.push_back("404");
 		valid_pages.push_back("405");
+		valid_pages.push_back("408");
 		valid_pages.push_back("413");
 		valid_pages.push_back("501");
 		valid_pages.push_back("502");
@@ -421,6 +422,8 @@ void Parser::Keys::ErrorPage::m_save(const std::vector<std::string> &tokens, Dat
 			dst->error_404 = file;
 		else if (page == "405")
 			dst->error_405 = file;
+		else if (page == "408")
+			dst->error_408 = file;
 		else if (page == "413")
 			dst->error_413 = file;
 		else if (page == "500")

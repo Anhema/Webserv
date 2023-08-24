@@ -37,7 +37,7 @@ std::string Message::m_createFile(const std::string &filename, const std::string
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
-	if (this->m_body.data.empty() || this->m_body.file_name.empty())
+	if (this->m_body.data.empty() || this->m_body.file_name.empty() || this->m_current_location->upload_path.empty())
 		return ("400");
 
 	cout << "Data size: " << this->m_body.data.size() << "\n";
@@ -46,7 +46,7 @@ std::string Message::m_createFile(const std::string &filename, const std::string
 	cout << "\n";
 	cout << "\n\n***********\nFileName = " << this->m_body.file_name << "\nExtension = " << this->m_body.file_extension << "\n";
 
-	composition_name.append("uploads/");
+	composition_name.append(this->m_current_location->upload_path);
 	composition_name.append(filename);
 	composition_name.append(time_str);
 	composition_name.append(".");
@@ -84,6 +84,8 @@ std::string Message::error_page(std::string error)
 	std::string			error_name;
 	std::string 		path;
 
+	cout <<  error <<"\n";
+
 	if (error == "400")
 	{
 		path = this->m_configuration.errors.error_400;
@@ -104,6 +106,11 @@ std::string Message::error_page(std::string error)
 	{
 		path = this->m_configuration.errors.error_405;
 		error_name = "Method Not Allowed";
+	}
+	else if (error == "408")
+	{
+		path = this->m_configuration.errors.error_408;
+		error_name = "Request Timeout";
 	}
 	else if (error == "413")
 	{
@@ -379,9 +386,9 @@ std::string Message::m_get()
 	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "py" || Utils::get_extension(path) == "sh")
 	{
 		this->m_response.body = cgi.exec_cgi(path, args, this->m_request.method);
-
+		cout << this->m_response.body << "\n";
 		if (this->m_response.body == "timeout")
-			return (this->error_page("502"));
+			return (this->error_page("408"));
 		if (this->m_response.body == "403")
 			return (this->error_page("403"));
 		if (this->m_response.body == "Error")
@@ -434,7 +441,7 @@ std::string Message::m_post()
 		this->m_response.body = cgi.exec_cgi(path, "", this->m_request.method);
 	}
 	if (this->m_response.body == "timeout")
-		return (this->error_page("502"));
+		return (this->error_page("408"));
 	if (this->m_response.body == "403")
 		return (this->error_page("403"));
 	if (this->m_response.body == "Error")

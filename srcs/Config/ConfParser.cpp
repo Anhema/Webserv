@@ -14,6 +14,7 @@ void WebServ::ConfParser::print() const
 
         cout << "Root -> " << (it)->root << "\n";
         cout << "Index -> " << (it)->index << "\n";
+
         cout << "Accepted methods -> ";
         Utils::print_vector(it->accepted_methods.methods);
         cout << "Max Body -> " << (it)->max_body_size << "\n";
@@ -23,6 +24,7 @@ void WebServ::ConfParser::print() const
 		cout << "403 -> " << (it)->errors.error_403 << "\n";
         cout << "404 -> " << (it)->errors.error_404 << "\n";
 		cout << "405 -> " << (it)->errors.error_405 << "\n";
+		cout << "408 -> " << (it)->errors.error_408 << "\n";
 		cout << "413 -> " << (it)->errors.error_413 << "\n";
 		cout << "500 -> " << (it)->errors.error_500 << "\n";
 		cout << "501 -> " << (it)->errors.error_501 << "\n";
@@ -73,6 +75,7 @@ void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &loc
     cout << "pre methods: " << "\n";
     Utils::print_vector(location.accepted_methods.methods);
     cout << "\n";
+	cout << "Location path: " << location.upload_path << "\n";
 	if (location.accepted_methods.methods.empty())
 		location.accepted_methods.methods = context.accepted_methods.methods;
 	if (location.root.empty())
