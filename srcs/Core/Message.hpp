@@ -15,8 +15,9 @@ namespace Request
 	{
 		HEADER,
 		BODY,
-        BODY_HEADER,
-		FINISHED_BODY
+		BODY_HEADER,
+		FINISHED_BODY,
+		CHUNKED_TRANSFER
 	};
 }
 
@@ -38,6 +39,8 @@ typedef struct s_body
 	string 								file_extension;
 	string 								boundary;
 	std::map<std::string, std::string>	headers;
+	size_t 								current_read;
+	bool								body_has_headers;
 }	t_body;
 
 typedef struct s_request
@@ -47,6 +50,7 @@ typedef struct s_request
 	std::string							connection;
 	std::string							plain_uri;
 	std::string							version;
+	std::string 						transfer_encoding;
 	size_t 								content_length;
 	std::map<std::string, std::string>	headers;
 }	t_request;
@@ -84,14 +88,16 @@ private:
 	// Returns a location object corresponding a uri
 	std::string				m_get_uri_segment_root(std::string &filter);
 
-	// Se me fue la cabeza
+	// Takes the body and fills t_body structures
+	void					m_parse_body_header();
+
 	std::string 			m_get_expanded_uri(const string &path);
 	std::string 			m_get_path();
 	std::string				m_get();
 	std::string				m_post();
 	std::string				m_delete();
 	string					m_readHeader(const fd client);
-	void					m_parseHeader(const string &header);
+	void					m_parseHeader(string &header);
 	void 					m_parseBody(const string &header);
 	void 					m_readBody(const fd client, const size_t fd_size);
 	void					m_createFile(const string &filename, const string &extension);
