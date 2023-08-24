@@ -1,5 +1,6 @@
 #include "CGI.hpp"
 #include "Logger.hpp"
+#include <signal.h>
 
 CGI::CGI(){}
 CGI::~CGI(){}
@@ -115,6 +116,7 @@ string CGI::exec_cgi(string file_path, string body, string method)
 				if (current - start >= timeout) {
 					std::cout << "Timeout reached. Child process is still running." << std::endl;
 					Logger::log("Timeout CGI", WARNING);
+					kill(pid, SIGKILL);
 					return "timeout";
 				}
 				usleep(100000);
