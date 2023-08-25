@@ -310,8 +310,9 @@ class TestServer(unittest.TestCase):
 
 if __name__ == "__main__":
 	logging.info("Starting Test Server")
-	# os.system("pkill webserv")
-	# os.system("./webserv_sani tests/test.conf  & ")
+	#os.system("pkill webserv")
+	#os.system("pkill webserv_sani")
+	#os.system("./webserv_sani tests/test.conf  & ")
 	time.sleep(1)
 	logging.info("Initializing tests\n")
 	chunked_request()

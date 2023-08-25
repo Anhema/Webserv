@@ -119,6 +119,10 @@ string CGI::exec_cgi(string file_path, string body, string method)
 					//std::cout << "Timeout reached. Child process is still running." << std::endl;
 					Logger::log("Timeout CGI", WARNING);
 					kill(pid, SIGKILL);
+					for (size_t i = 0; i < env_list.size() + 1; i++)
+						delete env[i];
+					delete []env;
+					env_list.clear();
 					return "timeout";
 				}
 				usleep(100000);
@@ -135,6 +139,9 @@ string CGI::exec_cgi(string file_path, string body, string method)
 		output.append(buffer);
 	}
 	close(pipefd[0]);
+	for (size_t i = 0; i < env_list.size() + 1; i++)
+		delete env[i];
 	delete []env;
+	env_list.clear();
 	return (output);
 }

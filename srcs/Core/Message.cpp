@@ -366,8 +366,16 @@ std::string Message::m_get()
 
 	std::string 		path(this->m_get_path());
 
-	args = Utils::split(path, "?")[1];
-	path = Utils::split(path, "?")[0];
+	if (path.find_first_of("?"))
+	{
+		std::vector<string> vec = Utils::split(path, '?');
+		if (vec.size() > 1)
+		{
+			args = vec[1];
+			path = vec[0];
+			vec.clear();
+		}
+	}
 
 	std::ifstream ifs(path);
 
@@ -553,6 +561,7 @@ void Message::m_parseHeader(std::string &header)
 		this->finishedReading = true;
 		return;
 	}
+	
 	std::vector<std::string> request = Utils::split(header, '\n');
 	std::vector<std::string>::iterator line = request.begin();
 	std::vector<std::string> r_line = Utils::split((*line), ' ');
@@ -925,7 +934,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 //	&& (stat(tmp.c_str(), &sb) == 0)
 	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
 	{
-		std::vector<std::string> uri_segments(Utils::split(this->m_request.plain_uri, "/"));
+		std::vector<std::string> uri_segments(Utils::split(this->m_request.plain_uri, '/'));
 		cout << "Last Uri Segment:" << *(uri_segments.end() - 1) << endl;
 		cout << "Uri: " << this->m_current_location->uri << endl;
 

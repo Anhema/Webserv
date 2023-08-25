@@ -72,7 +72,7 @@ bool	Utils::can_open_dir(std::string const &directory)
 std::string Utils::get_extension(std::string const file_name)
 {
 	std::string file(file_name);
-	std::vector<std::string> ext = Utils::split(file, ".");
+	std::vector<std::string> ext = Utils::split(file, '.');
 	std::vector<std::string>::iterator ite = ext.end();
 	ite -= 1;
 
