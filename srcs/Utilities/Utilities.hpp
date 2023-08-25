@@ -16,6 +16,7 @@
 # include "stdlib.h"
 # include <climits>
 # include <sys/stat.h>
+# include <errno.h>
 
 using std::string;
 using std::cout;
@@ -168,6 +169,7 @@ namespace Utils
 	std::string 				eraseAll(std::string const src, char c);
 	bool						is_directory(std::string const &path);
 	void						deleteConsecutives(std::string &src, char c);
+	int							file_exists(const std::string &path);
 }
 
 

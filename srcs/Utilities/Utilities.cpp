@@ -187,6 +187,24 @@ void Utils::deleteConsecutives(string &src, __unused char c)
 	src = result;
 }
 
+int Utils::file_exists(const string &path)
+{
+	struct stat buffer;
+	int stat_val = stat(path.c_str(), &buffer);
+	if (stat_val == 0)
+		return stat_val;
+	switch (errno)
+	{
+		case ENOENT: // failed cause no exists
+			return ENOENT;
+		case EACCES: // failed cause acces
+			return EACCES;
+		default:
+			return stat_val;
+	}
+}
+
+
 std::string Utils::eraseAll(const std::string src, char c)
 {
 	std::string result;

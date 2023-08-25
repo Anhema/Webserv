@@ -473,16 +473,18 @@ std::string Message::m_delete()
 
 	std::ifstream ifs(path);
 
-	if (access(path.c_str(), R_OK) != 0)
-		message << this->error_page("403");
-	else if (access(path.c_str(), F_OK) != 0)
+	int file_status = Utils::file_exists(path);
+
+	if (file_status == ENOENT)
 		message << this->error_page("404");
+	else if (access(path.c_str(), R_OK) != 0)
+		message << this->error_page("403");
 	else if (!ifs.is_open())
 		message << this->error_page("400");
 	else
 	{
 		this->m_response.htmlFile = Utils::read_file(path);
-		std::remove(path.c_str());
+		unlink(path.c_str());
 		this->m_response.extension = Utils::get_extension(path);
 		message << "HTTP/1.1 200 OK\nContent-Status: text/" << this->m_response.extension
 				<< "\nContent-Length: " << this->m_response.htmlFile.size() << "\r\n\r\n" << this->m_response.htmlFile;

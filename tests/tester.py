@@ -327,6 +327,7 @@ class TestServer(unittest.TestCase):
             self.assertEqual(response.status, 200, server + " failed")
             self.assertEqual(response.title, "Sample Index", server + " failed")
             logging.info(server + " OK")
+
     def test_landing_test_Page(self):
         for server in servers:
             response = get_response("GET", server, "/")
@@ -335,13 +336,39 @@ class TestServer(unittest.TestCase):
             self.assertEqual(response.title, "Web Server Test", server + " failed")
             logging.info(server + " OK")
 
+    def test_delete_file(self):
+        os.system("touch test_www/delete_me/file_1")
+        os.system("touch test_www/delete_me/file_2")
+        os.system("touch test_www/delete_me/file_3")
+
+        response = get_response("DELETE", "localhost:8080", "/delete/file_1")
+        self.assertEqual(response.status, 200, "localhost:8080" + " failed")
+        response = get_response("DELETE", "localhost:42", "/delete/file_2")
+        self.assertEqual(response.status, 200, "localhost:42" + " failed")
+        response = get_response("DELETE", "localhost:80", "/delete/file_3")
+        self.assertEqual(response.status, 200, "localhost:80" + " failed")
+    def test_delete_file_no_access(self):
+
+        response = get_response("DELETE", "localhost:8080", "/delete/test_error")
+        self.assertEqual(response.status, 403, "localhost:8080" + " failed")
+
+    def test_delete_file_no_exist(self):
+
+        response = get_response("DELETE", "localhost:8080", "/delete/noexist")
+        self.assertEqual(response.status, 404, "localhost:8080" + " failed")
+
 
 if __name__ == "__main__":
-	logging.info("Starting Test Server")
-	#os.system("pkill webserv")
-	#os.system("pkill webserv_sani")
-	#os.system("./webserv_sani tests/test.conf  & ")
-	time.sleep(1)
-	logging.info("Initializing tests\n")
-	chunked_request()
-	unittest.main()
+    os.system("touch test_www/delete_me/file_4")
+    logging.info("Starting Test Server")
+    os.system("touch test_www/delete_me/file_1")
+    os.system("touch test_www/delete_me/file_2")
+    os.system("touch test_www/delete_me/file_3")
+    os.system("touch test_www/delete_me/test_error")
+    os.system("chmod -r test_www/delete_me/test_error")
+    #os.system("pkill webserv")
+    #os.system("pkill webserv_sani")
+    #os.system("./webserv_sani tests/test.conf  & ")
+    time.sleep(1)
+    logging.info("Initializing tests\n")
+    unittest.main()
