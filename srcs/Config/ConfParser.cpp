@@ -92,6 +92,7 @@ void WebServ::ConfParser::save(Data::Conf *data)
     if (Data::Server *server = dynamic_cast<Data::Server *>(data))
     {
         this->m_serverBrackets.push_back(*server);
+		cout << "resetting location index\n";
         last_server_idx++;
 		last_location_idx = -1;
 		cout << "Saving at server: " << last_server_idx <<endl;
@@ -108,7 +109,6 @@ void WebServ::ConfParser::save(Data::Conf *data)
 	{
 		this->m_serverBrackets.at(last_server_idx).locations.at(last_location_idx).accepted_methods.methods = accept->methods;
         cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << "\n";
-        last_location_idx = total_pos;
 	}
 	else if (Data::ErrorPages *error_page = dynamic_cast<Data::ErrorPages *>(data))
 	{

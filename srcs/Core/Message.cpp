@@ -201,8 +201,8 @@ std::string Message::m_get_uri_segment_root(string &filter) {
 
 std::string Message::m_parse_uri(const string uri)
 {
-//	cout << "*******Parse URI *******\n";
-//	cout << "Plain uri: " << uri << "\n";
+	cout << "*******Parse URI *******\n";
+	cout << "Plain uri: " << uri << "\n";
 //
 
 	this->m_uri.location_filter.push_back("/");
@@ -250,7 +250,9 @@ std::string Message::m_parse_uri(const string uri)
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
 	if (this->m_uri.is_dir)
 	{
-//		cout << "appendea el file porque es un dir\n";
+		cout << "appendea el file porque es un dir\n";
+		if (*(this->m_uri.expanded.end() - 1) != '/')
+			this->m_uri.expanded.push_back('/');
 		this->m_uri.expanded.append(this->m_uri.file);
 	}
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
@@ -262,11 +264,11 @@ std::string Message::m_parse_uri(const string uri)
 //	cout << "Segments: ";
 //	Utils::print_vector(this->m_uri.segments);
 //
-//	cout << "Location filter: ";
-//	Utils::print_vector(this->m_uri.location_filter);
-//	cout << "File: " << this->m_uri.file << "\n";
-//	cout << "Expanded Uri: " << this->m_uri.expanded << "\n";
-//	cout << "Is dir: " << this->m_uri.is_dir << "\n";
+	cout << "Location filter: ";
+	Utils::print_vector(this->m_uri.location_filter);
+	cout << "File: " << this->m_uri.file << "\n";
+	cout << "Expanded Uri: " << this->m_uri.expanded << "\n";
+	cout << "Is dir: " << this->m_uri.is_dir << "\n";
 
 
 
@@ -288,9 +290,8 @@ string Message::m_update_location(const string &path)
 		{
 //			cout << "Filter-> " << *filter << " it uri-> " << it->uri << "\n";
 			if (*filter == it->uri)
-			if (*filter == it->uri)
 			{
-//				cout << "New location: " << it->uri << endl;
+				cout << "New location: " << it->uri << endl;
 				this->m_current_location = &(*it);
 				this->m_expanded_root.clear();
 				return ("");
@@ -740,7 +741,6 @@ void Message::handle_request(const fd client, size_t buffer_size)
 			cout << "Header parse finished\n";
 			break;
 		case Request::CHUNKED_TRANSFER:
-			//TODO
 			Logger::log("Handling a chunk", INFO);
 			this->m_read_chunk(client, buffer_size);
 			break;
@@ -970,16 +970,15 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 bool Message::m_valid_server_name(void)
 {
 	const std::string &host = this->m_request.headers.find("Host")->second;
-	// if (host.empty())
-	// {
-	// 	cout << "\n\n" << " ------- " << host << "\n\n";
+	 if (host.empty())
+	 {
+	 	cout << "\n\n" << " ------- " << host << "\n\n";
 
-	// 	return false;
-	// }
+	 	return false;
+	 }
 
 	for (std::vector<std::string>::iterator it = this->m_configuration.names.begin(); it != this->m_configuration.names.end(); it++)
 	{
-
 		if (*it == host)
 			return true;
 	}
