@@ -72,7 +72,7 @@ void WebServ::ConfParser::init()
 
 void WebServ::ConfParser::add_context(Data::Server &context, Data::Location &location)
 {
-    cout << "pre methods: " << "\n";
+    cout << "pre methods: " << " for uri: " << location.uri << "\n";
     Utils::print_vector(location.accepted_methods.methods);
     cout << "\n";
 	cout << "Location path: " << location.upload_path << "\n";
@@ -94,7 +94,7 @@ void WebServ::ConfParser::save(Data::Conf *data)
         this->m_serverBrackets.push_back(*server);
         last_server_idx++;
 		last_location_idx = -1;
-		cout << "Saving at server: " << last_server_idx << endl;
+		cout << "Saving at server: " << last_server_idx <<endl;
         this->m_serverBracket_count++;
     }
     else if (Data::Location *location = dynamic_cast<Data::Location *>(data))
@@ -102,7 +102,7 @@ void WebServ::ConfParser::save(Data::Conf *data)
         this->m_serverBrackets.at(last_server_idx).locations.push_back(*location);
 		this->m_locationBracket_count++;
         last_location_idx++;
-		cout << "Saving at server: " << last_server_idx << " at location: " << last_location_idx << endl;
+		cout << "Saving at server "  << last_server_idx << " at location: " << last_location_idx << " " << location->uri << endl;
     }
 	else if (Data::Accept *accept = dynamic_cast<Data::Accept *>(data))
 	{
@@ -148,9 +148,9 @@ void WebServ::ConfParser::validate() {
 
 void WebServ::ConfParser::validate_server(Data::Server &bracket) {
 	if (bracket.ip.empty())
-		throw (std::invalid_argument("DEFINE LA IP DEL SERVER NO??"));
+		throw (std::invalid_argument("No ip found"));
 	if (bracket.ports.empty())
-		throw (std::invalid_argument("UN PUERTO NI QUE SEA??"));
+		throw (std::invalid_argument("No port found"));
 
 	for (std::vector<Data::Location>::iterator it = bracket.locations.begin(); it != bracket.locations.end(); it++)
 		validate_location(*it);
@@ -158,5 +158,5 @@ void WebServ::ConfParser::validate_server(Data::Server &bracket) {
 
 void WebServ::ConfParser::validate_location(Data::Location &bracket) {
 	if (bracket.uri.empty())
-		throw (std::invalid_argument("LOCATION PERO DE QUE RUTA EH?"));
+		throw (std::invalid_argument("No uri found"));
 }
