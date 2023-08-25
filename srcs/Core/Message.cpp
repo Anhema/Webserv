@@ -172,7 +172,7 @@ std::string Message::m_get_expanded_uri(const string &path)
 
 	std::string expanded_uri;
 
-	Utils::print_vector(split_path);
+//	Utils::print_vector(split_path);
 
 
 	for (std::vector<std::string>::iterator split = split_path.begin(); split != split_path.end(); split++)
@@ -201,9 +201,9 @@ std::string Message::m_get_uri_segment_root(string &filter) {
 
 std::string Message::m_parse_uri(const string uri)
 {
-	cout << "*******Parse URI *******\n";
-	cout << "Plain uri: " << uri << "\n";
-
+//	cout << "*******Parse URI *******\n";
+//	cout << "Plain uri: " << uri << "\n";
+//
 
 	this->m_uri.location_filter.push_back("/");
 	if (uri == "/")
@@ -227,7 +227,7 @@ std::string Message::m_parse_uri(const string uri)
 	{
 		std::string filter("/");
 		std::string expanded_root = this->m_get_uri_segment_root(filter);
-		cout << "Expande size 1: " << expanded_root << "\n";
+//		cout << "Expande size 1: " << expanded_root << "\n";
 		this->m_uri.expanded.append(expanded_root);
 	}
 	else
@@ -235,7 +235,7 @@ std::string Message::m_parse_uri(const string uri)
 		for (std::vector<std::string>::iterator it = this->m_uri.segments.begin(); it != this->m_uri.segments.end(); it++)
 		{
 			std::string expanded_root = this->m_get_uri_segment_root(*it);
-			cout << "Extended root for " << *it << " is: " << expanded_root << "\n";
+//			cout << "Extended root for " << *it << " is: " << expanded_root << "\n";
 			// Couldnt find a matching location
 			if (*it == expanded_root)
 				this->m_uri.expanded.append(expanded_root);
@@ -250,7 +250,7 @@ std::string Message::m_parse_uri(const string uri)
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
 	if (this->m_uri.is_dir)
 	{
-		cout << "appendea el file porque es un dir\n";
+//		cout << "appendea el file porque es un dir\n";
 		this->m_uri.expanded.append(this->m_uri.file);
 	}
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
@@ -258,15 +258,15 @@ std::string Message::m_parse_uri(const string uri)
 //	if (!this->m_uri.is_dir)
 //		this->m_uri.location_filter = uri;
 
-
-	cout << "Segments: ";
-	Utils::print_vector(this->m_uri.segments);
-
-	cout << "Location filter: ";
-	Utils::print_vector(this->m_uri.location_filter);
-	cout << "File: " << this->m_uri.file << "\n";
-	cout << "Expanded Uri: " << this->m_uri.expanded << "\n";
-	cout << "Is dir: " << this->m_uri.is_dir << "\n";
+//
+//	cout << "Segments: ";
+//	Utils::print_vector(this->m_uri.segments);
+//
+//	cout << "Location filter: ";
+//	Utils::print_vector(this->m_uri.location_filter);
+//	cout << "File: " << this->m_uri.file << "\n";
+//	cout << "Expanded Uri: " << this->m_uri.expanded << "\n";
+//	cout << "Is dir: " << this->m_uri.is_dir << "\n";
 
 
 
@@ -290,7 +290,7 @@ string Message::m_update_location(const string &path)
 			if (*filter == it->uri)
 			if (*filter == it->uri)
 			{
-				cout << "New location: " << it->uri << endl;
+//				cout << "New location: " << it->uri << endl;
 				this->m_current_location = &(*it);
 				this->m_expanded_root.clear();
 				return ("");
@@ -385,7 +385,7 @@ std::string Message::m_get()
 	if (Utils::get_extension(path) == "php" || Utils::get_extension(path) == "py" || Utils::get_extension(path) == "sh")
 	{
 		this->m_response.body = cgi.exec_cgi(path, args, this->m_request.method);
-		cout << this->m_response.body << "\n";
+//		cout << "CGI RETURNS: " << this->m_response.body << "\n";
 		if (this->m_response.body == "timeout")
 			return (this->error_page("408"));
 		if (this->m_response.body == "403")
@@ -877,7 +877,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 //	ss << "Responding fd: " << client;
 	Logger::log(ss.str(), INFO);
 //	cout << "****Writing****\n";
-
+	Logger::log("New Response", WARNING);
 	if (this->m_readStatus == Request::CHUNKED_TRANSFER)
 	{
 		Logger::log("Continue Header Sent", INFO);
@@ -900,7 +900,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 //	cout << this->m_request.plain_uri << "\n\n**********" << tmp << "************" << this->m_current_location->plain_uri << "\n\n";
 
-	print_headers(this->m_request.headers, this->m_request);
+//	print_headers(this->m_request.headers, this->m_request);
 
 	cout << "Using location:\n" << *this->m_current_location << "\n";
 
@@ -946,8 +946,8 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		this->m_send_message(client);
 	}
 
-	cout << "\n\nMax-------->" << this->m_configuration.max_body_size << "\n\n";
-	cout << "\n\nBody-------->" << this->m_body.data.size() << "\n\n";
+//	cout << "\n\nMax-------->" << this->m_configuration.max_body_size << "\n\n";
+//	cout << "\n\nBody-------->" << this->m_body.data.size() << "\n\n";
 	if (this->m_body.data.size() > this->m_configuration.max_body_size)
 	{
 		this->error_page("413");

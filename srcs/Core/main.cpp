@@ -40,11 +40,6 @@ int main(int argc, char** argv)
 		e.print();
 		return (0);
 	}
-	catch (Parser::SyntaxError &e)
-	{
-		cout  << e.what() << "\n";
-		return (0);
-	}
 	catch (std::exception &e)
 	{
 		Logger::log(e.what(), ERROR);

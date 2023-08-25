@@ -2,9 +2,7 @@
 
 Parser::KeysNotClosed::KeysNotClosed(): std::invalid_argument("Keys are not closed correctly") {}
 
-Parser::SyntaxError::SyntaxError(): std::invalid_argument("Syntax Error") {}
 
-Parser::SyntaxError::SyntaxError(const string &line): std::invalid_argument(("Error at line: " + line).c_str()) {}
 
 Parser::InvalidValue::InvalidValue(const std::string &line, const std::string &token, int n): Exception(line, token, n) {}
 
@@ -108,8 +106,11 @@ bool Parser::Reader::lineIsOpener(const Data::Line &line)
 
 bool Parser::Reader::lineIsCloser(const Data::Line &line)
 {
-    if (line.raw.at(line.raw.find_first_not_of(WHITESPACE)) == this->m_rules.bracket_closer)
+	int first_char_idx = line.raw.find_first_not_of(WHITESPACE);
+    if (line.raw.at(first_char_idx) == this->m_rules.bracket_closer)
 	{
+		if (line.raw.substr(first_char_idx, std::string::npos).size() != 1)
+			throw (std::invalid_argument("Invalid closing line: " + line.raw));
 		return true;
 	}
 	return false;

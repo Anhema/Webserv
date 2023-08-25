@@ -125,7 +125,7 @@ void WebServ::ConfParser::start()
 {
 	this->m_find_bracket();
 	if (this->total_depth != 0)
-		throw (std::invalid_argument("Las llaves no estan cerradas!"));
+		throw (std::invalid_argument("Keys Not Closed"));
 
 	for (std::vector<Data::Server>::iterator iterator = this->m_serverBrackets.begin(); iterator != this->m_serverBrackets.end(); iterator++)
 	{

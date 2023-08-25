@@ -38,12 +38,8 @@ namespace Parser
 			return message.c_str();
 		}
 	};
-	class SyntaxError: public std::invalid_argument
-	{
-	public:
-		explicit SyntaxError(const string &line);
-		SyntaxError();
-	};
+
+
 
 	class BadCheck
 	{

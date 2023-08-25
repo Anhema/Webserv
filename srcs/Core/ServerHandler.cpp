@@ -108,7 +108,7 @@ void ServerHandler::m_eventLoop()
 				cout << "Getter:" << server->message[event_fd].getConnectionType() << "\n";
 				server->disconnectClient(this->m_kq, event_fd);
 			}
-			if (server->message[event_fd].m_readStatus != Request::CHUNKED_TRANSFER)
+//			if (server->message[event_fd].m_readStatus != Request::CHUNKED_TRANSFER)
 				server->message[event_fd].reset();
 		}
 	}

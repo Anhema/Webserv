@@ -294,19 +294,24 @@ class TestServer(unittest.TestCase):
 
 			self.assertEqual(response.status, 200, server + " failed")
 			logging.info(server + " OK")
-	def test_post_body_py_cgi(self):
+	def test_post_body_py_cgi_no_arg(self):
 		for server in servers:
-			response = get_response("POST", server, "/CGI/add.py", "")
+			response = get_response("POST", server, "/CGI/add.py")
 
 			self.assertEqual(response.status, 200, server + " failed")
 			logging.info(server + " OK")
+
+	def test_cgi_loop(self):
+		response = get_response("POST", "localhost:8080", "/CGI/loop.py")
+		self.assertEqual(response.status, 408, "localhost:8080" + " failed")
+
 
 
 
 if __name__ == "__main__":
 	logging.info("Starting Test Server")
-	os.system("pkill webserv")
-	os.system("./webserv_sani tests/test.conf  & ")
+	# os.system("pkill webserv")
+	# os.system("./webserv_sani tests/test.conf  & ")
 	time.sleep(1)
 	logging.info("Initializing tests\n")
 	chunked_request()
