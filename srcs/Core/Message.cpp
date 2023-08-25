@@ -1001,8 +1001,12 @@ void Message::reset()
 	this->m_request.headers.clear();
 	this->m_request.headers.clear();
 
-	std::memset(&this->m_response, 0, sizeof(t_response));
-	std::memset(&this->m_body, 0, sizeof(t_body));
+	this->m_response.htmlFile.clear();
+	this->m_response.body.clear();
+	this->m_response.extension.clear();
+
+	// std::memset(&this->m_response, 0, sizeof(t_response));
+	// std::memset(&this->m_body, 0, sizeof(t_body));
 
 	this->m_responseCode = HttpStatus::OK;
 	this->m_readStatus = Request::HEADER;
