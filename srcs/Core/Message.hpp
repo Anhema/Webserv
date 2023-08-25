@@ -79,6 +79,7 @@ private:
 	Data::Location			*m_current_location;
 	std::string 			m_expanded_root;
 	t_uri 					m_uri;
+	std::map<std::string, std::string>	chunked_headers;
 
 private:
 	// Takes the request uri and fills t_uri structures

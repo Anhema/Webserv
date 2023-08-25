@@ -30,8 +30,21 @@ std::string Message::m_createFile(const std::string &filename, const std::string
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
+	cout << "\n\n***********\nFileName = " << this->m_body.file_name << "\nExtension = " << this->m_body.file_extension << "\n";
 	if (this->m_body.data.empty() || this->m_body.file_name.empty() || this->m_current_location->upload_path.empty())
-		return ("400");
+	{
+		std::string content_disposition = this->m_request.headers.find("Content-Disposition")->second;
+
+		if (content_disposition.empty())
+			return ("400");
+
+		this->m_body.file_name = content_disposition.substr(content_disposition.find("filename=") + 9, std::string::npos);
+		this->m_body.file_name = this->m_body.file_name.substr(1, this->m_body.file_name.size() - 2);
+		this->m_body.file_extension = Utils::get_extension(this->m_body.file_name);
+		if (this->m_body.data.empty() || this->m_body.file_name.empty() || this->m_current_location->upload_path.empty())
+			return ("400");
+	}
+
 
 	cout << "Data size: " << this->m_body.data.size() << "\n";
 	for (std::vector<char>::iterator it = this->m_body.data.begin(); it != this->m_body.data.end(); it++)
@@ -545,7 +558,7 @@ string Message::m_readHeader(const fd client)
 
 void Message::m_parseHeader(std::string &header)
 {
-	cout << "\n\n------>" << header << "<------\n\n";
+//	cout << "\n\n------>" << header << "<------\n\n";
 	if (header == "")
 	{
 		this->m_request.method = "";
@@ -607,6 +620,8 @@ void Message::m_parseHeader(std::string &header)
 		Logger::log("Finished read -> true", INFO);
 		this->finishedReading = true;
 	}
+	cout << "after parse headers\n";
+	print_headers(this->m_request.headers, this->m_request);
 }
 
 void Message::m_parseBody(const std::string &header)
@@ -732,6 +747,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 
 	ss << "READ STATUS: " << this->m_readStatus;
 
+	print_headers(this->m_request.headers, this->m_request);
 
 	Logger::log(ss.str(), INFO);
 	std::string header;
@@ -739,7 +755,7 @@ void Message::handle_request(const fd client, size_t buffer_size)
 	{
 		case Request::HEADER:
 			header = this->m_readHeader(client);
-			cout << "incoming header: (" << header << ")\n";
+//			cout << "incoming header: (" << header << ")\n";
 			this->m_parseHeader(header);
 			cout << "Header parse finished\n";
 			break;
@@ -811,7 +827,7 @@ void Message::m_send_message(const fd client)
 //		cout << "Sent: " << send_bytes << " Expected: " << m_server_message.size() << "\n";
 //	}
 
-	this->m_request.headers.clear();
+//	this->m_request.headers.clear();
 }
 
 void Message::m_make_redir(void)
@@ -903,7 +919,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 //	cout << this->m_request.plain_uri << "\n\n**********" << tmp << "************" << this->m_current_location->plain_uri << "\n\n";
 
-//	print_headers(this->m_request.headers, this->m_request);
+	print_headers(this->m_request.headers, this->m_request);
 
 	cout << "Using location:\n" << *this->m_current_location << "\n";
 
@@ -972,16 +988,18 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 
 bool Message::m_valid_server_name(void)
 {
-	const std::string &host = this->m_request.headers.find("Host")->second;
+	std::string host = this->m_request.headers.find("Host")->second;
 	 if (host.empty())
 	 {
-	 	cout << "\n\n" << " ------- " << host << "\n\n";
-
-	 	return false;
+//		 host = "localhost";
+//		 cout << "******VALID SERVER NAME*****\n";
+//		 cout << "\n\n" << " ------- " << host << "\n\n";
+		 return false;
 	 }
 
 	for (std::vector<std::string>::iterator it = this->m_configuration.names.begin(); it != this->m_configuration.names.end(); it++)
 	{
+		cout << "\n\n"<< *it << " ------- " << host << "\n\n";
 		if (*it == host)
 			return true;
 	}
@@ -998,7 +1016,6 @@ void Message::reset()
 	this->m_request.plain_uri.clear();
 	this->m_request.version.clear();
 	this->m_request.content_length = 0;
-	this->m_request.headers.clear();
 	this->m_request.headers.clear();
 
 	this->m_response.htmlFile.clear();
