@@ -20,6 +20,7 @@ ServerHandler::ServerHandler(int server_count): _server_count(server_count)
 
 ServerHandler::~ServerHandler()
 {
+	delete [] this->m_socketEvents;
 	this->m_server_list.clear();
 }
 
@@ -34,14 +35,14 @@ void ServerHandler::m_startKqueue()
 
 void ServerHandler::m_monitorSockets()
 {
-	this->m_socketEvents.reset(new struct kevent[this->m_server_list.size()]);
+	this->m_socketEvents = new struct kevent[this->m_server_list.size()];
 
 	for (size_t i = 0; i < this->m_server_list.size(); i++)
 	{
-		EV_SET(m_socketEvents.get(), m_server_list.at(i)->getSocket(), EVFILT_READ, EV_ADD, 0, 0, 0);
+		EV_SET(m_socketEvents, m_server_list.at(i)->getSocket(), EVFILT_READ, EV_ADD, 0, 0, 0);
 		stringstream ss;
 
-		kevent(this->m_kq, m_socketEvents.get(), 1, NULL, 0, NULL);
+		kevent(this->m_kq, m_socketEvents, 1, NULL, 0, NULL);
 		ss << "Monitoring socket fd: " << this->m_server_list.at(i)->getSocket();
 		Logger::log(ss.str(), INFO);
 	}

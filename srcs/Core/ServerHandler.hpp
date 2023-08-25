@@ -37,7 +37,7 @@ private:
 
 private:
 	std::vector<Server *>					m_server_list;
-	std::unique_ptr<struct kevent[]>		m_socketEvents;
+	struct kevent                  			*m_socketEvents;
 	std::map<fd, Server *>			        m_active_fds;
 	struct kevent							m_events[Server::maxEvents];
 
