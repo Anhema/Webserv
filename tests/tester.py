@@ -329,7 +329,7 @@ class TestServer(unittest.TestCase):
             logging.info(server + " OK")
     def test_landing_test_Page(self):
         for server in servers:
-            response = get_response("GET", server, "/autoindex/")
+            response = get_response("GET", server, "/")
 
             self.assertEqual(response.status, 200, server + " failed")
             self.assertEqual(response.title, "Web Server Test", server + " failed")

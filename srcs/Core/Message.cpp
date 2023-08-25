@@ -19,13 +19,6 @@ void Message::setConfig(Data::Server &config)
 	this->m_configuration = config;
 }
 
-void Message::buildHeader()
-{
-
-
-
-}
-
 std::string Message::m_createFile(const std::string &filename, const std::string &extension)
 {
 	char			time_str[100];
@@ -156,16 +149,6 @@ std::string Message::error_page(std::string error)
 
 }
 
-std::string Message::getRoot(const string &dir) {
-
-	for (std::vector<Data::Location>::iterator it = this->m_configuration.locations.begin(); it != this->m_configuration.locations.end(); it++)
-	{
-		if (Utils::comparePaths(it->uri, dir))
-			return it->root;
-	}
-	return "";
-}
-
 std::string Message::m_get_expanded_uri(const string &path)
 {
 	std::vector<std::string> split_path = Utils::split(path, '/');
@@ -256,7 +239,6 @@ std::string Message::m_parse_uri(const string uri)
 		this->m_uri.expanded.append(this->m_uri.file);
 	}
 	this->m_uri.is_dir = Utils::is_directory(this->m_uri.expanded);
-
 //	if (!this->m_uri.is_dir)
 //		this->m_uri.location_filter = uri;
 
@@ -306,6 +288,16 @@ string Message::m_update_location(const string &path)
 	return (this->m_current_location->root);
 }
 
+bool Message::m_is_autoindex()
+{
+	bool enable_and_no_index = this->m_current_location->autoindex && this->m_current_location->index.empty();
+
+	std::string tryfile = this->m_current_location->root + this->m_uri.expanded;
+
+	cout << "Enable: " <<enable_and_no_index << "\n";
+	cout << "TryFile: " << tryfile << "\n";
+	return ((enable_and_no_index && ((this->m_request.plain_uri == this->m_current_location->uri) || (this->m_request.plain_uri == this->m_current_location->uri  + '/'))));
+}
 
 std::string Message::m_get_path()
 {
@@ -923,7 +915,7 @@ void Message::make_response(const fd client, size_t __unused buffer_size)
 		return;
 	}
 //	&& (stat(tmp.c_str(), &sb) == 0)
-	if (this->m_current_location->autoindex && this->m_current_location->index.empty())
+	if (this->m_is_autoindex())
 	{
 		std::vector<std::string> uri_segments(Utils::split(this->m_request.plain_uri, "/"));
 		cout << "Last Uri Segment:" << *(uri_segments.end() - 1) << endl;

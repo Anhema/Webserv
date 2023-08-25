@@ -89,6 +89,7 @@ private:
 
 	// Takes the body and fills t_body structures
 
+	bool 					m_is_autoindex();
 	void					m_read_chunk(const fd client, size_t fd_size);
 	std::string 			m_get_expanded_uri(const string &path);
 	std::string 			m_get_path();
@@ -107,14 +108,11 @@ private:
 	void					m_make_autoindex(void);
 	bool					m_valid_server_name(void);
 	std::string				m_make_html_link(std::string const &link);
-	std::string 			m_expand_file();
-	std::string 			getRoot(const string &dir);
 
 public:
 	void 					reset(void);
 	void					setConfig(Data::Server &config);
 	void					make_response(const fd client, size_t buffer_size);
-	void 					buildHeader();
 	void					handle_request(const fd client, size_t buffer_size);
 	string					&getConnectionType(void);
 
