@@ -30,7 +30,6 @@ std::string Message::m_createFile(const std::string &filename, const std::string
 	strftime(time_str, sizeof(time_str), "%d-%m-%y_%H-%M", time_ptr);
 
 	string composition_name;
-	cout << "\n\n***********\nFileName = " << this->m_body.file_name << "\nExtension = " << this->m_body.file_extension << "\n";
 	if (this->m_body.data.empty() || this->m_body.file_name.empty() || this->m_current_location->upload_path.empty())
 	{
 		std::string content_disposition = this->m_request.headers.find("Content-Disposition")->second;
